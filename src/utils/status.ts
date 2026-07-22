@@ -1,6 +1,6 @@
 /** Payment-status derivation and status → pill-style mappings. */
 
-import { statusColors } from '@theme';
+import { statusColors, colors } from '@theme';
 import type { PaymentStatus, RsvpStatus, FunctionStatus } from '@types';
 
 export interface StatusStyle {
@@ -61,5 +61,17 @@ export const functionStatusLabel = (status: FunctionStatus): string => {
       return 'Upcoming';
     default:
       return 'Planned';
+  }
+};
+
+/** Solid dot color for a function on the timeline / dashboard. */
+export const functionDotColor = (status: FunctionStatus): string => {
+  switch (status) {
+    case 'done':
+      return colors.success;
+    case 'upcoming':
+      return colors.accent;
+    default:
+      return '#D9CBAE';
   }
 };

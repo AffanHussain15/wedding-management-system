@@ -21,3 +21,18 @@ export type { AvatarProps } from './common/Avatar';
 
 export { ProgressBar } from './common/ProgressBar';
 export type { ProgressBarProps } from './common/ProgressBar';
+
+export { Icon } from './common/Icon';
+export type { IconProps, IconName } from './common/Icon';
+
+export { ProgressRing } from './common/ProgressRing';
+export type { ProgressRingProps } from './common/ProgressRing';
+
+export { GradientView } from './common/GradientView';
+export type { GradientViewProps } from './common/GradientView';
+
+export { SectionHeader } from './common/SectionHeader';
+export type { SectionHeaderProps } from './common/SectionHeader';
+
+export { StatCard } from './common/StatCard';
+export type { StatCardProps } from './common/StatCard';

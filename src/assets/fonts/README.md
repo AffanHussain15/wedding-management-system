@@ -1,6 +1,7 @@
 # Fonts
 
-The app's typography (`src/theme/typography.ts`) expects the **Inter** family.
+The app's typography (`src/theme/typography.ts`) uses two families:
+**Inter** (UI/body) and **Playfair Display** (serif headings & big numbers).
 Add the font files here, then link them — two steps:
 
 ## 1. Drop the files in this folder
@@ -10,13 +11,16 @@ The file names **must** match the family names used in `typography.ts`
 
 ```
 src/assets/fonts/
-├── Inter-Regular.ttf     → fontFamily.regular  ('Inter-Regular')
-├── Inter-Medium.ttf      → fontFamily.medium   ('Inter-Medium')
-├── Inter-SemiBold.ttf    → fontFamily.semiBold ('Inter-SemiBold')
-└── Inter-Bold.ttf        → fontFamily.bold     ('Inter-Bold')
+├── Inter-Regular.ttf           → fontFamily.regular   ('Inter-Regular')
+├── Inter-Medium.ttf            → fontFamily.medium    ('Inter-Medium')
+├── Inter-SemiBold.ttf          → fontFamily.semiBold  ('Inter-SemiBold')
+├── Inter-Bold.ttf              → fontFamily.bold      ('Inter-Bold')
+├── PlayfairDisplay-Regular.ttf → fontFamily.serif     ('PlayfairDisplay-Regular')
+└── PlayfairDisplay-Bold.ttf    → fontFamily.serifBold ('PlayfairDisplay-Bold')
 ```
 
-Download Inter from https://rsms.me/inter/ or Google Fonts.
+Download Inter from https://rsms.me/inter/ and Playfair Display from
+Google Fonts (https://fonts.google.com/specimen/Playfair+Display).
 
 ## 2. Link the fonts into the native projects
 

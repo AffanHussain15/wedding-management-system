@@ -1,5 +1,6 @@
 /**
- * Typography tokens (Inter family).
+ * Typography tokens. Two families: Inter (UI/body) and Playfair Display
+ * (serif — headings and big numbers), matching the design.
  * Font files aren't linked yet — see src/assets/fonts/README.md. The family
  * names below already match the expected files; until then RN falls back to
  * the system font.
@@ -12,6 +13,8 @@ export const fontFamily = {
   medium: 'Inter-Medium',
   semiBold: 'Inter-SemiBold',
   bold: 'Inter-Bold',
+  serif: 'PlayfairDisplay-Regular',
+  serifBold: 'PlayfairDisplay-Bold',
 } as const;
 
 export const fontWeight = {
@@ -50,6 +53,27 @@ export const typography = {
     fontSize: fontSize.display,
     lineHeight: lineHeight.display,
     letterSpacing: 0.4,
+  },
+  // Serif (Playfair) — used for hero numbers, stat values and section titles.
+  serifDisplay: {
+    fontFamily: fontFamily.serifBold,
+    fontSize: 44,
+    lineHeight: 48,
+  },
+  serifTitle: {
+    fontFamily: fontFamily.serifBold,
+    fontSize: fontSize.lg,
+    lineHeight: lineHeight.lg,
+  },
+  serifHeading: {
+    fontFamily: fontFamily.serifBold,
+    fontSize: fontSize.base,
+    lineHeight: lineHeight.base,
+  },
+  serifValue: {
+    fontFamily: fontFamily.serifBold,
+    fontSize: fontSize.xl,
+    lineHeight: lineHeight.xl,
   },
   h1: {
     fontFamily: fontFamily.bold,
