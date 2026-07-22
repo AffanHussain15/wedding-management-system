@@ -1,0 +1,88 @@
+/**
+ * Seed data from the approved design, used to initialize the store on first
+ * launch. Replace with a real API/persistence layer later — shapes match `@types`.
+ */
+
+import type {
+  Vendor,
+  Guest,
+  BudgetCategory,
+  WeddingFunction,
+  Task,
+  Reminder,
+  WeddingDetails,
+} from '@types';
+
+export const seedWedding: WeddingDetails = {
+  bride: 'Ayesha',
+  groom: 'Danyal',
+  weddingDate: '2027-02-14',
+  city: 'Lahore',
+  venue: 'Pearl Continental',
+  functionsSelected: {
+    Dholki: true,
+    Mayun: true,
+    Mehndi: true,
+    Baraat: true,
+    Walima: true,
+  },
+};
+
+export const seedVendors: Vendor[] = [
+  { id: 1, name: 'Al-Noor Caterers', category: 'Catering', phone: '0300-1234567', cost: 220000, advance: 100000, status: 'Advance', rating: 4.6 },
+  { id: 2, name: 'Shaadi Decor Co.', category: 'Decor', phone: '0300-7654321', cost: 180000, advance: 180000, status: 'Paid', rating: 4.8 },
+  { id: 3, name: 'Lens & Light Studio', category: 'Photography', phone: '0300-9988776', cost: 150000, advance: 50000, status: 'Advance', rating: 4.9 },
+  { id: 4, name: 'Glow Beauty Bar', category: 'Bridal Makeup', phone: '0300-4433221', cost: 60000, advance: 0, status: 'Pending', rating: 4.5 },
+  { id: 5, name: 'Mehndi by Fiza', category: 'Mehndi Artist', phone: '0300-2211334', cost: 35000, advance: 35000, status: 'Paid', rating: 5.0 },
+  { id: 6, name: 'Rhythm Sound & DJ', category: 'Sound & DJ', phone: '0300-6677889', cost: 90000, advance: 0, status: 'Pending', rating: 4.3 },
+  { id: 7, name: 'Pearl Continental Banquet', category: 'Venue', phone: '0300-5566778', cost: 650000, advance: 300000, status: 'Advance', rating: 4.7 },
+];
+
+export const seedGuests: Guest[] = [
+  { id: 1, name: 'Ayesha Khan', phone: '0301-1111111', side: 'Bride', group: 'Family', rsvp: 'Confirmed' },
+  { id: 2, name: 'Danyal Ahmed', phone: '0301-2222222', side: 'Groom', group: 'Family', rsvp: 'Confirmed' },
+  { id: 3, name: 'Fatima Noor', phone: '0301-3333333', side: 'Bride', group: 'Zanana', rsvp: 'Confirmed' },
+  { id: 4, name: 'Bilal Sheikh', phone: '0301-4444444', side: 'Groom', group: 'Mardana', rsvp: 'Pending' },
+  { id: 5, name: 'Ammara Rizvi', phone: '0301-5555555', side: 'Bride', group: 'Zanana', rsvp: 'Confirmed' },
+  { id: 6, name: 'Usman Tariq', phone: '0301-6666666', side: 'Groom', group: 'Mardana', rsvp: 'Not Coming' },
+  { id: 7, name: 'Sana Malik', phone: '0301-7777777', side: 'Bride', group: 'Zanana', rsvp: 'Pending' },
+  { id: 8, name: 'Hassan Raza', phone: '0301-8888888', side: 'Groom', group: 'Mardana', rsvp: 'Confirmed' },
+  { id: 9, name: 'Nadia Farooq', phone: '0301-9999999', side: 'Bride', group: 'Family', rsvp: 'Pending' },
+  { id: 10, name: 'Ali Hamza', phone: '0301-1010101', side: 'Groom', group: 'Mardana', rsvp: 'Confirmed' },
+  { id: 11, name: 'Zoya Aslam', phone: '0301-1111100', side: 'Bride', group: 'Zanana', rsvp: 'Not Coming' },
+  { id: 12, name: 'Omar Siddiqui', phone: '0301-1212121', side: 'Groom', group: 'Family', rsvp: 'Confirmed' },
+];
+
+export const seedBudget: BudgetCategory[] = [
+  { name: 'Catering', allotted: 250000, spent: 210000 },
+  { name: 'Decor', allotted: 200000, spent: 180000 },
+  { name: 'Bridal Wear', allotted: 300000, spent: 260000 },
+  { name: 'Photography', allotted: 160000, spent: 150000 },
+  { name: 'Venue', allotted: 700000, spent: 300000 },
+  { name: 'Miscellaneous', allotted: 90000, spent: 95000 },
+];
+
+export const seedFunctions: WeddingFunction[] = [
+  { id: 1, name: 'Dholki', date: '2026-11-10', time: '7:00 PM', venue: 'Khan Residence', status: 'done' },
+  { id: 2, name: 'Mayun', date: '2026-11-14', time: '6:00 PM', venue: 'Khan Residence', status: 'done' },
+  { id: 3, name: 'Mehndi', date: '2027-02-10', time: '7:30 PM', venue: 'Pearl Continental', status: 'upcoming' },
+  { id: 4, name: 'Baraat', date: '2027-02-14', time: '5:00 PM', venue: 'Grand Marquee', status: 'pending' },
+  { id: 5, name: 'Walima', date: '2027-02-15', time: '8:00 PM', venue: 'Pearl Continental', status: 'pending' },
+];
+
+export const seedTasks: Task[] = [
+  { id: 1, title: 'Finalize catering menu', owner: 'Ayesha', function: 'Walima', done: true },
+  { id: 2, title: 'Confirm Mehndi decor colors', owner: 'Danyal', function: 'Mehndi', done: true },
+  { id: 3, title: 'Book bridal car', owner: 'Ammi', function: 'Baraat', done: false },
+  { id: 4, title: 'Send Baraat invites', owner: 'Abbu', function: 'Baraat', done: false },
+  { id: 5, title: 'Order Walima cake', owner: 'Ayesha', function: 'Walima', done: false },
+  { id: 6, title: 'Confirm guest transport', owner: 'Bilal', function: 'Mehndi', done: false },
+  { id: 7, title: 'Finalize seating chart', owner: 'Danyal', function: 'Baraat', done: false },
+];
+
+export const seedReminders: Reminder[] = [
+  { id: 1, type: 'payment', text: 'Balance due to Pearl Continental Banquet', date: 'in 5 days' },
+  { id: 2, type: 'booking', text: 'Confirm DJ booking for Baraat', date: 'in 3 days' },
+  { id: 3, type: 'task', text: 'Finalize seating chart', date: 'tomorrow' },
+  { id: 4, type: 'payment', text: 'Advance due to Glow Beauty Bar', date: 'in 9 days' },
+];
