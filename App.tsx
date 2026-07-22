@@ -15,7 +15,7 @@ function App(): React.JSX.Element {
   return (
     <SafeAreaProvider>
       <WeddingProvider>
-        <StatusBar barStyle="light-content" />
+        <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
         <NavigationContainer theme={navigationTheme}>
           <RootNavigator />
         </NavigationContainer>

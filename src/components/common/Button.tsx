@@ -1,4 +1,4 @@
-/** Call-to-action button: primary / secondary / outline / ghost. */
+/** Call-to-action button: primary (maroon gradient) / secondary / outline / ghost. */
 
 import React from 'react';
 import {
@@ -12,6 +12,7 @@ import {
 
 import { colors, radius, spacing, typography } from '@theme';
 import { AppText } from './AppText';
+import { GradientView } from './GradientView';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 export type ButtonSize = 'md' | 'sm';
@@ -29,6 +30,8 @@ export interface ButtonProps {
   style?: StyleProp<ViewStyle>;
 }
 
+const PRIMARY_GRADIENT = ['#8A2142', '#6D0F2B'] as const;
+
 interface VariantStyle {
   bg: string;
   text: string;
@@ -36,7 +39,7 @@ interface VariantStyle {
 }
 
 const VARIANTS: Record<ButtonVariant, VariantStyle> = {
-  primary: { bg: colors.primary, text: colors.textOnPrimary },
+  primary: { bg: colors.transparent, text: colors.textOnPrimary },
   secondary: { bg: colors.accent, text: colors.textOnAccent },
   outline: { bg: colors.transparent, text: colors.primary, border: colors.primary },
   ghost: { bg: colors.transparent, text: colors.primary },
@@ -56,6 +59,7 @@ export function Button({
 }: ButtonProps): React.JSX.Element {
   const v = VARIANTS[variant];
   const isDisabled = disabled || loading;
+  const isPrimary = variant === 'primary';
 
   return (
     <Pressable
@@ -71,11 +75,15 @@ export function Button({
           borderColor: v.border ?? colors.transparent,
           borderWidth: v.border ? 1.5 : 0,
         },
+        isPrimary && styles.primaryShadow,
         fullWidth && styles.fullWidth,
         pressed && !isDisabled && styles.pressed,
         isDisabled && styles.disabled,
         style,
       ]}>
+      {isPrimary ? (
+        <GradientView colors={PRIMARY_GRADIENT} style={styles.gradientFill} />
+      ) : null}
       {loading ? (
         <ActivityIndicator color={v.text} />
       ) : (
@@ -91,19 +99,35 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: radius.pill,
+    borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'visible',
   },
-  md: { height: 52, paddingHorizontal: spacing.xl },
+  md: { height: 54, paddingHorizontal: spacing.xl },
   sm: { height: 40, paddingHorizontal: spacing.base },
   fullWidth: { alignSelf: 'stretch' },
+  gradientFill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: radius.lg,
+  },
+  primaryShadow: {
+    shadowColor: colors.primary,
+    shadowOpacity: 0.28,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
+  },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
   },
-  pressed: { opacity: 0.85 },
-  disabled: { opacity: 0.45 },
+  pressed: { opacity: 0.9 },
+  disabled: { opacity: 0.5 },
 });

@@ -21,15 +21,13 @@ import {
   selectVendorStats,
   selectNextFunction,
 } from '@store';
-import { colors, radius, spacing, typography } from '@theme';
+import { colors, radius, shadows, spacing, typography } from '@theme';
 import { formatDate, functionDotColor } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 // Translucent cream tones for text over the maroon hero gradient.
 const HERO_TEXT = 'rgba(253,246,233,0.65)';
 const HERO_DAYS = 'rgba(253,246,233,0.75)';
-const HERO_NUMBER = '#F3D98B';
-const TILE_BG = '#FBF8F2';
 
 export function HomeScreen(): React.JSX.Element {
   const nav = useAppNavigation();
@@ -77,7 +75,7 @@ export function HomeScreen(): React.JSX.Element {
       <GradientView colors={['#7A1230', '#4E0A1D']} style={styles.hero}>
         <AppText style={styles.heroLabel}>COUNTDOWN TO BARAAT</AppText>
         <View style={styles.heroRow}>
-          <AppText style={[typography.serifDisplay, { color: HERO_NUMBER }]}>
+          <AppText style={[typography.serifDisplay, { color: colors.goldSoft }]}>
             {daysLeft}
           </AppText>
           <AppText style={styles.heroDays}>days to go</AppText>
@@ -241,6 +239,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+    ...shadows.sm,
   },
   initialsButton: {
     width: 38,
@@ -291,6 +290,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
     alignItems: 'center',
+    ...shadows.sm,
   },
   functionDot: {
     width: 34,
@@ -311,6 +311,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.base,
+    ...shadows.sm,
   },
   reminderDot: {
     width: 7,
@@ -325,7 +326,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: TILE_BG,
+    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.md,
     padding: spacing.md,
   },

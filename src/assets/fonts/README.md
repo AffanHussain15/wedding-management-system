@@ -32,11 +32,17 @@ This copies the fonts into the iOS bundle (updating `Info.plist`) and the
 Android `assets/fonts` folder, using the `assets` path declared in
 `react-native.config.js`.
 
-Then rebuild the app:
+## 3. Turn the fonts on
+
+Set `FONTS_LOADED = true` in `src/theme/typography.ts`, then rebuild:
 
 ```bash
 npm run ios      # or: npm run android
 ```
+
+Until this flag is `true`, the app intentionally uses the system font (at the
+correct weight, with a platform serif for headings) so text always renders —
+referencing an unlinked font would otherwise show at the wrong weight.
 
 ## Notes
 

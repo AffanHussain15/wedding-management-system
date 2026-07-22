@@ -51,17 +51,9 @@ export function RootNavigator(): React.JSX.Element {
         <Stack.Screen name="Main" component={MainTabNavigator} />
       </Stack.Group>
 
-      <Stack.Group>
-        <Stack.Screen
-          name="VendorDetail"
-          component={VendorDetailScreen}
-          options={{ title: 'Vendor' }}
-        />
-        <Stack.Screen
-          name="FunctionDetail"
-          component={FunctionDetailScreen}
-          options={{ title: 'Function' }}
-        />
+      <Stack.Group screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="VendorDetail" component={VendorDetailScreen} />
+        <Stack.Screen name="FunctionDetail" component={FunctionDetailScreen} />
         <Stack.Screen name="Reminders" component={RemindersScreen} />
         <Stack.Screen name="Tasks" component={TasksScreen} />
         <Stack.Screen name="Seating" component={SeatingScreen} />

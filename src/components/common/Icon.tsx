@@ -11,7 +11,16 @@ export type IconName =
   | 'seating'
   | 'profile'
   | 'check'
-  | 'chevronRight';
+  | 'chevronRight'
+  | 'link'
+  | 'code'
+  | 'plus'
+  | 'search'
+  | 'phone'
+  | 'message'
+  | 'send'
+  | 'card'
+  | 'calendar';
 
 export interface IconProps {
   name: IconName;
@@ -75,6 +84,70 @@ export function Icon({
       return (
         <Svg {...svgProps}>
           <Path d="M9 6l6 6-6 6" {...p} />
+        </Svg>
+      );
+    case 'link':
+      return (
+        <Svg {...svgProps}>
+          <Circle cx={8} cy={16} r={3} {...p} />
+          <Circle cx={16} cy={8} r={3} {...p} />
+          <Path d="M10 14l4-4" {...p} />
+        </Svg>
+      );
+    case 'code':
+      return (
+        <Svg {...svgProps}>
+          <Rect x={4} y={4} width={16} height={16} rx={3} {...p} />
+          <Path d="M9 12h6M12 9v6" {...p} />
+        </Svg>
+      );
+    case 'plus':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M12 5v14M5 12h14" {...p} />
+        </Svg>
+      );
+    case 'search':
+      return (
+        <Svg {...svgProps}>
+          <Circle cx={11} cy={11} r={7} {...p} />
+          <Path d="M20 20l-4-4" {...p} />
+        </Svg>
+      );
+    case 'phone':
+      return (
+        <Svg {...svgProps}>
+          <Path
+            d="M4 5a1 1 0 011-1h3l2 5-2 1a11 11 0 005 5l1-2 5 2v3a1 1 0 01-1 1A16 16 0 014 5z"
+            {...p}
+          />
+        </Svg>
+      );
+    case 'message':
+      return (
+        <Svg {...svgProps}>
+          <Rect x={3} y={5} width={18} height={14} rx={3} {...p} />
+          <Path d="M3 7l9 6 9-6" {...p} />
+        </Svg>
+      );
+    case 'send':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M21 3L10 14M21 3l-7 18-4-8-8-4 19-6z" {...p} />
+        </Svg>
+      );
+    case 'card':
+      return (
+        <Svg {...svgProps}>
+          <Rect x={3} y={6} width={18} height={13} rx={2} {...p} />
+          <Path d="M3 10h18" {...p} />
+        </Svg>
+      );
+    case 'calendar':
+      return (
+        <Svg {...svgProps}>
+          <Rect x={4} y={5} width={16} height={15} rx={2} {...p} />
+          <Path d="M8 3v4M16 3v4M4 10h16" {...p} />
         </Svg>
       );
   }

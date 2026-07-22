@@ -17,6 +17,7 @@ export {
   fontWeight,
   fontSize,
   lineHeight,
+  FONTS_LOADED,
 } from './typography';
 export { spacing, layout } from './spacing';
 export { radius } from './radius';

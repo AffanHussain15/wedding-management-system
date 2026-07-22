@@ -42,16 +42,18 @@ const parseDate = (iso: string): Date => {
   return new Date(y, (m ?? 1) - 1, d ?? 1);
 };
 
-/** "2027-02-14" → "February 14, 2027" (long) or "Feb 14" (short). */
+/**
+ * "2027-02-14" → "February 14, 2027" (long), "February 14" (monthDay),
+ * or "Feb 14" (short).
+ */
 export const formatDate = (
   iso: string,
-  style: 'long' | 'short' = 'long',
+  style: 'long' | 'short' | 'monthDay' = 'long',
 ): string => {
   const d = parseDate(iso);
-  const month = (style === 'long' ? MONTHS_LONG : MONTHS_SHORT)[d.getMonth()];
-  return style === 'long'
-    ? `${month} ${d.getDate()}, ${d.getFullYear()}`
-    : `${month} ${d.getDate()}`;
+  const month = (style === 'short' ? MONTHS_SHORT : MONTHS_LONG)[d.getMonth()];
+  if (style === 'long') return `${month} ${d.getDate()}, ${d.getFullYear()}`;
+  return `${month} ${d.getDate()}`;
 };
 
 /** Whole days from today until the given ISO date (never negative). */

@@ -1,28 +1,61 @@
 /**
  * Typography tokens. Two families: Inter (UI/body) and Playfair Display
  * (serif — headings and big numbers), matching the design.
- * Font files aren't linked yet — see src/assets/fonts/README.md. The family
- * names below already match the expected files; until then RN falls back to
- * the system font.
+ *
+ * Fonts aren't bundled yet. Until they are, the app uses the system font at
+ * the correct weight (and a platform serif for headings) so the UI still
+ * reads correctly. After adding the font files to src/assets/fonts and
+ * running `npx react-native-asset`, flip FONTS_LOADED to true.
  */
 
-import type { TextStyle } from 'react-native';
+import { Platform, type TextStyle } from 'react-native';
 
-export const fontFamily = {
+/** Set true once the custom font files are added and linked. */
+export const FONTS_LOADED = false;
+
+const INTER = {
   regular: 'Inter-Regular',
   medium: 'Inter-Medium',
   semiBold: 'Inter-SemiBold',
   bold: 'Inter-Bold',
-  serif: 'PlayfairDisplay-Regular',
-  serifBold: 'PlayfairDisplay-Bold',
 } as const;
+
+const PLAYFAIR = {
+  regular: 'PlayfairDisplay-Regular',
+  bold: 'PlayfairDisplay-Bold',
+} as const;
+
+export const fontFamily = {
+  ...INTER,
+  serif: PLAYFAIR.regular,
+  serifBold: PLAYFAIR.bold,
+} as const;
+
+type Weight = keyof typeof INTER;
 
 export const fontWeight = {
   regular: '400',
   medium: '500',
   semiBold: '600',
   bold: '700',
-} as const satisfies Record<string, TextStyle['fontWeight']>;
+} as const satisfies Record<Weight, TextStyle['fontWeight']>;
+
+// System serif fallback used until Playfair Display is linked.
+const PLATFORM_SERIF = Platform.select({
+  ios: 'Georgia',
+  android: 'serif',
+  default: 'serif',
+});
+
+/** Inter when loaded, else system font at the matching weight. */
+const sans = (w: Weight): TextStyle =>
+  FONTS_LOADED ? { fontFamily: INTER[w] } : { fontWeight: fontWeight[w] };
+
+/** Playfair when loaded, else a platform serif at bold weight. */
+const serif = (): TextStyle =>
+  FONTS_LOADED
+    ? { fontFamily: PLAYFAIR.bold }
+    : { fontFamily: PLATFORM_SERIF, fontWeight: '700' };
 
 export const fontSize = {
   xs: 11,
@@ -49,91 +82,67 @@ export const lineHeight = {
 /** Ready-to-spread text variants: `<Text style={typography.h1}>`. */
 export const typography = {
   display: {
-    fontFamily: fontFamily.bold,
+    ...sans('bold'),
     fontSize: fontSize.display,
     lineHeight: lineHeight.display,
     letterSpacing: 0.4,
   },
-  // Serif (Playfair) — used for hero numbers, stat values and section titles.
-  serifDisplay: {
-    fontFamily: fontFamily.serifBold,
-    fontSize: 44,
-    lineHeight: 48,
-  },
-  serifTitle: {
-    fontFamily: fontFamily.serifBold,
-    fontSize: fontSize.lg,
-    lineHeight: lineHeight.lg,
-  },
+  // Serif (Playfair) — hero numbers, stat values and section titles.
+  serifDisplay: { ...serif(), fontSize: 44, lineHeight: 48 },
+  serifTitle: { ...serif(), fontSize: fontSize.lg, lineHeight: lineHeight.lg },
   serifHeading: {
-    fontFamily: fontFamily.serifBold,
+    ...serif(),
     fontSize: fontSize.base,
     lineHeight: lineHeight.base,
   },
-  serifValue: {
-    fontFamily: fontFamily.serifBold,
-    fontSize: fontSize.xl,
-    lineHeight: lineHeight.xl,
-  },
-  h1: {
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xxl,
-    lineHeight: lineHeight.xxl,
-  },
-  h2: {
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.xl,
-    lineHeight: lineHeight.xl,
-  },
-  h3: {
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.lg,
-    lineHeight: lineHeight.lg,
-  },
+  serifValue: { ...serif(), fontSize: fontSize.xl, lineHeight: lineHeight.xl },
+  h1: { ...sans('bold'), fontSize: fontSize.xxl, lineHeight: lineHeight.xxl },
+  h2: { ...sans('semiBold'), fontSize: fontSize.xl, lineHeight: lineHeight.xl },
+  h3: { ...sans('semiBold'), fontSize: fontSize.lg, lineHeight: lineHeight.lg },
   title: {
-    fontFamily: fontFamily.semiBold,
+    ...sans('semiBold'),
     fontSize: fontSize.base,
     lineHeight: lineHeight.base,
   },
   body: {
-    fontFamily: fontFamily.regular,
+    ...sans('regular'),
     fontSize: fontSize.base,
     lineHeight: lineHeight.base,
   },
   bodyMedium: {
-    fontFamily: fontFamily.medium,
+    ...sans('medium'),
     fontSize: fontSize.base,
     lineHeight: lineHeight.base,
   },
   callout: {
-    fontFamily: fontFamily.regular,
+    ...sans('regular'),
     fontSize: fontSize.md,
     lineHeight: lineHeight.md,
   },
   caption: {
-    fontFamily: fontFamily.regular,
+    ...sans('regular'),
     fontSize: fontSize.sm,
     lineHeight: lineHeight.sm,
   },
   overline: {
-    fontFamily: fontFamily.medium,
+    ...sans('medium'),
     fontSize: fontSize.sm,
     lineHeight: lineHeight.sm,
-    textTransform: 'uppercase',
+    textTransform: 'uppercase' as const,
     letterSpacing: 0.4,
   },
   label: {
-    fontFamily: fontFamily.medium,
+    ...sans('medium'),
     fontSize: fontSize.sm,
     lineHeight: lineHeight.sm,
   },
   button: {
-    fontFamily: fontFamily.semiBold,
+    ...sans('semiBold'),
     fontSize: fontSize.base,
     lineHeight: lineHeight.base,
     letterSpacing: 0.2,
   },
-} as const satisfies Record<string, TextStyle>;
+} satisfies Record<string, TextStyle>;
 
 export type TypographyVariant = keyof typeof typography;
 export type Typography = typeof typography;
