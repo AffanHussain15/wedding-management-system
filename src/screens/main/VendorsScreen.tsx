@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import {
   ScreenContainer,
@@ -9,7 +9,7 @@ import {
   FilterChip,
   StatusBadge,
   Avatar,
-  Icon,
+  Fab,
 } from '@components';
 import { useWedding } from '@store';
 import { VENDOR_FILTERS } from '@constants';
@@ -37,13 +37,9 @@ export function VendorsScreen(): React.JSX.Element {
   );
 
   return (
+    <View style={styles.screen}>
     <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <AppText style={typography.serifValue}>Vendors</AppText>
-        <Pressable style={styles.addButton} onPress={() => nav.navigate('AddVendor')}>
-          <Icon name="plus" size={20} color={colors.primary} />
-        </Pressable>
-      </View>
+      <AppText style={[typography.serifValue, styles.title]}>Vendors</AppText>
 
       <SearchBar value={search} onChangeText={setSearch} placeholder="Search vendors" />
 
@@ -72,6 +68,8 @@ export function VendorsScreen(): React.JSX.Element {
         ) : null}
       </View>
     </ScreenContainer>
+      <Fab onPress={() => nav.navigate('AddVendor')} />
+    </View>
   );
 }
 
@@ -104,21 +102,9 @@ function VendorRow({ vendor, onPress }: { vendor: Vendor; onPress: () => void })
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1 },
   content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xxl },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.base,
-  },
-  addButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  title: { marginBottom: spacing.base },
   filters: { marginHorizontal: -20, marginTop: spacing.md },
   filtersContent: { paddingHorizontal: 20, gap: spacing.sm },
   list: { gap: spacing.md, marginTop: spacing.base },

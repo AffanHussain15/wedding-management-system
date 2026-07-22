@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import {
   ScreenContainer,
@@ -8,7 +8,7 @@ import {
   DonutChart,
   ProgressBar,
   StatusBadge,
-  Icon,
+  Fab,
 } from '@components';
 import { useWedding, selectBudgetTotals } from '@store';
 import type { BudgetCategory } from '@types';
@@ -27,13 +27,9 @@ export function BudgetScreen(): React.JSX.Element {
   }));
 
   return (
+    <View style={styles.screen}>
     <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <AppText style={typography.serifValue}>Budget / Bajat</AppText>
-        <Pressable style={styles.addButton} onPress={() => nav.navigate('AddExpense')}>
-          <Icon name="plus" size={20} color={colors.primary} />
-        </Pressable>
-      </View>
+      <AppText style={[typography.serifValue, styles.title]}>Budget / Bajat</AppText>
 
       <Card style={styles.summary}>
         <DonutChart segments={segments} size={84} strokeWidth={14}>
@@ -54,6 +50,8 @@ export function BudgetScreen(): React.JSX.Element {
         ))}
       </View>
     </ScreenContainer>
+      <Fab onPress={() => nav.navigate('AddExpense')} />
+    </View>
   );
 }
 
@@ -106,21 +104,9 @@ function CategoryCard({ category, color }: { category: BudgetCategory; color: st
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1 },
   content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xxl },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.base,
-  },
-  addButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  title: { marginBottom: spacing.base },
   summary: {
     flexDirection: 'row',
     alignItems: 'center',

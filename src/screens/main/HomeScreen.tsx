@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 
 import {
   ScreenContainer,
@@ -11,6 +12,7 @@ import {
   StatCard,
   SectionHeader,
   Icon,
+  Fab,
 } from '@components';
 import {
   useWedding,
@@ -48,6 +50,7 @@ export function HomeScreen(): React.JSX.Element {
     nav.navigate('Main', { screen });
 
   return (
+    <View style={styles.screen}>
     <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.header}>
@@ -73,6 +76,9 @@ export function HomeScreen(): React.JSX.Element {
 
       {/* Countdown hero */}
       <GradientView colors={['#7A1230', '#4E0A1D']} style={styles.hero}>
+        <Svg width={120} height={120} viewBox="0 0 120 120" style={styles.heroRing}>
+          <Circle cx={60} cy={60} r={56} fill="none" stroke={colors.accentBright} strokeWidth={1.4} />
+        </Svg>
         <AppText style={styles.heroLabel}>COUNTDOWN TO BARAAT</AppText>
         <View style={styles.heroRow}>
           <AppText style={[typography.serifDisplay, { color: colors.goldSoft }]}>
@@ -193,6 +199,15 @@ export function HomeScreen(): React.JSX.Element {
         <ToolTile label="Profile" icon="profile" onPress={() => nav.navigate('Profile')} />
       </View>
     </ScreenContainer>
+
+      <Fab
+        actions={[
+          { label: '+ Add Vendor', onPress: () => nav.navigate('AddVendor') },
+          { label: '+ Add Guest', onPress: () => nav.navigate('AddGuest') },
+          { label: '+ Add Expense', onPress: () => nav.navigate('AddExpense') },
+        ]}
+      />
+    </View>
   );
 }
 
@@ -218,6 +233,7 @@ function ToolTile({
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1 },
   content: {
     paddingHorizontal: 20,
     paddingTop: spacing.xs,
@@ -256,6 +272,7 @@ const styles = StyleSheet.create({
     padding: 22,
     marginBottom: spacing.base,
   },
+  heroRing: { position: 'absolute', top: -30, right: -30, opacity: 0.5 },
   heroLabel: {
     ...typography.caption,
     color: HERO_TEXT,

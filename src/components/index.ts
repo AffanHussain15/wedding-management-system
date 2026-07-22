@@ -19,6 +19,9 @@ export type { SearchBarProps } from './common/SearchBar';
 export { Toast } from './common/Toast';
 export type { ToastProps } from './common/Toast';
 
+export { Fab } from './common/Fab';
+export type { FabProps, FabAction } from './common/Fab';
+
 export { Card } from './common/Card';
 export type { CardProps } from './common/Card';
 

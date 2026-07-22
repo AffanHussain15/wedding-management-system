@@ -11,6 +11,7 @@ import {
   Avatar,
   Icon,
   Toast,
+  Fab,
 } from '@components';
 import { useWedding, selectGuestCounts } from '@store';
 import { GUEST_FILTERS, RSVP_STATUSES } from '@constants';
@@ -57,12 +58,7 @@ export function GuestsScreen(): React.JSX.Element {
   return (
     <View style={styles.flex}>
       <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <AppText style={typography.serifValue}>Guests / Mehmaan</AppText>
-          <Pressable style={styles.addButton} onPress={() => nav.navigate('AddGuest')}>
-            <Icon name="plus" size={20} color={colors.primary} />
-          </Pressable>
-        </View>
+        <AppText style={[typography.serifValue, styles.title]}>Guests / Mehmaan</AppText>
 
         <View style={styles.stats}>
           <MiniStat value={counts.confirmed} label="Confirmed" color={colors.successText} />
@@ -99,6 +95,7 @@ export function GuestsScreen(): React.JSX.Element {
         </View>
       </ScreenContainer>
 
+      <Fab onPress={() => nav.navigate('AddGuest')} />
       <Toast message={toast} visible={!!toast} />
     </View>
   );
@@ -150,20 +147,7 @@ function GuestRow({
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xxl },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.base,
-  },
-  addButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  title: { marginBottom: spacing.base },
   stats: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
   miniStat: {
     flex: 1,

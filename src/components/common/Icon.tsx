@@ -20,7 +20,12 @@ export type IconName =
   | 'message'
   | 'send'
   | 'card'
-  | 'calendar';
+  | 'calendar'
+  | 'home'
+  | 'vendors'
+  | 'guests'
+  | 'budget'
+  | 'timeline';
 
 export interface IconProps {
   name: IconName;
@@ -148,6 +153,46 @@ export function Icon({
         <Svg {...svgProps}>
           <Rect x={4} y={5} width={16} height={15} rx={2} {...p} />
           <Path d="M8 3v4M16 3v4M4 10h16" {...p} />
+        </Svg>
+      );
+    case 'home':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M4 11 12 4l8 7" {...p} />
+          <Path d="M6 10v9h12v-9" {...p} />
+        </Svg>
+      );
+    case 'vendors':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M4 8l1.5-4h13L20 8" {...p} />
+          <Path d="M4 8h16v11H4z" {...p} />
+          <Path d="M9 19v-5h6v5" {...p} />
+        </Svg>
+      );
+    case 'guests':
+      return (
+        <Svg {...svgProps}>
+          <Circle cx={9} cy={9} r={3.2} {...p} />
+          <Path d="M3.5 19c0-3.6 2.5-6 5.5-6s5.5 2.4 5.5 6" {...p} />
+          <Circle cx={17} cy={9.5} r={2.4} {...p} />
+          <Path d="M15.5 13.3c2 .5 3.3 2.4 3.3 5.7" {...p} />
+        </Svg>
+      );
+    case 'budget':
+      return (
+        <Svg {...svgProps}>
+          <Rect x={3} y={7} width={18} height={12} rx={2} {...p} />
+          <Path d="M3 10h18" {...p} />
+          <Circle cx={16} cy={14.5} r={1.1} fill={color} />
+        </Svg>
+      );
+    case 'timeline':
+      return (
+        <Svg {...svgProps}>
+          <Rect x={4} y={5} width={16} height={15} rx={2} {...p} />
+          <Path d="M4 9h16" {...p} />
+          <Path d="M8 3v4M16 3v4" {...p} />
         </Svg>
       );
   }

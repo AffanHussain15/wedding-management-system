@@ -1,10 +1,12 @@
 /** Bottom tabs: Home · Vendors · Guests · Budget · Timeline. */
 
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, layout } from '@theme';
+import { Icon, type IconName } from '@components';
+import { colors } from '@theme';
 import {
   HomeScreen,
   VendorsScreen,
@@ -17,42 +19,47 @@ import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-// TODO: replace emoji with the design's SVG icons once react-native-svg is added.
-const TAB_ICON: Record<keyof MainTabParamList, string> = {
-  Home: '🏠',
-  Vendors: '🛍️',
-  Guests: '👥',
-  Budget: '💰',
-  Timeline: '📅',
+const TAB_META: Record<
+  keyof MainTabParamList,
+  { label: string; urdu: string; icon: IconName }
+> = {
+  Home: { label: 'Home', urdu: 'Ghar', icon: 'home' },
+  Vendors: { label: 'Vendors', urdu: 'Vendors', icon: 'vendors' },
+  Guests: { label: 'Guests', urdu: 'Mehmaan', icon: 'guests' },
+  Budget: { label: 'Budget', urdu: 'Bajat', icon: 'budget' },
+  Timeline: { label: 'Timeline', urdu: 'Timeline', icon: 'timeline' },
 };
 
-function TabBarIcon({
-  routeName,
-  focused,
-}: {
-  routeName: keyof MainTabParamList;
-  focused: boolean;
-}): React.JSX.Element {
+function TabBarIcon({ name, color }: { name: IconName; color: string }) {
+  return <Icon name={name} size={22} color={color} strokeWidth={1.9} />;
+}
+
+function TabBarLabel({ name, color }: { name: keyof MainTabParamList; color: string }) {
   return (
-    <Text style={[styles.icon, focused ? styles.iconActive : styles.iconInactive]}>
-      {TAB_ICON[routeName]}
-    </Text>
+    <View style={styles.labelWrap}>
+      <Text style={[styles.labelEn, { color }]}>{TAB_META[name].label}</Text>
+      <Text style={styles.labelUr}>{TAB_META[name].urdu}</Text>
+    </View>
   );
 }
 
 export function MainTabNavigator(): React.JSX.Element {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: styles.tabBar,
-        tabBarLabelStyle: styles.tabLabel,
-        // eslint-disable-next-line react/no-unstable-nested-components -- render prop returning the stable TabBarIcon component
-        tabBarIcon: ({ focused }) => (
-          <TabBarIcon routeName={route.name} focused={focused} />
-        ),
+        tabBarStyle: [
+          styles.tabBar,
+          { height: 58 + insets.bottom, paddingBottom: insets.bottom + 6 },
+        ],
+        // eslint-disable-next-line react/no-unstable-nested-components -- render prop -> stable TabBarIcon
+        tabBarIcon: ({ color }) => <TabBarIcon name={TAB_META[route.name].icon} color={color} />,
+        // eslint-disable-next-line react/no-unstable-nested-components -- render prop -> stable TabBarLabel
+        tabBarLabel: ({ color }) => <TabBarLabel name={route.name} color={color} />,
       })}>
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Vendors" component={VendorsScreen} />
@@ -67,11 +74,9 @@ const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: colors.surface,
     borderTopColor: colors.borderSubtle,
-    height: layout.tabBarHeight,
-    paddingTop: 6,
+    paddingTop: 8,
   },
-  tabLabel: { fontSize: 11 },
-  icon: { fontSize: 20 },
-  iconActive: { opacity: 1 },
-  iconInactive: { opacity: 0.5 },
+  labelWrap: { alignItems: 'center' },
+  labelEn: { fontSize: 10.5, fontWeight: '700' },
+  labelUr: { fontSize: 8, color: colors.textMuted, marginTop: 1 },
 });
