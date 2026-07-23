@@ -3,7 +3,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { colors, radius, shadows, spacing, typography } from '@theme';
+import { colors, radius, shadows, spacing, typography, weight } from '@theme';
 import { AppText } from './AppText';
 
 export interface StatCardProps {
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
   caption: {
     marginTop: spacing.sm,
-    fontWeight: '600',
+    ...weight('semiBold'),
   },
   pressed: {
     opacity: 0.9,

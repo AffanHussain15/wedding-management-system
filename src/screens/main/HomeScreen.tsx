@@ -23,7 +23,7 @@ import {
   selectVendorStats,
   selectNextFunction,
 } from '@store';
-import { colors, radius, shadows, spacing, typography } from '@theme';
+import { colors, radius, shadows, spacing, typography, weight } from '@theme';
 import { formatDate, functionDotColor } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
@@ -278,9 +278,10 @@ const styles = StyleSheet.create({
   },
   initials: {
     fontSize: 12,
-    fontWeight: '700',
+    ...weight('bold'),
   },
   hero: {
+    marginHorizontal: -20,
     borderRadius: 22,
     padding: 22,
     marginBottom: spacing.base,
@@ -320,7 +321,7 @@ const styles = StyleSheet.create({
   },
   ringLabel: {
     fontSize: 14,
-    fontWeight: '700',
+    ...weight('bold'),
   },
   progressSub: {
     marginTop: spacing.xxs,

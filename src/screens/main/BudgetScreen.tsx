@@ -12,7 +12,7 @@ import {
 } from '@components';
 import { useWedding, selectBudgetTotals } from '@store';
 import type { BudgetCategory } from '@types';
-import { colors, radius, spacing, typography } from '@theme';
+import { colors, radius, spacing, typography, weight } from '@theme';
 import { formatNumber, percentage, getChartColor } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   },
   donutLabel: {
     fontSize: 13,
-    fontWeight: '700',
+    ...weight('bold'),
   },
   totals: {
     flex: 1,
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   totalValue: {
-    fontWeight: '700',
+    ...weight('bold'),
   },
   list: {
     gap: spacing.md,

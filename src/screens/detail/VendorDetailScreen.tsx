@@ -14,7 +14,7 @@ import {
 import { useWedding } from '@store';
 import type { RootStackParamList } from '@navigation/types';
 import { useAppNavigation } from '@navigation/hooks';
-import { colors, radius, spacing, typography } from '@theme';
+import { colors, radius, spacing, typography, weight } from '@theme';
 import { paymentStatusStyle, balanceOf, formatNumber } from '@utils';
 
 const NOTE =
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   rowValue: {
-    fontWeight: '700',
+    ...weight('bold'),
   },
   bar: {
     marginTop: spacing.xs,

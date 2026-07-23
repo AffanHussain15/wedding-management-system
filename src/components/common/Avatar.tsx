@@ -3,7 +3,7 @@
 import React from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors } from '@theme';
+import { colors, weight } from '@theme';
 import { getInitials, getAvatarColor } from '@utils';
 import { AppText } from './AppText';
 
@@ -34,10 +34,7 @@ export function Avatar({
         },
         style,
       ]}>
-      <AppText
-        color={colors.textOnPrimary}
-        // eslint-disable-next-line react-native/no-inline-styles -- font size scales with the `size` prop
-        style={{ fontSize: size * 0.32, fontWeight: '700' }}>
+      <AppText color={colors.textOnPrimary} style={{ fontSize: size * 0.32, ...weight('bold') }}>
         {getInitials(name)}
       </AppText>
     </View>

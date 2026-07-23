@@ -6,7 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@components';
-import { colors } from '@theme';
+import { colors, weight } from '@theme';
 import { HomeScreen, VendorsScreen, GuestsScreen, BudgetScreen, TimelineScreen } from '@screens';
 
 import type { MainTabParamList } from './types';
@@ -72,11 +72,12 @@ const styles = StyleSheet.create({
   },
   labelEn: {
     fontSize: 10.5,
-    fontWeight: '700',
+    ...weight('bold'),
   },
   labelUr: {
     fontSize: 8,
     color: colors.textMuted,
     marginTop: 1,
+    ...weight('regular'),
   },
 });

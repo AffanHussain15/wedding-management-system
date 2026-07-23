@@ -3,7 +3,7 @@
 import React from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors, radius, spacing, typography } from '@theme';
+import { colors, radius, spacing, typography, weight } from '@theme';
 import { AppText } from './AppText';
 
 export interface StatusBadgeProps {
@@ -34,6 +34,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
   label: {
-    fontWeight: '600',
+    ...weight('semiBold'),
   },
 });

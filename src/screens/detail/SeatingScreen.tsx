@@ -5,7 +5,7 @@ import { ScreenContainer, AppText, BackButton, FilterChip, Avatar } from '@compo
 import { useWedding } from '@store';
 import { GUEST_GROUPS } from '@constants';
 import type { GuestGroup } from '@types';
-import { colors, radius, shadows, spacing, typography } from '@theme';
+import { colors, radius, shadows, spacing, typography, weight } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
 
 export function SeatingScreen(): React.JSX.Element {
@@ -92,6 +92,6 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   pillName: {
-    fontWeight: '600',
+    ...weight('semiBold'),
   },
 });

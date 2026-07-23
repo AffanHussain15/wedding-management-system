@@ -11,7 +11,7 @@
 import { Platform, type TextStyle } from 'react-native';
 
 /** Set true once the custom font files are added and linked. */
-export const FONTS_LOADED = false;
+export const FONTS_LOADED = true;
 
 const INTER = {
   regular: 'Inter-Regular',
@@ -47,8 +47,16 @@ const PLATFORM_SERIF = Platform.select({
   default: 'serif',
 });
 
-/** Inter when loaded, else system font at the matching weight. */
-const sans = (w: Weight): TextStyle =>
+/**
+ * Weight helper — the correct way to select a weight. When the custom fonts are
+ * loaded it picks the named Inter file (e.g. `Inter-Bold`) via `fontFamily`;
+ * otherwise it falls back to `fontWeight` on the system font.
+ *
+ * Exported so one-off styles outside the `typography` variants (badges, chart
+ * labels, avatar initials) stay bold after FONTS_LOADED is flipped — a bare
+ * `fontWeight` is ignored once a custom `fontFamily` is set (notably on iOS).
+ */
+export const weight = (w: Weight): TextStyle =>
   FONTS_LOADED ? { fontFamily: INTER[w] } : { fontWeight: fontWeight[w] };
 
 /** Playfair when loaded, else a platform serif at bold weight. */
@@ -80,7 +88,7 @@ export const lineHeight = {
 /** Ready-to-spread text variants: `<Text style={typography.h1}>`. */
 export const typography = {
   display: {
-    ...sans('bold'),
+    ...weight('bold'),
     fontSize: fontSize.display,
     lineHeight: lineHeight.display,
     letterSpacing: 0.4,
@@ -94,48 +102,48 @@ export const typography = {
     lineHeight: lineHeight.base,
   },
   serifValue: { ...serif(), fontSize: fontSize.xl, lineHeight: lineHeight.xl },
-  h1: { ...sans('bold'), fontSize: fontSize.xxl, lineHeight: lineHeight.xxl },
-  h2: { ...sans('semiBold'), fontSize: fontSize.xl, lineHeight: lineHeight.xl },
-  h3: { ...sans('semiBold'), fontSize: fontSize.lg, lineHeight: lineHeight.lg },
+  h1: { ...weight('bold'), fontSize: fontSize.xxl, lineHeight: lineHeight.xxl },
+  h2: { ...weight('semiBold'), fontSize: fontSize.xl, lineHeight: lineHeight.xl },
+  h3: { ...weight('semiBold'), fontSize: fontSize.lg, lineHeight: lineHeight.lg },
   title: {
-    ...sans('semiBold'),
+    ...weight('semiBold'),
     fontSize: fontSize.base,
     lineHeight: lineHeight.base,
   },
   body: {
-    ...sans('regular'),
+    ...weight('regular'),
     fontSize: fontSize.base,
     lineHeight: lineHeight.base,
   },
   bodyMedium: {
-    ...sans('medium'),
+    ...weight('medium'),
     fontSize: fontSize.base,
     lineHeight: lineHeight.base,
   },
   callout: {
-    ...sans('regular'),
+    ...weight('regular'),
     fontSize: fontSize.md,
     lineHeight: lineHeight.md,
   },
   caption: {
-    ...sans('regular'),
+    ...weight('regular'),
     fontSize: fontSize.sm,
     lineHeight: lineHeight.sm,
   },
   overline: {
-    ...sans('medium'),
+    ...weight('medium'),
     fontSize: fontSize.sm,
     lineHeight: lineHeight.sm,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.4,
   },
   label: {
-    ...sans('medium'),
+    ...weight('medium'),
     fontSize: fontSize.sm,
     lineHeight: lineHeight.sm,
   },
   button: {
-    ...sans('semiBold'),
+    ...weight('semiBold'),
     fontSize: fontSize.base,
     lineHeight: lineHeight.base,
     letterSpacing: 0.2,

@@ -1,5 +1,5 @@
 import { colors, statusColors, avatarPalette, chartPalette } from './colors';
-import { typography, fontFamily, fontWeight, fontSize, lineHeight } from './typography';
+import { typography, fontFamily, fontWeight, fontSize, lineHeight, weight } from './typography';
 import { spacing, layout } from './spacing';
 import { radius } from './radius';
 import { shadows } from './shadows';
@@ -11,6 +11,7 @@ export {
   fontWeight,
   fontSize,
   lineHeight,
+  weight,
   FONTS_LOADED,
 } from './typography';
 export { spacing, layout } from './spacing';
@@ -34,6 +35,7 @@ export const theme = {
   fontWeight,
   fontSize,
   lineHeight,
+  weight,
   spacing,
   layout,
   radius,
