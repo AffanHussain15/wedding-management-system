@@ -122,16 +122,44 @@ export function SetupScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  root: { paddingHorizontal: 24, paddingTop: spacing.sm, paddingBottom: spacing.xxl },
-  bars: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.xl },
-  bar: { flex: 1, height: 5, borderRadius: 4 },
-  barActive: { backgroundColor: colors.accent },
-  barInactive: { backgroundColor: colors.borderSubtle },
-  stepLabel: { marginBottom: spacing.xs },
-  title: { marginBottom: spacing.xl },
-  form: { gap: spacing.md },
-  hint: { marginBottom: spacing.md },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  root: {
+    paddingHorizontal: 24,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xxl,
+  },
+  bars: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.xl,
+  },
+  bar: {
+    flex: 1,
+    height: 5,
+    borderRadius: 4,
+  },
+  barActive: {
+    backgroundColor: colors.accent,
+  },
+  barInactive: {
+    backgroundColor: colors.borderSubtle,
+  },
+  stepLabel: {
+    marginBottom: spacing.xs,
+  },
+  title: {
+    marginBottom: spacing.xl,
+  },
+  form: {
+    gap: spacing.md,
+  },
+  hint: {
+    marginBottom: spacing.md,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
   summary: {
     marginTop: spacing.xl,
     backgroundColor: colors.surfaceMuted,
@@ -139,7 +167,15 @@ const styles = StyleSheet.create({
     padding: spacing.base,
     gap: spacing.sm,
   },
-  actions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xl },
-  back: { flex: 1 },
-  nextBtn: { flex: 2 },
+  actions: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.xl,
+  },
+  back: {
+    flex: 1,
+  },
+  nextBtn: {
+    flex: 2,
+  },
 });

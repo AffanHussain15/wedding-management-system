@@ -79,6 +79,11 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
     marginTop: spacing.sm,
   },
-  caption: { marginTop: spacing.sm, fontWeight: '600' },
-  pressed: { opacity: 0.9 },
+  caption: {
+    marginTop: spacing.sm,
+    fontWeight: '600',
+  },
+  pressed: {
+    opacity: 0.9,
+  },
 });

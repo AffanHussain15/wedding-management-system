@@ -112,18 +112,59 @@ function VendorRow({ vendor, onPress }: { vendor: Vendor; onPress: () => void })
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  flex: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xxl },
-  title: { marginBottom: spacing.base },
-  searchWrap: { marginBottom: spacing.md },
-  filterBar: { backgroundColor: colors.background, marginHorizontal: -20 },
-  filtersContent: { paddingHorizontal: 20, paddingVertical: spacing.xs, gap: spacing.sm },
-  list: { gap: spacing.md, marginTop: spacing.base },
-  row: { flexDirection: 'row', gap: spacing.md, borderRadius: radius.lg },
-  rowBody: { flex: 1, minWidth: 0 },
-  rowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  rowName: { flex: 1, marginRight: spacing.sm },
-  rowMeta: { marginTop: spacing.xxs, marginBottom: spacing.xs },
-  empty: { marginTop: spacing.xxl },
+  screen: {
+    flex: 1,
+  },
+  flex: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xxl,
+  },
+  title: {
+    marginBottom: spacing.base,
+  },
+  searchWrap: {
+    marginBottom: spacing.md,
+  },
+  filterBar: {
+    backgroundColor: colors.background,
+    marginHorizontal: -20,
+  },
+  filtersContent: {
+    paddingHorizontal: 20,
+    paddingVertical: spacing.xs,
+    gap: spacing.sm,
+  },
+  list: {
+    gap: spacing.md,
+    marginTop: spacing.base,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    borderRadius: radius.lg,
+  },
+  rowBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  rowTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  rowName: {
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  rowMeta: {
+    marginTop: spacing.xxs,
+    marginBottom: spacing.xs,
+  },
+  empty: {
+    marginTop: spacing.xxl,
+  },
 });

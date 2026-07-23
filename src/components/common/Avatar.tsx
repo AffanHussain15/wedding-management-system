@@ -45,5 +45,8 @@ export function Avatar({
 }
 
 const styles = StyleSheet.create({
-  avatar: { alignItems: 'center', justifyContent: 'center' },
+  avatar: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

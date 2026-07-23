@@ -24,5 +24,7 @@ export function AppText({
 }
 
 const styles = StyleSheet.create({
-  center: { textAlign: 'center' },
+  center: {
+    textAlign: 'center',
+  },
 });

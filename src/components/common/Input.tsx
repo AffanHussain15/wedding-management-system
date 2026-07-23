@@ -24,7 +24,9 @@ export function Input({ label, style, ...rest }: InputProps): React.JSX.Element 
 }
 
 const styles = StyleSheet.create({
-  label: { marginBottom: spacing.xs },
+  label: {
+    marginBottom: spacing.xs,
+  },
   input: {
     minHeight: 52,
     paddingHorizontal: spacing.base,

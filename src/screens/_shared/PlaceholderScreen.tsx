@@ -60,7 +60,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  subtitle: { marginTop: spacing.sm },
+  subtitle: {
+    marginTop: spacing.sm,
+  },
   links: {
     alignSelf: 'stretch',
     marginTop: spacing.xxl,

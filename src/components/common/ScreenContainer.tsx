@@ -44,8 +44,17 @@ export function ScreenContainer({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  flex: { flex: 1 },
-  padded: { paddingHorizontal: layout.screenPadding },
-  scrollContent: { flexGrow: 1, paddingBottom: layout.screenPadding },
+  safe: {
+    flex: 1,
+  },
+  flex: {
+    flex: 1,
+  },
+  padded: {
+    paddingHorizontal: layout.screenPadding,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: layout.screenPadding,
+  },
 });

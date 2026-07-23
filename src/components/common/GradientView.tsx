@@ -35,5 +35,7 @@ export function GradientView({
 }
 
 const styles = StyleSheet.create({
-  wrap: { overflow: 'hidden' },
+  wrap: {
+    overflow: 'hidden',
+  },
 });

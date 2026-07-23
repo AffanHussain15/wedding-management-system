@@ -55,7 +55,11 @@ export function SignupScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  root: { paddingHorizontal: 24, paddingTop: spacing.sm, paddingBottom: spacing.xxl },
+  root: {
+    paddingHorizontal: 24,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xxl,
+  },
   back: {
     width: 40,
     height: 40,
@@ -66,17 +70,35 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     transform: [{ scaleX: -1 }],
   },
-  subtitle: { marginTop: spacing.xs, marginBottom: spacing.xl },
-  form: { gap: spacing.md },
-  cta: { marginTop: spacing.xl },
+  subtitle: {
+    marginTop: spacing.xs,
+    marginBottom: spacing.xl,
+  },
+  form: {
+    gap: spacing.md,
+  },
+  cta: {
+    marginTop: spacing.xl,
+  },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
     marginVertical: spacing.lg,
   },
-  line: { flex: 1, height: 1, backgroundColor: colors.borderSubtle },
-  social: { flexDirection: 'row', gap: spacing.md },
-  socialButton: { flex: 1 },
-  footer: { marginTop: spacing.xl },
+  line: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.borderSubtle,
+  },
+  social: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  socialButton: {
+    flex: 1,
+  },
+  footer: {
+    marginTop: spacing.xl,
+  },
 });

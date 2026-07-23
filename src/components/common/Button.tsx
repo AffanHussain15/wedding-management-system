@@ -102,9 +102,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'visible',
   },
-  md: { height: 54, paddingHorizontal: spacing.xl },
-  sm: { height: 40, paddingHorizontal: spacing.base },
-  fullWidth: { alignSelf: 'stretch' },
+  md: {
+    height: 54,
+    paddingHorizontal: spacing.xl,
+  },
+  sm: {
+    height: 40,
+    paddingHorizontal: spacing.base,
+  },
+  fullWidth: {
+    alignSelf: 'stretch',
+  },
   gradientFill: {
     position: 'absolute',
     top: 0,
@@ -126,6 +134,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
   },
-  pressed: { opacity: 0.9 },
-  disabled: { opacity: 0.5 },
+  pressed: {
+    opacity: 0.9,
+  },
+  disabled: {
+    opacity: 0.5,
+  },
 });

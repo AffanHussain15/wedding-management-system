@@ -83,9 +83,19 @@ export function OnboardingScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  root: { paddingHorizontal: 24, paddingTop: spacing.sm, paddingBottom: spacing.xl },
-  top: { alignItems: 'flex-end' },
-  center: { flex: 1, justifyContent: 'center', gap: spacing.xl },
+  root: {
+    paddingHorizontal: 24,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xl,
+  },
+  top: {
+    alignItems: 'flex-end',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: spacing.xl,
+  },
   illustration: {
     width: '100%',
     height: 190,
@@ -94,11 +104,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: { marginBottom: spacing.sm },
-  body: { paddingHorizontal: spacing.sm },
-  dots: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm },
-  dot: { height: 8, borderRadius: 5 },
-  dotActive: { width: 22, backgroundColor: colors.accent },
-  dotInactive: { width: 8, backgroundColor: 'rgba(109,15,43,0.2)' },
-  footer: { gap: spacing.md },
+  title: {
+    marginBottom: spacing.sm,
+  },
+  body: {
+    paddingHorizontal: spacing.sm,
+  },
+  dots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  dot: {
+    height: 8,
+    borderRadius: 5,
+  },
+  dotActive: {
+    width: 22,
+    backgroundColor: colors.accent,
+  },
+  dotInactive: {
+    width: 8,
+    backgroundColor: 'rgba(109,15,43,0.2)',
+  },
+  footer: {
+    gap: spacing.md,
+  },
 });

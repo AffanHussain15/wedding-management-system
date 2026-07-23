@@ -42,6 +42,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: radius.card,
   },
-  padded: { padding: spacing.base },
-  pressed: { opacity: 0.9 },
+  padded: {
+    padding: spacing.base,
+  },
+  pressed: {
+    opacity: 0.9,
+  },
 });

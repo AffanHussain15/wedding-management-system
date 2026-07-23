@@ -48,7 +48,9 @@ export function SplashScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
+  flex: {
+    flex: 1,
+  },
   center: {
     flex: 1,
     alignItems: 'center',
@@ -63,7 +65,11 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginTop: spacing.sm,
   },
-  tagline: { ...typography.callout, color: CREAM_80, maxWidth: 220 },
+  tagline: {
+    ...typography.callout,
+    color: CREAM_80,
+    maxWidth: 220,
+  },
   hint: {
     ...typography.caption,
     color: CREAM_45,

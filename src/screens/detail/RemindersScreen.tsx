@@ -52,10 +52,24 @@ function ReminderRow({ reminder }: { reminder: Reminder }) {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xl },
-  title: { marginTop: spacing.base, marginBottom: spacing.lg },
-  list: { gap: spacing.md },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md, borderRadius: radius.lg },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xl,
+  },
+  title: {
+    marginTop: spacing.base,
+    marginBottom: spacing.lg,
+  },
+  list: {
+    gap: spacing.md,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+    borderRadius: radius.lg,
+  },
   iconBox: {
     width: 36,
     height: 36,
@@ -63,6 +77,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rowBody: { flex: 1, minWidth: 0 },
-  sub: { marginTop: spacing.xxs },
+  rowBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  sub: {
+    marginTop: spacing.xxs,
+  },
 });

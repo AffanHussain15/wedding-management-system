@@ -68,5 +68,8 @@ export function DonutChart({
 }
 
 const styles = StyleSheet.create({
-  wrap: { alignItems: 'center', justifyContent: 'center' },
+  wrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

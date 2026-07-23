@@ -45,7 +45,11 @@ export function LoginScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  root: { paddingHorizontal: 24, paddingTop: spacing.sm, paddingBottom: spacing.xxl },
+  root: {
+    paddingHorizontal: 24,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xxl,
+  },
   back: {
     width: 40,
     height: 40,
@@ -56,8 +60,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     transform: [{ scaleX: -1 }],
   },
-  subtitle: { marginTop: spacing.xs, marginBottom: spacing.xl },
-  form: { gap: spacing.md },
-  forgot: { alignSelf: 'flex-end', marginTop: spacing.md, marginBottom: spacing.xl },
-  footer: { marginTop: spacing.xl },
+  subtitle: {
+    marginTop: spacing.xs,
+    marginBottom: spacing.xl,
+  },
+  form: {
+    gap: spacing.md,
+  },
+  forgot: {
+    alignSelf: 'flex-end',
+    marginTop: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  footer: {
+    marginTop: spacing.xl,
+  },
 });

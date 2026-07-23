@@ -116,7 +116,11 @@ export function FunctionDetailScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xl },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xl,
+  },
   back: {
     width: 40,
     height: 40,
@@ -127,10 +131,23 @@ const styles = StyleSheet.create({
     marginBottom: spacing.base,
     transform: [{ scaleX: -1 }],
   },
-  hero: { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.lg },
-  heroLine: { marginTop: spacing.xs },
-  sectionLabel: { marginBottom: spacing.md },
-  vendors: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.lg },
+  hero: {
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  heroLine: {
+    marginTop: spacing.xs,
+  },
+  sectionLabel: {
+    marginBottom: spacing.md,
+  },
+  vendors: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
   vendorPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -141,7 +158,10 @@ const styles = StyleSheet.create({
     paddingLeft: spacing.xs,
     paddingRight: spacing.md,
   },
-  tasks: { gap: spacing.sm, marginBottom: spacing.lg },
+  tasks: {
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
   taskRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -156,6 +176,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  done: { textDecorationLine: 'line-through' },
-  reminder: { borderRadius: radius.md },
+  done: {
+    textDecorationLine: 'line-through',
+  },
+  reminder: {
+    borderRadius: radius.md,
+  },
 });

@@ -55,9 +55,18 @@ function TimelineItem({ fn, onPress }: { fn: WeddingFunction; onPress: () => voi
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xxl },
-  title: { marginBottom: spacing.lg },
-  track: { position: 'relative', paddingLeft: 26 },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xxl,
+  },
+  title: {
+    marginBottom: spacing.lg,
+  },
+  track: {
+    position: 'relative',
+    paddingLeft: 26,
+  },
   line: {
     position: 'absolute',
     left: 9,
@@ -66,7 +75,10 @@ const styles = StyleSheet.create({
     width: 2,
     backgroundColor: 'rgba(109,15,43,0.14)',
   },
-  item: { position: 'relative', marginBottom: spacing.lg },
+  item: {
+    position: 'relative',
+    marginBottom: spacing.lg,
+  },
   dot: {
     position: 'absolute',
     left: -26,
@@ -77,13 +89,20 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: colors.background,
   },
-  card: { borderRadius: radius.lg },
+  card: {
+    borderRadius: radius.lg,
+  },
   cardTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: spacing.xxs,
   },
-  name: { flex: 1, marginRight: spacing.sm },
-  venue: { marginTop: spacing.xxs },
+  name: {
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  venue: {
+    marginTop: spacing.xxs,
+  },
 });

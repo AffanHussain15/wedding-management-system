@@ -121,7 +121,11 @@ function Row({
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xl },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xl,
+  },
   back: {
     width: 40,
     height: 40,
@@ -145,17 +149,37 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.xxs,
   },
-  name: { flex: 1, marginRight: spacing.sm },
-  meta: { marginBottom: spacing.lg },
-  card: { borderRadius: radius.lg, marginBottom: spacing.md },
-  cardLabel: { marginBottom: spacing.md },
+  name: {
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  meta: {
+    marginBottom: spacing.lg,
+  },
+  card: {
+    borderRadius: radius.lg,
+    marginBottom: spacing.md,
+  },
+  cardLabel: {
+    marginBottom: spacing.md,
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: spacing.sm,
   },
-  rowValue: { fontWeight: '700' },
-  bar: { marginTop: spacing.xs },
-  actions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xs },
-  action: { flex: 1 },
+  rowValue: {
+    fontWeight: '700',
+  },
+  bar: {
+    marginTop: spacing.xs,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.xs,
+  },
+  action: {
+    flex: 1,
+  },
 });

@@ -71,7 +71,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: spacing.md,
   },
-  menu: { alignItems: 'flex-end', gap: spacing.sm },
+  menu: {
+    alignItems: 'flex-end',
+    gap: spacing.sm,
+  },
   menuItem: {
     backgroundColor: colors.surface,
     borderRadius: radius.pill,
@@ -105,5 +108,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     borderRadius: 28,
   },
-  rotated: { transform: [{ rotate: '45deg' }] },
+  rotated: {
+    transform: [{ rotate: '45deg' }],
+  },
 });

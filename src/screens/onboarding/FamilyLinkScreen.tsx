@@ -80,9 +80,18 @@ function InviteRow({ icon, title, subtitle }: { icon: IconName; title: string; s
 }
 
 const styles = StyleSheet.create({
-  root: { paddingHorizontal: 24, paddingTop: spacing.sm, paddingBottom: spacing.xxl },
-  flex: { flex: 1 },
-  subtitle: { marginTop: spacing.sm, marginBottom: spacing.xl },
+  root: {
+    paddingHorizontal: 24,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xxl,
+  },
+  flex: {
+    flex: 1,
+  },
+  subtitle: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.xl,
+  },
   hero: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -98,15 +107,23 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     backgroundColor: colors.surfaceSand,
   },
-  options: { gap: spacing.md, marginBottom: spacing.xl },
+  options: {
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+  },
   inviteRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
     borderRadius: radius.lg,
   },
-  linkedLabel: { marginBottom: spacing.md },
-  linked: { gap: spacing.sm, marginBottom: spacing.xl },
+  linkedLabel: {
+    marginBottom: spacing.md,
+  },
+  linked: {
+    gap: spacing.sm,
+    marginBottom: spacing.xl,
+  },
   linkedRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -116,5 +133,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
   },
-  skip: { alignSelf: 'center', marginTop: spacing.base },
+  skip: {
+    alignSelf: 'center',
+    marginTop: spacing.base,
+  },
 });

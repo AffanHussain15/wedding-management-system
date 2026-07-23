@@ -155,10 +155,22 @@ function GuestRow({
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xxl },
-  title: { marginBottom: spacing.base },
-  stats: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
+  flex: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xxl,
+  },
+  title: {
+    marginBottom: spacing.base,
+  },
+  stats: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
   miniStat: {
     flex: 1,
     backgroundColor: colors.surface,
@@ -166,13 +178,35 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
   },
-  miniLabel: { marginTop: spacing.xxs },
-  searchWrap: { marginBottom: spacing.md },
-  filterBar: { backgroundColor: colors.background, marginHorizontal: -20 },
-  filtersContent: { paddingHorizontal: 20, paddingVertical: spacing.xs, gap: spacing.sm },
-  list: { gap: spacing.md, marginTop: spacing.base },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, borderRadius: radius.lg },
-  rowBody: { flex: 1, minWidth: 0 },
+  miniLabel: {
+    marginTop: spacing.xxs,
+  },
+  searchWrap: {
+    marginBottom: spacing.md,
+  },
+  filterBar: {
+    backgroundColor: colors.background,
+    marginHorizontal: -20,
+  },
+  filtersContent: {
+    paddingHorizontal: 20,
+    paddingVertical: spacing.xs,
+    gap: spacing.sm,
+  },
+  list: {
+    gap: spacing.md,
+    marginTop: spacing.base,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    borderRadius: radius.lg,
+  },
+  rowBody: {
+    flex: 1,
+    minWidth: 0,
+  },
   invite: {
     width: 30,
     height: 30,
@@ -181,5 +215,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  empty: { marginTop: spacing.xxl },
+  empty: {
+    marginTop: spacing.xxl,
+  },
 });

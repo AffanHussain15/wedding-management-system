@@ -238,21 +238,27 @@ function ToolTile({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
+  screen: {
+    flex: 1,
+  },
   content: {
     paddingHorizontal: 20,
     paddingTop: spacing.xs,
     paddingBottom: spacing.xxl,
   },
-  flexShrink: { flexShrink: 1 },
-
+  flexShrink: {
+    flexShrink: 1,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     marginBottom: spacing.lg,
   },
-  headerActions: { flexDirection: 'row', gap: spacing.sm },
+  headerActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
   iconButton: {
     width: 38,
     height: 38,
@@ -270,24 +276,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  initials: { fontSize: 12, fontWeight: '700' },
-
+  initials: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
   hero: {
     borderRadius: 22,
     padding: 22,
     marginBottom: spacing.base,
   },
-  heroRing: { position: 'absolute', top: -30, right: -30, opacity: 0.5 },
+  heroRing: {
+    position: 'absolute',
+    top: -30,
+    right: -30,
+    opacity: 0.5,
+  },
   heroLabel: {
     ...typography.caption,
     color: HERO_TEXT,
     letterSpacing: 0.5,
     marginBottom: spacing.xs,
   },
-  heroRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm },
-  heroDays: { ...typography.body, color: HERO_DAYS },
-  heroSub: { ...typography.caption, color: HERO_TEXT, marginTop: spacing.xs },
-
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.sm,
+  },
+  heroDays: {
+    ...typography.body,
+    color: HERO_DAYS,
+  },
+  heroSub: {
+    ...typography.caption,
+    color: HERO_TEXT,
+    marginTop: spacing.xs,
+  },
   progressCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -295,15 +318,30 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     marginBottom: spacing.base,
   },
-  ringLabel: { fontSize: 14, fontWeight: '700' },
-  progressSub: { marginTop: spacing.xxs },
-
-  grid: { flexDirection: 'row', gap: spacing.md, marginVertical: 6 },
-  gridSpaced: { marginTop: spacing.md },
-  statBar: { marginTop: spacing.sm },
-
-  sectionSpaced: { marginTop: spacing.xl },
-  functionsRow: { marginHorizontal: -20 },
+  ringLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  progressSub: {
+    marginTop: spacing.xxs,
+  },
+  grid: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginVertical: 6,
+  },
+  gridSpaced: {
+    marginTop: spacing.md,
+  },
+  statBar: {
+    marginTop: spacing.sm,
+  },
+  sectionSpaced: {
+    marginTop: spacing.xl,
+  },
+  functionsRow: {
+    marginHorizontal: -20,
+  },
   functionsContent: {
     paddingHorizontal: 20,
     gap: spacing.md,
@@ -326,9 +364,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: spacing.sm,
   },
-  functionName: { ...typography.label, color: colors.text },
-
-  reminders: { gap: spacing.sm },
+  functionName: {
+    ...typography.label,
+    color: colors.text,
+  },
+  reminders: {
+    gap: spacing.sm,
+  },
   reminderCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -345,8 +387,10 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: colors.accent,
   },
-
-  moreTitle: { marginTop: spacing.xl, marginBottom: spacing.md },
+  moreTitle: {
+    marginTop: spacing.xl,
+    marginBottom: spacing.md,
+  },
   tile: {
     flex: 1,
     flexDirection: 'row',
@@ -356,5 +400,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: spacing.md,
   },
-  pressed: { opacity: 0.85 },
+  pressed: {
+    opacity: 0.85,
+  },
 });

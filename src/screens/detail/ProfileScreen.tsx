@@ -113,8 +113,14 @@ function PrefRow({
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xl },
-  flex: { flex: 1 },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xl,
+  },
+  flex: {
+    flex: 1,
+  },
   profile: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -123,17 +129,30 @@ const styles = StyleSheet.create({
     marginTop: spacing.base,
     marginBottom: spacing.lg,
   },
-  profileSub: { marginTop: spacing.xxs },
-  sectionLabel: { marginBottom: spacing.md },
-  family: { gap: spacing.sm, marginBottom: spacing.lg },
+  profileSub: {
+    marginTop: spacing.xxs,
+  },
+  sectionLabel: {
+    marginBottom: spacing.md,
+  },
+  family: {
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
   familyRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
     borderRadius: radius.md,
   },
-  manage: { alignItems: 'center', paddingVertical: spacing.sm },
-  prefs: { borderRadius: radius.lg, marginBottom: spacing.lg },
+  manage: {
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  prefs: {
+    borderRadius: radius.lg,
+    marginBottom: spacing.lg,
+  },
   prefRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -141,7 +160,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.base,
     paddingVertical: spacing.md,
   },
-  prefRowDivider: { borderBottomWidth: 1, borderBottomColor: 'rgba(109,15,43,0.06)' },
+  prefRowDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(109,15,43,0.06)',
+  },
   logout: {
     height: 52,
     borderRadius: radius.lg,

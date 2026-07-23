@@ -86,10 +86,25 @@ export function AddGuestScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 24, paddingTop: spacing.base, paddingBottom: spacing.xxl },
-  form: { gap: spacing.base },
-  label: { marginBottom: spacing.sm },
-  chipRow: { flexDirection: 'row', gap: spacing.sm },
-  chip: { flex: 1 },
-  cta: { marginTop: spacing.xl },
+  content: {
+    paddingHorizontal: 24,
+    paddingTop: spacing.base,
+    paddingBottom: spacing.xxl,
+  },
+  form: {
+    gap: spacing.base,
+  },
+  label: {
+    marginBottom: spacing.sm,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  chip: {
+    flex: 1,
+  },
+  cta: {
+    marginTop: spacing.xl,
+  },
 });

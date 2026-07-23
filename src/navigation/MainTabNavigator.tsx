@@ -67,7 +67,16 @@ const styles = StyleSheet.create({
     borderTopColor: colors.borderSubtle,
     paddingTop: 8,
   },
-  labelWrap: { alignItems: 'center' },
-  labelEn: { fontSize: 10.5, fontWeight: '700' },
-  labelUr: { fontSize: 8, color: colors.textMuted, marginTop: 1 },
+  labelWrap: {
+    alignItems: 'center',
+  },
+  labelEn: {
+    fontSize: 10.5,
+    fontWeight: '700',
+  },
+  labelUr: {
+    fontSize: 8,
+    color: colors.textMuted,
+    marginTop: 1,
+  },
 });

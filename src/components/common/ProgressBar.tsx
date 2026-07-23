@@ -42,6 +42,11 @@ export function ProgressBar({
 }
 
 const styles = StyleSheet.create({
-  track: { width: '100%', overflow: 'hidden' },
-  fill: { height: '100%' },
+  track: {
+    width: '100%',
+    overflow: 'hidden',
+  },
+  fill: {
+    height: '100%',
+  },
 });

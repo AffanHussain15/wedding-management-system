@@ -92,11 +92,30 @@ export function AddVendorScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 24, paddingTop: spacing.base, paddingBottom: spacing.xxl },
-  form: { gap: spacing.base },
-  label: { marginBottom: spacing.sm },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  money: { flexDirection: 'row', gap: spacing.md },
-  moneyField: { flex: 1 },
-  cta: { marginTop: spacing.xl },
+  content: {
+    paddingHorizontal: 24,
+    paddingTop: spacing.base,
+    paddingBottom: spacing.xxl,
+  },
+  form: {
+    gap: spacing.base,
+  },
+  label: {
+    marginBottom: spacing.sm,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  money: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  moneyField: {
+    flex: 1,
+  },
+  cta: {
+    marginTop: spacing.xl,
+  },
 });

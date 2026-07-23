@@ -114,9 +114,17 @@ function CategoryCard({ category, color }: { category: BudgetCategory; color: st
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xxl },
-  title: { marginBottom: spacing.base },
+  screen: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xxl,
+  },
+  title: {
+    marginBottom: spacing.base,
+  },
   summary: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -124,20 +132,43 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     marginBottom: spacing.base,
   },
-  donutLabel: { fontSize: 13, fontWeight: '700' },
-  totals: { flex: 1, gap: spacing.xs },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  totalValue: { fontWeight: '700' },
-  list: { gap: spacing.md },
-  category: { borderRadius: radius.lg },
+  donutLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  totals: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  totalValue: {
+    fontWeight: '700',
+  },
+  list: {
+    gap: spacing.md,
+  },
+  category: {
+    borderRadius: radius.lg,
+  },
   categoryTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: spacing.sm,
   },
-  categoryName: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  dot: { width: 9, height: 9, borderRadius: 3 },
+  categoryName: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  dot: {
+    width: 9,
+    height: 9,
+    borderRadius: 3,
+  },
   categoryMeta: {
     flexDirection: 'row',
     justifyContent: 'space-between',

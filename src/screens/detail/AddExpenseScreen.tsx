@@ -72,11 +72,30 @@ export function AddExpenseScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 24, paddingTop: spacing.base, paddingBottom: spacing.xxl },
-  form: { gap: spacing.base },
-  label: { marginBottom: spacing.sm },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  typeRow: { flexDirection: 'row', gap: spacing.sm },
-  typeChip: { flex: 1 },
-  cta: { marginTop: spacing.xl },
+  content: {
+    paddingHorizontal: 24,
+    paddingTop: spacing.base,
+    paddingBottom: spacing.xxl,
+  },
+  form: {
+    gap: spacing.base,
+  },
+  label: {
+    marginBottom: spacing.sm,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  typeRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  typeChip: {
+    flex: 1,
+  },
+  cta: {
+    marginTop: spacing.xl,
+  },
 });

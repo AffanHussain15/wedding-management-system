@@ -55,12 +55,31 @@ export function SeatingScreen(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xl },
-  title: { marginTop: spacing.base, marginBottom: spacing.xs },
-  subtitle: { marginBottom: spacing.base },
-  tabs: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
-  tab: { flex: 1 },
-  guests: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xl,
+  },
+  title: {
+    marginTop: spacing.base,
+    marginBottom: spacing.xs,
+  },
+  subtitle: {
+    marginBottom: spacing.base,
+  },
+  tabs: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  tab: {
+    flex: 1,
+  },
+  guests: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -72,5 +91,7 @@ const styles = StyleSheet.create({
     paddingRight: spacing.md,
     ...shadows.sm,
   },
-  pillName: { fontWeight: '600' },
+  pillName: {
+    fontWeight: '600',
+  },
 });

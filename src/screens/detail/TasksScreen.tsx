@@ -70,11 +70,29 @@ function TaskRow({ task, onToggle }: { task: Task; onToggle: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xl },
-  title: { marginTop: spacing.base, marginBottom: spacing.base },
-  filters: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.base },
-  list: { gap: spacing.md },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, borderRadius: radius.lg },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xl,
+  },
+  title: {
+    marginTop: spacing.base,
+    marginBottom: spacing.base,
+  },
+  filters: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.base,
+  },
+  list: {
+    gap: spacing.md,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    borderRadius: radius.lg,
+  },
   checkbox: {
     width: 22,
     height: 22,
@@ -83,7 +101,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rowBody: { flex: 1, minWidth: 0 },
-  sub: { marginTop: spacing.xxs },
-  done: { textDecorationLine: 'line-through' },
+  rowBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  sub: {
+    marginTop: spacing.xxs,
+  },
+  done: {
+    textDecorationLine: 'line-through',
+  },
 });
