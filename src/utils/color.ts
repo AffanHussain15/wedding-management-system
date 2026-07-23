@@ -6,5 +6,4 @@ import { avatarPalette, chartPalette } from '@theme';
 export const getAvatarColor = (name: string): string =>
   avatarPalette[name.length % avatarPalette.length];
 
-export const getChartColor = (index: number): string =>
-  chartPalette[index % chartPalette.length];
+export const getChartColor = (index: number): string => chartPalette[index % chartPalette.length];

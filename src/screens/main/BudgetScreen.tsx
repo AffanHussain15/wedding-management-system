@@ -28,28 +28,40 @@ export function BudgetScreen(): React.JSX.Element {
 
   return (
     <View style={styles.screen}>
-    <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
-      <AppText style={[typography.serifValue, styles.title]}>Budget / Bajat</AppText>
+      <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
+        <AppText style={[typography.serifValue, styles.title]}>Budget / Bajat</AppText>
 
-      <Card style={styles.summary}>
-        <DonutChart segments={segments} size={84} strokeWidth={14}>
-          <AppText style={styles.donutLabel} color={colors.primary}>
-            {totals.pctUsed}%
-          </AppText>
-        </DonutChart>
-        <View style={styles.totals}>
-          <TotalRow label="Total budget" value={`Rs ${formatNumber(totals.allotted)}`} color={colors.text} />
-          <TotalRow label="Spent" value={`Rs ${formatNumber(totals.spent)}`} color={colors.primaryLight} />
-          <TotalRow label="Remaining" value={`Rs ${formatNumber(totals.remaining)}`} color={colors.successText} />
+        <Card style={styles.summary}>
+          <DonutChart segments={segments} size={84} strokeWidth={14}>
+            <AppText style={styles.donutLabel} color={colors.primary}>
+              {totals.pctUsed}%
+            </AppText>
+          </DonutChart>
+          <View style={styles.totals}>
+            <TotalRow
+              label="Total budget"
+              value={`Rs ${formatNumber(totals.allotted)}`}
+              color={colors.text}
+            />
+            <TotalRow
+              label="Spent"
+              value={`Rs ${formatNumber(totals.spent)}`}
+              color={colors.primaryLight}
+            />
+            <TotalRow
+              label="Remaining"
+              value={`Rs ${formatNumber(totals.remaining)}`}
+              color={colors.successText}
+            />
+          </View>
+        </Card>
+
+        <View style={styles.list}>
+          {state.budget.map((c, i) => (
+            <CategoryCard key={c.name} category={c} color={getChartColor(i)} />
+          ))}
         </View>
-      </Card>
-
-      <View style={styles.list}>
-        {state.budget.map((c, i) => (
-          <CategoryCard key={c.name} category={c} color={getChartColor(i)} />
-        ))}
-      </View>
-    </ScreenContainer>
+      </ScreenContainer>
       <Fab onPress={() => nav.navigate('AddExpense')} />
     </View>
   );
@@ -81,9 +93,7 @@ function CategoryCard({ category, color }: { category: BudgetCategory; color: st
             {category.name}
           </AppText>
         </View>
-        {over ? (
-          <StatusBadge label="Overspent" bg={colors.dangerBg} color={colors.danger} />
-        ) : null}
+        {over ? <StatusBadge label="Overspent" bg={colors.dangerBg} color={colors.danger} /> : null}
       </View>
       <View style={styles.categoryMeta}>
         <AppText variant="caption" color={colors.textSecondary}>

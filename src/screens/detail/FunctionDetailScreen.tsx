@@ -2,14 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 
-import {
-  ScreenContainer,
-  AppText,
-  Card,
-  Avatar,
-  GradientView,
-  Icon,
-} from '@components';
+import { ScreenContainer, AppText, Card, Avatar, GradientView, Icon } from '@components';
 import { useWedding } from '@store';
 import { FUNCTION_VENDOR_MAP } from '@constants';
 import type { FunctionName } from '@types';
@@ -49,9 +42,7 @@ export function FunctionDetailScreen(): React.JSX.Element {
       </Pressable>
 
       <GradientView colors={['#7A1230', '#4E0A1D']} style={styles.hero}>
-        <AppText style={[typography.serifValue, { color: colors.goldSoft }]}>
-          {fn.name}
-        </AppText>
+        <AppText style={[typography.serifValue, { color: colors.goldSoft }]}>{fn.name}</AppText>
         <AppText variant="caption" color={CREAM_75} style={styles.heroLine}>
           {formatDate(fn.date, 'monthDay')} · {fn.time}
         </AppText>

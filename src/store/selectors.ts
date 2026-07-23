@@ -67,8 +67,7 @@ export const selectTaskStats = (state: WeddingState): TaskStats => {
   return { total, done, donePct: percentage(done, total) };
 };
 
-export const selectDaysLeft = (state: WeddingState): number =>
-  daysUntil(state.wedding.weddingDate);
+export const selectDaysLeft = (state: WeddingState): number => daysUntil(state.wedding.weddingDate);
 
 export interface NextFunctionInfo {
   name: string;

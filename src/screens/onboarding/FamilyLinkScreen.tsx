@@ -2,15 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
-import {
-  ScreenContainer,
-  AppText,
-  Button,
-  Card,
-  Avatar,
-  Icon,
-  type IconName,
-} from '@components';
+import { ScreenContainer, AppText, Button, Card, Avatar, Icon, type IconName } from '@components';
 import { colors, radius, spacing, typography } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
 
@@ -26,8 +18,7 @@ export function FamilyLinkScreen(): React.JSX.Element {
     <ScreenContainer scroll padded={false} contentContainerStyle={styles.root}>
       <AppText style={typography.serifValue}>You're not planning this alone</AppText>
       <AppText variant="callout" color={colors.textSecondary} style={styles.subtitle}>
-        Link your partner and family to one shared account — a single source of
-        truth for everyone.
+        Link your partner and family to one shared account — a single source of truth for everyone.
       </AppText>
 
       <Card style={styles.hero}>
@@ -40,16 +31,8 @@ export function FamilyLinkScreen(): React.JSX.Element {
       </Card>
 
       <View style={styles.options}>
-        <InviteRow
-          icon="link"
-          title="Invite via link"
-          subtitle="Share a one-tap join link"
-        />
-        <InviteRow
-          icon="code"
-          title="Invite via code"
-          subtitle="WEDD-8421 — share with Khandaan"
-        />
+        <InviteRow icon="link" title="Invite via link" subtitle="Share a one-tap join link" />
+        <InviteRow icon="code" title="Invite via code" subtitle="WEDD-8421 — share with Khandaan" />
       </View>
 
       <AppText variant="overline" color={colors.textMuted} style={styles.linkedLabel}>
@@ -79,15 +62,7 @@ export function FamilyLinkScreen(): React.JSX.Element {
   );
 }
 
-function InviteRow({
-  icon,
-  title,
-  subtitle,
-}: {
-  icon: IconName;
-  title: string;
-  subtitle: string;
-}) {
+function InviteRow({ icon, title, subtitle }: { icon: IconName; title: string; subtitle: string }) {
   return (
     <Card onPress={() => {}} style={styles.inviteRow}>
       <Icon name={icon} size={20} />

@@ -1,11 +1,5 @@
 import { colors, statusColors, avatarPalette, chartPalette } from './colors';
-import {
-  typography,
-  fontFamily,
-  fontWeight,
-  fontSize,
-  lineHeight,
-} from './typography';
+import { typography, fontFamily, fontWeight, fontSize, lineHeight } from './typography';
 import { spacing, layout } from './spacing';
 import { radius } from './radius';
 import { shadows } from './shadows';

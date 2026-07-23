@@ -34,10 +34,7 @@ export function FilterChip({
         style,
       ]}>
       <AppText
-        style={[
-          typography.label,
-          { color: active ? colors.textOnPrimary : colors.primary },
-        ]}>
+        style={[typography.label, { color: active ? colors.textOnPrimary : colors.primary }]}>
         {label}
       </AppText>
     </Pressable>

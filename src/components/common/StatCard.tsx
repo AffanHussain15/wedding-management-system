@@ -37,9 +37,7 @@ export function StatCard({
         {label}
       </AppText>
       <View style={styles.valueRow}>
-        <AppText style={compact ? typography.serifHeading : typography.serifValue}>
-          {value}
-        </AppText>
+        <AppText style={compact ? typography.serifHeading : typography.serifValue}>{value}</AppText>
         {valueSuffix ? (
           <AppText variant="caption" color={colors.textMuted}>
             {valueSuffix}

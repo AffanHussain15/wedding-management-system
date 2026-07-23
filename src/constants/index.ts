@@ -25,13 +25,7 @@ export const GUEST_GROUPS = ['Mardana', 'Zanana', 'Family'] as const;
 
 export const GUEST_SIDES = ['Bride', 'Groom'] as const;
 
-export const FUNCTION_NAMES = [
-  'Dholki',
-  'Mayun',
-  'Mehndi',
-  'Baraat',
-  'Walima',
-] as const;
+export const FUNCTION_NAMES = ['Dholki', 'Mayun', 'Mehndi', 'Baraat', 'Walima'] as const;
 
 export const FUNCTION_STATUSES = ['done', 'upcoming', 'pending'] as const;
 

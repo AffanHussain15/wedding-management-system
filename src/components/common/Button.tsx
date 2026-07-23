@@ -81,9 +81,7 @@ export function Button({
         isDisabled && styles.disabled,
         style,
       ]}>
-      {isPrimary ? (
-        <GradientView colors={PRIMARY_GRADIENT} style={styles.gradientFill} />
-      ) : null}
+      {isPrimary ? <GradientView colors={PRIMARY_GRADIENT} style={styles.gradientFill} /> : null}
       {loading ? (
         <ActivityIndicator color={v.text} />
       ) : (

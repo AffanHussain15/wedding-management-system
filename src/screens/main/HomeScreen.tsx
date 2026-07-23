@@ -51,154 +51,161 @@ export function HomeScreen(): React.JSX.Element {
 
   return (
     <View style={styles.screen}>
-    <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.flexShrink}>
-          <AppText variant="caption" color={colors.textSecondary}>
-            Welcome back / Ghar
-          </AppText>
-          <AppText style={typography.serifTitle}>
-            {wedding.bride} & {wedding.groom}
-          </AppText>
-        </View>
-        <View style={styles.headerActions}>
-          <Pressable style={styles.iconButton} onPress={() => nav.navigate('Reminders')}>
-            <Icon name="bell" size={18} />
-          </Pressable>
-          <Pressable style={styles.initialsButton} onPress={() => nav.navigate('Profile')}>
-            <AppText color={colors.textOnPrimary} style={styles.initials}>
-              {initials}
+      <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.flexShrink}>
+            <AppText variant="caption" color={colors.textSecondary}>
+              Welcome back / Ghar
             </AppText>
-          </Pressable>
-        </View>
-      </View>
-
-      {/* Countdown hero */}
-      <GradientView colors={['#7A1230', '#4E0A1D']} style={styles.hero}>
-        <Svg width={120} height={120} viewBox="0 0 120 120" style={styles.heroRing}>
-          <Circle cx={60} cy={60} r={56} fill="none" stroke={colors.accentBright} strokeWidth={1.4} />
-        </Svg>
-        <AppText style={styles.heroLabel}>COUNTDOWN TO BARAAT</AppText>
-        <View style={styles.heroRow}>
-          <AppText style={[typography.serifDisplay, { color: colors.goldSoft }]}>
-            {daysLeft}
-          </AppText>
-          <AppText style={styles.heroDays}>days to go</AppText>
-        </View>
-        <AppText style={styles.heroSub}>
-          {weddingDate} · {wedding.venue}, {wedding.city}
-        </AppText>
-      </GradientView>
-
-      {/* Planning progress */}
-      <Card style={styles.progressCard} elevated>
-        <ProgressRing progress={progress} size={64}>
-          <AppText color={colors.primary} style={styles.ringLabel}>
-            {progress}%
-          </AppText>
-        </ProgressRing>
-        <View style={styles.flexShrink}>
-          <AppText variant="title">Planning Progress</AppText>
-          <AppText variant="caption" color={colors.textSecondary} style={styles.progressSub}>
-            Across vendors, guests, budget & tasks
-          </AppText>
-        </View>
-      </Card>
-
-      {/* Stat grid */}
-      <View style={styles.grid}>
-        <StatCard
-          label="Budget Used / Bajat"
-          value={`${budget.pctUsed}%`}
-          onPress={() => goTab('Budget')}
-          footer={<ProgressBar progress={budget.pctUsed} height={5} style={styles.statBar} />}
-        />
-        <StatCard
-          label="Guests / Mehmaan"
-          value={guests.confirmed}
-          valueSuffix={`/${guests.total}`}
-          caption="confirmed"
-          captionColor={colors.successText}
-          onPress={() => goTab('Guests')}
-        />
-      </View>
-      <View style={styles.grid}>
-        <StatCard
-          label="Vendors"
-          value={vendors.booked}
-          valueSuffix={`/${vendors.total}`}
-          caption="booked"
-          captionColor={colors.primaryLight}
-          onPress={() => goTab('Vendors')}
-        />
-        <StatCard
-          label="Upcoming"
-          value={next.name}
-          caption={next.relative}
-          captionColor={colors.warning}
-          compact
-          onPress={() => goTab('Timeline')}
-        />
-      </View>
-
-      {/* Functions */}
-      <SectionHeader title="Functions" style={styles.sectionSpaced} />
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.functionsRow}
-        contentContainerStyle={styles.functionsContent}>
-        {state.functions.map(fn => (
-          <Pressable
-            key={fn.id}
-            style={styles.functionCard}
-            onPress={() => nav.navigate('FunctionDetail', { functionId: fn.id })}>
-            <View style={[styles.functionDot, { backgroundColor: functionDotColor(fn.status) }]}>
-              {fn.status === 'done' ? (
-                <Icon name="check" size={14} color={colors.textOnPrimary} />
-              ) : null}
-            </View>
-            <AppText style={styles.functionName}>{fn.name}</AppText>
-            <AppText variant="caption" color={colors.textMuted}>
-              {formatDate(fn.date, 'short')}
-            </AppText>
-          </Pressable>
-        ))}
-      </ScrollView>
-
-      {/* Reminders */}
-      <SectionHeader
-        title="Reminders"
-        actionLabel="View all"
-        onAction={() => nav.navigate('Reminders')}
-        style={styles.sectionSpaced}
-      />
-      <View style={styles.reminders}>
-        {state.reminders.slice(0, 2).map(rm => (
-          <View key={rm.id} style={styles.reminderCard}>
-            <View style={styles.reminderDot} />
-            <AppText variant="callout" style={styles.flexShrink}>
-              {rm.text}
-            </AppText>
-            <AppText variant="caption" color={colors.textMuted}>
-              {rm.date}
+            <AppText style={typography.serifTitle}>
+              {wedding.bride} & {wedding.groom}
             </AppText>
           </View>
-        ))}
-      </View>
+          <View style={styles.headerActions}>
+            <Pressable style={styles.iconButton} onPress={() => nav.navigate('Reminders')}>
+              <Icon name="bell" size={18} />
+            </Pressable>
+            <Pressable style={styles.initialsButton} onPress={() => nav.navigate('Profile')}>
+              <AppText color={colors.textOnPrimary} style={styles.initials}>
+                {initials}
+              </AppText>
+            </Pressable>
+          </View>
+        </View>
 
-      {/* More tools */}
-      <AppText style={[typography.serifHeading, styles.moreTitle]}>More tools</AppText>
-      <View style={styles.grid}>
-        <ToolTile label="Tasks" icon="tasks" onPress={() => nav.navigate('Tasks')} />
-        <ToolTile label="Seating" icon="seating" onPress={() => nav.navigate('Seating')} />
-      </View>
-      <View style={[styles.grid, styles.gridSpaced]}>
-        <ToolTile label="Reminders" icon="bell" onPress={() => nav.navigate('Reminders')} />
-        <ToolTile label="Profile" icon="profile" onPress={() => nav.navigate('Profile')} />
-      </View>
-    </ScreenContainer>
+        {/* Countdown hero */}
+        <GradientView colors={['#7A1230', '#4E0A1D']} style={styles.hero}>
+          <Svg width={120} height={120} viewBox="0 0 120 120" style={styles.heroRing}>
+            <Circle
+              cx={60}
+              cy={60}
+              r={56}
+              fill="none"
+              stroke={colors.accentBright}
+              strokeWidth={1.4}
+            />
+          </Svg>
+          <AppText style={styles.heroLabel}>COUNTDOWN TO BARAAT</AppText>
+          <View style={styles.heroRow}>
+            <AppText style={[typography.serifDisplay, { color: colors.goldSoft }]}>
+              {daysLeft}
+            </AppText>
+            <AppText style={styles.heroDays}>days to go</AppText>
+          </View>
+          <AppText style={styles.heroSub}>
+            {weddingDate} · {wedding.venue}, {wedding.city}
+          </AppText>
+        </GradientView>
+
+        {/* Planning progress */}
+        <Card style={styles.progressCard} elevated>
+          <ProgressRing progress={progress} size={64}>
+            <AppText color={colors.primary} style={styles.ringLabel}>
+              {progress}%
+            </AppText>
+          </ProgressRing>
+          <View style={styles.flexShrink}>
+            <AppText variant="title">Planning Progress</AppText>
+            <AppText variant="caption" color={colors.textSecondary} style={styles.progressSub}>
+              Across vendors, guests, budget & tasks
+            </AppText>
+          </View>
+        </Card>
+
+        {/* Stat grid */}
+        <View style={styles.grid}>
+          <StatCard
+            label="Budget Used / Bajat"
+            value={`${budget.pctUsed}%`}
+            onPress={() => goTab('Budget')}
+            footer={<ProgressBar progress={budget.pctUsed} height={5} style={styles.statBar} />}
+          />
+          <StatCard
+            label="Guests / Mehmaan"
+            value={guests.confirmed}
+            valueSuffix={`/${guests.total}`}
+            caption="confirmed"
+            captionColor={colors.successText}
+            onPress={() => goTab('Guests')}
+          />
+        </View>
+        <View style={styles.grid}>
+          <StatCard
+            label="Vendors"
+            value={vendors.booked}
+            valueSuffix={`/${vendors.total}`}
+            caption="booked"
+            captionColor={colors.primaryLight}
+            onPress={() => goTab('Vendors')}
+          />
+          <StatCard
+            label="Upcoming"
+            value={next.name}
+            caption={next.relative}
+            captionColor={colors.warning}
+            compact
+            onPress={() => goTab('Timeline')}
+          />
+        </View>
+
+        {/* Functions */}
+        <SectionHeader title="Functions" style={styles.sectionSpaced} />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.functionsRow}
+          contentContainerStyle={styles.functionsContent}>
+          {state.functions.map(fn => (
+            <Pressable
+              key={fn.id}
+              style={styles.functionCard}
+              onPress={() => nav.navigate('FunctionDetail', { functionId: fn.id })}>
+              <View style={[styles.functionDot, { backgroundColor: functionDotColor(fn.status) }]}>
+                {fn.status === 'done' ? (
+                  <Icon name="check" size={14} color={colors.textOnPrimary} />
+                ) : null}
+              </View>
+              <AppText style={styles.functionName}>{fn.name}</AppText>
+              <AppText variant="caption" color={colors.textMuted}>
+                {formatDate(fn.date, 'short')}
+              </AppText>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        {/* Reminders */}
+        <SectionHeader
+          title="Reminders"
+          actionLabel="View all"
+          onAction={() => nav.navigate('Reminders')}
+          style={styles.sectionSpaced}
+        />
+        <View style={styles.reminders}>
+          {state.reminders.slice(0, 2).map(rm => (
+            <View key={rm.id} style={styles.reminderCard}>
+              <View style={styles.reminderDot} />
+              <AppText variant="callout" style={styles.flexShrink}>
+                {rm.text}
+              </AppText>
+              <AppText variant="caption" color={colors.textMuted}>
+                {rm.date}
+              </AppText>
+            </View>
+          ))}
+        </View>
+
+        {/* More tools */}
+        <AppText style={[typography.serifHeading, styles.moreTitle]}>More tools</AppText>
+        <View style={styles.grid}>
+          <ToolTile label="Tasks" icon="tasks" onPress={() => nav.navigate('Tasks')} />
+          <ToolTile label="Seating" icon="seating" onPress={() => nav.navigate('Seating')} />
+        </View>
+        <View style={[styles.grid, styles.gridSpaced]}>
+          <ToolTile label="Reminders" icon="bell" onPress={() => nav.navigate('Reminders')} />
+          <ToolTile label="Profile" icon="profile" onPress={() => nav.navigate('Profile')} />
+        </View>
+      </ScreenContainer>
 
       <Fab
         actions={[
@@ -221,9 +228,7 @@ function ToolTile({
   onPress: () => void;
 }) {
   return (
-    <Pressable
-      style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
-      onPress={onPress}>
+    <Pressable style={({ pressed }) => [styles.tile, pressed && styles.pressed]} onPress={onPress}>
       <Icon name={icon} size={16} />
       <AppText variant="label" color={colors.text}>
         {label}
@@ -293,13 +298,17 @@ const styles = StyleSheet.create({
   ringLabel: { fontSize: 14, fontWeight: '700' },
   progressSub: { marginTop: spacing.xxs },
 
-  grid: { flexDirection: 'row', gap: spacing.md },
+  grid: { flexDirection: 'row', gap: spacing.md, marginVertical: 6 },
   gridSpaced: { marginTop: spacing.md },
   statBar: { marginTop: spacing.sm },
 
   sectionSpaced: { marginTop: spacing.xl },
   functionsRow: { marginHorizontal: -20 },
-  functionsContent: { paddingHorizontal: 20, gap: spacing.md, paddingBottom: spacing.xs },
+  functionsContent: {
+    paddingHorizontal: 20,
+    gap: spacing.md,
+    paddingBottom: spacing.xs,
+  },
   functionCard: {
     width: 96,
     backgroundColor: colors.surface,

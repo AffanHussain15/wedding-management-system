@@ -31,10 +31,7 @@ const nextGroup = (group: GuestGroup): GuestGroup => {
   return GUEST_GROUPS[(idx + 1) % GUEST_GROUPS.length];
 };
 
-export function weddingReducer(
-  state: WeddingState,
-  action: WeddingAction,
-): WeddingState {
+export function weddingReducer(state: WeddingState, action: WeddingAction): WeddingState {
   switch (action.type) {
     case 'ADD_VENDOR':
       return { ...state, vendors: [...state.vendors, action.vendor] };
@@ -42,9 +39,7 @@ export function weddingReducer(
     case 'UPDATE_VENDOR':
       return {
         ...state,
-        vendors: state.vendors.map(v =>
-          v.id === action.id ? { ...v, ...action.changes } : v,
-        ),
+        vendors: state.vendors.map(v => (v.id === action.id ? { ...v, ...action.changes } : v)),
       };
 
     case 'REMOVE_VENDOR':
@@ -59,9 +54,7 @@ export function weddingReducer(
     case 'SET_GUEST_RSVP':
       return {
         ...state,
-        guests: state.guests.map(g =>
-          g.id === action.id ? { ...g, rsvp: action.rsvp } : g,
-        ),
+        guests: state.guests.map(g => (g.id === action.id ? { ...g, rsvp: action.rsvp } : g)),
       };
 
     case 'CYCLE_GUEST_GROUP':
@@ -82,9 +75,7 @@ export function weddingReducer(
       return {
         ...state,
         budget: state.budget.map(c =>
-          c.name === action.category
-            ? { ...c, spent: c.spent + action.amount }
-            : c,
+          c.name === action.category ? { ...c, spent: c.spent + action.amount } : c,
         ),
       };
 
@@ -94,9 +85,7 @@ export function weddingReducer(
     case 'TOGGLE_TASK':
       return {
         ...state,
-        tasks: state.tasks.map(t =>
-          t.id === action.id ? { ...t, done: !t.done } : t,
-        ),
+        tasks: state.tasks.map(t => (t.id === action.id ? { ...t, done: !t.done } : t)),
       };
 
     case 'TOGGLE_FUNCTION_SELECTED':

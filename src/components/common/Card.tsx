@@ -1,13 +1,7 @@
 /** Rounded surface container, optionally pressable for navigable rows. */
 
 import React, { type PropsWithChildren } from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { colors, radius, shadows, spacing } from '@theme';
 
@@ -34,9 +28,7 @@ export function Card({
 
   if (onPress) {
     return (
-      <Pressable
-        onPress={onPress}
-        style={({ pressed }) => [cardStyle, pressed && styles.pressed]}>
+      <Pressable onPress={onPress} style={({ pressed }) => [cardStyle, pressed && styles.pressed]}>
         {children}
       </Pressable>
     );

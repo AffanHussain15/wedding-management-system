@@ -26,7 +26,11 @@ export function ProgressBar({
 
   return (
     <View
-      style={[styles.track, { height, borderRadius: height / 2, backgroundColor: trackColor }, style]}>
+      style={[
+        styles.track,
+        { height, borderRadius: height / 2, backgroundColor: trackColor },
+        style,
+      ]}>
       <View
         style={[
           styles.fill,

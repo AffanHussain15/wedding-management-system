@@ -49,9 +49,7 @@ export interface WeddingContextValue {
 
 const WeddingContext = createContext<WeddingContextValue | null>(null);
 
-export function WeddingProvider({
-  children,
-}: PropsWithChildren): React.JSX.Element {
+export function WeddingProvider({ children }: PropsWithChildren): React.JSX.Element {
   const [state, dispatch] = useReducer(weddingReducer, initialState);
 
   // dispatch is stable, so action creators are memoized once.
@@ -74,10 +72,7 @@ export function WeddingProvider({
           changes.cost !== undefined || changes.advance !== undefined
             ? {
                 ...changes,
-                status: derivePaymentStatus(
-                  changes.cost ?? 0,
-                  changes.advance ?? 0,
-                ),
+                status: derivePaymentStatus(changes.cost ?? 0, changes.advance ?? 0),
               }
             : changes;
         dispatch({ type: 'UPDATE_VENDOR', id, changes: withStatus });
@@ -97,8 +92,7 @@ export function WeddingProvider({
 
       removeGuest: id => dispatch({ type: 'REMOVE_GUEST', id }),
 
-      addExpense: (category, amount) =>
-        dispatch({ type: 'ADD_EXPENSE', category, amount }),
+      addExpense: (category, amount) => dispatch({ type: 'ADD_EXPENSE', category, amount }),
 
       addTask: input =>
         dispatch({
@@ -108,8 +102,7 @@ export function WeddingProvider({
 
       toggleTask: id => dispatch({ type: 'TOGGLE_TASK', id }),
 
-      toggleFunctionSelected: name =>
-        dispatch({ type: 'TOGGLE_FUNCTION_SELECTED', name }),
+      toggleFunctionSelected: name => dispatch({ type: 'TOGGLE_FUNCTION_SELECTED', name }),
 
       updateWedding: changes => dispatch({ type: 'UPDATE_WEDDING', changes }),
 
@@ -118,14 +111,9 @@ export function WeddingProvider({
     [],
   );
 
-  const value = useMemo<WeddingContextValue>(
-    () => ({ state, actions }),
-    [state, actions],
-  );
+  const value = useMemo<WeddingContextValue>(() => ({ state, actions }), [state, actions]);
 
-  return (
-    <WeddingContext.Provider value={value}>{children}</WeddingContext.Provider>
-  );
+  return <WeddingContext.Provider value={value}>{children}</WeddingContext.Provider>;
 }
 
 export function useWedding(): WeddingContextValue {

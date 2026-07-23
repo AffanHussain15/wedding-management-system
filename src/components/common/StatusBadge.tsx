@@ -21,9 +21,7 @@ export function StatusBadge({
 }: StatusBadgeProps): React.JSX.Element {
   return (
     <View style={[styles.badge, { backgroundColor: bg }, style]}>
-      <AppText style={[typography.caption, styles.label, { color }]}>
-        {label}
-      </AppText>
+      <AppText style={[typography.caption, styles.label, { color }]}>{label}</AppText>
     </View>
   );
 }

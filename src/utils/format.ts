@@ -6,13 +6,33 @@
 import { CURRENCY_SYMBOL } from '@constants';
 
 const MONTHS_LONG = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ] as const;
 
 const MONTHS_SHORT = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ] as const;
 
 const MS_PER_DAY = 86_400_000;
@@ -46,10 +66,7 @@ const parseDate = (iso: string): Date => {
  * "2027-02-14" → "February 14, 2027" (long), "February 14" (monthDay),
  * or "Feb 14" (short).
  */
-export const formatDate = (
-  iso: string,
-  style: 'long' | 'short' | 'monthDay' = 'long',
-): string => {
+export const formatDate = (iso: string, style: 'long' | 'short' | 'monthDay' = 'long'): string => {
   const d = parseDate(iso);
   const month = (style === 'short' ? MONTHS_SHORT : MONTHS_LONG)[d.getMonth()];
   if (style === 'long') return `${month} ${d.getDate()}, ${d.getFullYear()}`;
@@ -60,10 +77,7 @@ export const formatDate = (
 export const daysUntil = (iso: string): number => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  return Math.max(
-    0,
-    Math.ceil((parseDate(iso).getTime() - today.getTime()) / MS_PER_DAY),
-  );
+  return Math.max(0, Math.ceil((parseDate(iso).getTime() - today.getTime()) / MS_PER_DAY));
 };
 
 /** "today" | "tomorrow" | "in N days". */

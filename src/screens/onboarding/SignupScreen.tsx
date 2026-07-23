@@ -21,7 +21,11 @@ export function SignupScreen(): React.JSX.Element {
 
       <View style={styles.form}>
         <Input placeholder="Full name" autoCapitalize="words" />
-        <Input placeholder="Email or phone number" autoCapitalize="none" keyboardType="email-address" />
+        <Input
+          placeholder="Email or phone number"
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
         <Input placeholder="Password" secureTextEntry />
       </View>
 

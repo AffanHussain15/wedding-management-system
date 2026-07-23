@@ -38,36 +38,46 @@ export function VendorsScreen(): React.JSX.Element {
 
   return (
     <View style={styles.screen}>
-    <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
-      <AppText style={[typography.serifValue, styles.title]}>Vendors</AppText>
+      <ScreenContainer padded={false} edges={['top']}>
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={styles.content}
+          stickyHeaderIndices={[2]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled">
+          <AppText style={[typography.serifValue, styles.title]}>Vendors</AppText>
 
-      <SearchBar value={search} onChangeText={setSearch} placeholder="Search vendors" />
+          <View style={styles.searchWrap}>
+            <SearchBar value={search} onChangeText={setSearch} placeholder="Search vendors" />
+          </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filters}
-        contentContainerStyle={styles.filtersContent}>
-        {VENDOR_FILTERS.map(f => (
-          <FilterChip key={f} label={f} active={f === filter} onPress={() => setFilter(f)} />
-        ))}
-      </ScrollView>
+          <View style={styles.filterBar}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filtersContent}>
+              {VENDOR_FILTERS.map(f => (
+                <FilterChip key={f} label={f} active={f === filter} onPress={() => setFilter(f)} />
+              ))}
+            </ScrollView>
+          </View>
 
-      <View style={styles.list}>
-        {vendors.map(v => (
-          <VendorRow
-            key={v.id}
-            vendor={v}
-            onPress={() => nav.navigate('VendorDetail', { vendorId: v.id })}
-          />
-        ))}
-        {vendors.length === 0 ? (
-          <AppText variant="callout" color={colors.textMuted} center style={styles.empty}>
-            No vendors match your search.
-          </AppText>
-        ) : null}
-      </View>
-    </ScreenContainer>
+          <View style={styles.list}>
+            {vendors.map(v => (
+              <VendorRow
+                key={v.id}
+                vendor={v}
+                onPress={() => nav.navigate('VendorDetail', { vendorId: v.id })}
+              />
+            ))}
+            {vendors.length === 0 ? (
+              <AppText variant="callout" color={colors.textMuted} center style={styles.empty}>
+                No vendors match your search.
+              </AppText>
+            ) : null}
+          </View>
+        </ScrollView>
+      </ScreenContainer>
       <Fab onPress={() => nav.navigate('AddVendor')} />
     </View>
   );
@@ -103,10 +113,12 @@ function VendorRow({ vendor, onPress }: { vendor: Vendor; onPress: () => void })
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
+  flex: { flex: 1 },
   content: { paddingHorizontal: 20, paddingTop: spacing.xs, paddingBottom: spacing.xxl },
   title: { marginBottom: spacing.base },
-  filters: { marginHorizontal: -20, marginTop: spacing.md },
-  filtersContent: { paddingHorizontal: 20, gap: spacing.sm },
+  searchWrap: { marginBottom: spacing.md },
+  filterBar: { backgroundColor: colors.background, marginHorizontal: -20 },
+  filtersContent: { paddingHorizontal: 20, paddingVertical: spacing.xs, gap: spacing.sm },
   list: { gap: spacing.md, marginTop: spacing.base },
   row: { flexDirection: 'row', gap: spacing.md, borderRadius: radius.lg },
   rowBody: { flex: 1, minWidth: 0 },

@@ -18,8 +18,23 @@ export function SplashScreen(): React.JSX.Element {
       <GradientView colors={['#7A1230', '#4E0A1D']} style={styles.flex}>
         <View style={styles.center}>
           <Svg width={72} height={72} viewBox="0 0 72 72">
-            <Circle cx={28} cy={36} r={18} fill="none" stroke={colors.accentBright} strokeWidth={2.6} />
-            <Circle cx={44} cy={36} r={18} fill="none" stroke={colors.accentBright} strokeWidth={2.6} opacity={0.85} />
+            <Circle
+              cx={28}
+              cy={36}
+              r={18}
+              fill="none"
+              stroke={colors.accentBright}
+              strokeWidth={2.6}
+            />
+            <Circle
+              cx={44}
+              cy={36}
+              r={18}
+              fill="none"
+              stroke={colors.accentBright}
+              strokeWidth={2.6}
+              opacity={0.85}
+            />
           </Svg>
           <AppText style={styles.wordmark}>Ek</AppText>
           <AppText center style={styles.tagline}>

@@ -37,10 +37,7 @@ export function SeatingScreen(): React.JSX.Element {
 
       <View style={styles.guests}>
         {guests.map(g => (
-          <Pressable
-            key={g.id}
-            style={styles.pill}
-            onPress={() => actions.cycleGuestGroup(g.id)}>
+          <Pressable key={g.id} style={styles.pill} onPress={() => actions.cycleGuestGroup(g.id)}>
             <Avatar name={g.name} size={26} />
             <AppText variant="caption" color={colors.text} style={styles.pillName}>
               {g.name}

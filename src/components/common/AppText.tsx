@@ -19,10 +19,7 @@ export function AppText({
   ...rest
 }: AppTextProps): React.JSX.Element {
   return (
-    <RNText
-      style={[typography[variant], { color }, center && styles.center, style]}
-      {...rest}
-    />
+    <RNText style={[typography[variant], { color }, center && styles.center, style]} {...rest} />
   );
 }
 

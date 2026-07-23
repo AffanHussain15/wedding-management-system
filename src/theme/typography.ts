@@ -53,9 +53,7 @@ const sans = (w: Weight): TextStyle =>
 
 /** Playfair when loaded, else a platform serif at bold weight. */
 const serif = (): TextStyle =>
-  FONTS_LOADED
-    ? { fontFamily: PLAYFAIR.bold }
-    : { fontFamily: PLATFORM_SERIF, fontWeight: '700' };
+  FONTS_LOADED ? { fontFamily: PLAYFAIR.bold } : { fontFamily: PLATFORM_SERIF, fontWeight: '700' };
 
 export const fontSize = {
   xs: 11,

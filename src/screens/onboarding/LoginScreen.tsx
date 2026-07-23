@@ -20,7 +20,11 @@ export function LoginScreen(): React.JSX.Element {
       </AppText>
 
       <View style={styles.form}>
-        <Input placeholder="Email or phone number" autoCapitalize="none" keyboardType="email-address" />
+        <Input
+          placeholder="Email or phone number"
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
         <Input placeholder="Password" secureTextEntry />
       </View>
 

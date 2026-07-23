@@ -8,17 +8,13 @@ export interface StatusStyle {
   text: string;
 }
 
-export const derivePaymentStatus = (
-  cost: number,
-  advance: number,
-): PaymentStatus => {
+export const derivePaymentStatus = (cost: number, advance: number): PaymentStatus => {
   if (cost > 0 && advance >= cost) return 'Paid';
   if (advance > 0) return 'Advance';
   return 'Pending';
 };
 
-export const balanceOf = (cost: number, advance: number): number =>
-  Math.max(0, cost - advance);
+export const balanceOf = (cost: number, advance: number): number => Math.max(0, cost - advance);
 
 export const paymentStatusStyle = (status: PaymentStatus): StatusStyle => {
   switch (status) {

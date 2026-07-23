@@ -2,12 +2,7 @@
 
 import { Platform, type ViewStyle } from 'react-native';
 
-const make = (
-  elevation: number,
-  opacity: number,
-  blur: number,
-  offsetY: number,
-): ViewStyle =>
+const make = (elevation: number, opacity: number, blur: number, offsetY: number): ViewStyle =>
   Platform.select<ViewStyle>({
     ios: {
       shadowColor: '#4A0A1C',

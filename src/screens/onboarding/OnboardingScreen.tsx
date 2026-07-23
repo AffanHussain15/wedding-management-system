@@ -72,10 +72,7 @@ export function OnboardingScreen(): React.JSX.Element {
         {isLast ? (
           <AppText variant="caption" color={colors.textSecondary} center>
             Already have an account?{' '}
-            <AppText
-              variant="caption"
-              color={colors.primary}
-              onPress={() => nav.navigate('Login')}>
+            <AppText variant="caption" color={colors.primary} onPress={() => nav.navigate('Login')}>
               Login
             </AppText>
           </AppText>

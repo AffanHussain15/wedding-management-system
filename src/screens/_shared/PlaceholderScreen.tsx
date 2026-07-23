@@ -33,11 +33,7 @@ export function PlaceholderScreen({
           {title}
         </AppText>
         {subtitle ? (
-          <AppText
-            variant="callout"
-            color={colors.textSecondary}
-            center
-            style={styles.subtitle}>
+          <AppText variant="callout" color={colors.textSecondary} center style={styles.subtitle}>
             {subtitle}
           </AppText>
         ) : null}

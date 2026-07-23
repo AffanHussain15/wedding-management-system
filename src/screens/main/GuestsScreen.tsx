@@ -57,42 +57,52 @@ export function GuestsScreen(): React.JSX.Element {
 
   return (
     <View style={styles.flex}>
-      <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
-        <AppText style={[typography.serifValue, styles.title]}>Guests / Mehmaan</AppText>
-
-        <View style={styles.stats}>
-          <MiniStat value={counts.confirmed} label="Confirmed" color={colors.successText} />
-          <MiniStat value={counts.pending} label="Pending" color={colors.warning} />
-          <MiniStat value={counts.notComing} label="Not Coming" color={colors.danger} />
-        </View>
-
-        <SearchBar value={search} onChangeText={setSearch} placeholder="Search guests" />
-
+      <ScreenContainer padded={false} edges={['top']}>
         <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filters}
-          contentContainerStyle={styles.filtersContent}>
-          {GUEST_FILTERS.map(f => (
-            <FilterChip key={f} label={f} active={f === filter} onPress={() => setFilter(f)} />
-          ))}
-        </ScrollView>
+          style={styles.flex}
+          contentContainerStyle={styles.content}
+          stickyHeaderIndices={[3]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled">
+          <AppText style={[typography.serifValue, styles.title]}>Guests / Mehmaan</AppText>
 
-        <View style={styles.list}>
-          {guests.map(g => (
-            <GuestRow
-              key={g.id}
-              guest={g}
-              onCycleRsvp={() => cycleRsvp(g.id, g.rsvp)}
-              onInvite={() => showToast(`Invite sent to ${g.name.split(' ')[0]}`)}
-            />
-          ))}
-          {guests.length === 0 ? (
-            <AppText variant="callout" color={colors.textMuted} center style={styles.empty}>
-              No guests match your search.
-            </AppText>
-          ) : null}
-        </View>
+          <View style={styles.stats}>
+            <MiniStat value={counts.confirmed} label="Confirmed" color={colors.successText} />
+            <MiniStat value={counts.pending} label="Pending" color={colors.warning} />
+            <MiniStat value={counts.notComing} label="Not Coming" color={colors.danger} />
+          </View>
+
+          <View style={styles.searchWrap}>
+            <SearchBar value={search} onChangeText={setSearch} placeholder="Search guests" />
+          </View>
+
+          <View style={styles.filterBar}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filtersContent}>
+              {GUEST_FILTERS.map(f => (
+                <FilterChip key={f} label={f} active={f === filter} onPress={() => setFilter(f)} />
+              ))}
+            </ScrollView>
+          </View>
+
+          <View style={styles.list}>
+            {guests.map(g => (
+              <GuestRow
+                key={g.id}
+                guest={g}
+                onCycleRsvp={() => cycleRsvp(g.id, g.rsvp)}
+                onInvite={() => showToast(`Invite sent to ${g.name.split(' ')[0]}`)}
+              />
+            ))}
+            {guests.length === 0 ? (
+              <AppText variant="callout" color={colors.textMuted} center style={styles.empty}>
+                No guests match your search.
+              </AppText>
+            ) : null}
+          </View>
+        </ScrollView>
       </ScreenContainer>
 
       <Fab onPress={() => nav.navigate('AddGuest')} />
@@ -157,8 +167,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   miniLabel: { marginTop: spacing.xxs },
-  filters: { marginHorizontal: -20, marginTop: spacing.md },
-  filtersContent: { paddingHorizontal: 20, gap: spacing.sm },
+  searchWrap: { marginBottom: spacing.md },
+  filterBar: { backgroundColor: colors.background, marginHorizontal: -20 },
+  filtersContent: { paddingHorizontal: 20, paddingVertical: spacing.xs, gap: spacing.sm },
   list: { gap: spacing.md, marginTop: spacing.base },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, borderRadius: radius.lg },
   rowBody: { flex: 1, minWidth: 0 },

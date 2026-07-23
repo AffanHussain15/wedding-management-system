@@ -1,13 +1,7 @@
 /** Safe-area screen shell with the app background and optional scroll. */
 
 import React, { type PropsWithChildren } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { colors, layout } from '@theme';
@@ -37,19 +31,13 @@ export function ScreenContainer({
       {scroll ? (
         <ScrollView
           style={styles.flex}
-          contentContainerStyle={[
-            styles.scrollContent,
-            paddingStyle,
-            contentContainerStyle,
-          ]}
+          contentContainerStyle={[styles.scrollContent, paddingStyle, contentContainerStyle]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
           {children}
         </ScrollView>
       ) : (
-        <View style={[styles.flex, paddingStyle, contentContainerStyle]}>
-          {children}
-        </View>
+        <View style={[styles.flex, paddingStyle, contentContainerStyle]}>{children}</View>
       )}
     </SafeAreaView>
   );

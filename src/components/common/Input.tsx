@@ -1,12 +1,7 @@
 /** Text field styled to match the design's form inputs. */
 
 import React from 'react';
-import {
-  StyleSheet,
-  TextInput,
-  View,
-  type TextInputProps,
-} from 'react-native';
+import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { colors, radius, spacing, typography } from '@theme';
 import { AppText } from './AppText';
@@ -23,11 +18,7 @@ export function Input({ label, style, ...rest }: InputProps): React.JSX.Element 
           {label}
         </AppText>
       ) : null}
-      <TextInput
-        placeholderTextColor={colors.textMuted}
-        style={[styles.input, style]}
-        {...rest}
-      />
+      <TextInput placeholderTextColor={colors.textMuted} style={[styles.input, style]} {...rest} />
     </View>
   );
 }

@@ -1,24 +1,14 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import {
-  ScreenContainer,
-  AppText,
-  Button,
-  Input,
-  FilterChip,
-} from '@components';
+import { ScreenContainer, AppText, Button, Input, FilterChip } from '@components';
 import { useWedding } from '@store';
 import { FUNCTION_NAMES } from '@constants';
 import { colors, radius, spacing, typography } from '@theme';
 import { formatDate } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
-const STEP_TITLES = [
-  'Tell us about the couple',
-  'Set your date & venue',
-  'Confirm your functions',
-];
+const STEP_TITLES = ['Tell us about the couple', 'Set your date & venue', 'Confirm your functions'];
 
 export function SetupScreen(): React.JSX.Element {
   const nav = useAppNavigation();
@@ -35,19 +25,14 @@ export function SetupScreen(): React.JSX.Element {
     <ScreenContainer scroll padded={false} contentContainerStyle={styles.root}>
       <View style={styles.bars}>
         {[0, 1, 2].map(i => (
-          <View
-            key={i}
-            style={[styles.bar, step >= i ? styles.barActive : styles.barInactive]}
-          />
+          <View key={i} style={[styles.bar, step >= i ? styles.barActive : styles.barInactive]} />
         ))}
       </View>
 
       <AppText variant="overline" color={colors.accent} style={styles.stepLabel}>
         Step {step + 1} of 3
       </AppText>
-      <AppText style={[typography.serifTitle, styles.title]}>
-        {STEP_TITLES[step]}
-      </AppText>
+      <AppText style={[typography.serifTitle, styles.title]}>{STEP_TITLES[step]}</AppText>
 
       {step === 0 ? (
         <View style={styles.form}>
@@ -118,7 +103,13 @@ export function SetupScreen(): React.JSX.Element {
       ) : null}
 
       <View style={styles.actions}>
-        <Button label="Back" variant="outline" fullWidth={false} style={styles.back} onPress={back} />
+        <Button
+          label="Back"
+          variant="outline"
+          fullWidth={false}
+          style={styles.back}
+          onPress={back}
+        />
         <Button
           label={isLast ? 'Finish Setup' : 'Next'}
           fullWidth={false}

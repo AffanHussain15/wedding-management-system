@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import {
-  ScreenContainer,
-  AppText,
-  Card,
-  BackButton,
-  FilterChip,
-  Icon,
-} from '@components';
+import { ScreenContainer, AppText, Card, BackButton, FilterChip, Icon } from '@components';
 import { useWedding } from '@store';
 import { TASK_FILTERS } from '@constants';
 import type { Task } from '@types';

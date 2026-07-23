@@ -7,22 +7,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@components';
 import { colors } from '@theme';
-import {
-  HomeScreen,
-  VendorsScreen,
-  GuestsScreen,
-  BudgetScreen,
-  TimelineScreen,
-} from '@screens';
+import { HomeScreen, VendorsScreen, GuestsScreen, BudgetScreen, TimelineScreen } from '@screens';
 
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const TAB_META: Record<
-  keyof MainTabParamList,
-  { label: string; urdu: string; icon: IconName }
-> = {
+const TAB_META: Record<keyof MainTabParamList, { label: string; urdu: string; icon: IconName }> = {
   Home: { label: 'Home', urdu: 'Ghar', icon: 'home' },
   Vendors: { label: 'Vendors', urdu: 'Vendors', icon: 'vendors' },
   Guests: { label: 'Guests', urdu: 'Mehmaan', icon: 'guests' },

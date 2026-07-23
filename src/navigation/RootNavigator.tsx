@@ -66,11 +66,7 @@ export function RootNavigator(): React.JSX.Element {
           component={AddVendorScreen}
           options={{ title: 'Add Vendor' }}
         />
-        <Stack.Screen
-          name="AddGuest"
-          component={AddGuestScreen}
-          options={{ title: 'Add Guest' }}
-        />
+        <Stack.Screen name="AddGuest" component={AddGuestScreen} options={{ title: 'Add Guest' }} />
         <Stack.Screen
           name="AddExpense"
           component={AddExpenseScreen}
