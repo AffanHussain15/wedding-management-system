@@ -11,6 +11,7 @@ import {
   seedFunctions,
   seedTasks,
   seedReminders,
+  seedTables,
 } from '@data';
 import { GUEST_GROUPS } from '@constants';
 import type { GuestGroup } from '@types';
@@ -24,6 +25,7 @@ export const initialState: WeddingState = {
   functions: seedFunctions,
   tasks: seedTasks,
   reminders: seedReminders,
+  tables: seedTables,
 };
 
 const nextGroup = (group: GuestGroup): GuestGroup => {
@@ -69,6 +71,12 @@ export function weddingReducer(state: WeddingState, action: WeddingAction): Wedd
       return {
         ...state,
         guests: state.guests.filter(g => g.id !== action.id),
+        // Keep seating consistent: drop the guest from any table.
+        tables: state.tables.map(t =>
+          t.guestIds.includes(action.id)
+            ? { ...t, guestIds: t.guestIds.filter(gid => gid !== action.id) }
+            : t,
+        ),
       };
 
     case 'ADD_EXPENSE':
@@ -104,6 +112,49 @@ export function weddingReducer(state: WeddingState, action: WeddingAction): Wedd
       return {
         ...state,
         wedding: { ...state.wedding, ...action.changes },
+      };
+
+    case 'ADD_TABLE':
+      return { ...state, tables: [...state.tables, action.table] };
+
+    case 'REMOVE_TABLE':
+      return {
+        ...state,
+        tables: state.tables.filter(t => t.id !== action.id),
+      };
+
+    case 'RENAME_TABLE':
+      return {
+        ...state,
+        tables: state.tables.map(t =>
+          t.id === action.id ? { ...t, name: action.name } : t,
+        ),
+      };
+
+    case 'ASSIGN_GUEST':
+      // A guest sits at exactly one table: remove from all, then add to target.
+      return {
+        ...state,
+        tables: state.tables.map(t => {
+          if (t.id === action.tableId) {
+            return t.guestIds.includes(action.guestId)
+              ? t
+              : { ...t, guestIds: [...t.guestIds, action.guestId] };
+          }
+          return t.guestIds.includes(action.guestId)
+            ? { ...t, guestIds: t.guestIds.filter(gid => gid !== action.guestId) }
+            : t;
+        }),
+      };
+
+    case 'UNASSIGN_GUEST':
+      return {
+        ...state,
+        tables: state.tables.map(t =>
+          t.guestIds.includes(action.guestId)
+            ? { ...t, guestIds: t.guestIds.filter(gid => gid !== action.guestId) }
+            : t,
+        ),
       };
 
     case 'RESET':

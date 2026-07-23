@@ -10,6 +10,7 @@ import type {
   WeddingFunction,
   Task,
   Reminder,
+  SeatingTable,
   WeddingDetails,
 } from '@types';
 
@@ -267,4 +268,10 @@ export const seedReminders: Reminder[] = [
   { id: 2, type: 'booking', text: 'Confirm DJ booking for Baraat', date: 'in 3 days' },
   { id: 3, type: 'task', text: 'Finalize seating chart', date: 'tomorrow' },
   { id: 4, type: 'payment', text: 'Advance due to Glow Beauty Bar', date: 'in 9 days' },
+];
+
+export const seedTables: SeatingTable[] = [
+  { id: 1, name: 'Head Table', guestIds: [1, 2] },
+  { id: 2, name: 'Family Table', guestIds: [9, 12] },
+  { id: 3, name: 'Friends Table', guestIds: [] },
 ];

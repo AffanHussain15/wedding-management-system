@@ -15,6 +15,9 @@ export type IconName =
   | 'link'
   | 'code'
   | 'plus'
+  | 'trash'
+  | 'pencil'
+  | 'close'
   | 'search'
   | 'phone'
   | 'message'
@@ -110,6 +113,24 @@ export function Icon({
       return (
         <Svg {...svgProps}>
           <Path d="M12 5v14M5 12h14" {...p} />
+        </Svg>
+      );
+    case 'trash':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" {...p} />
+        </Svg>
+      );
+    case 'pencil':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M14 5l5 5M4 20l1-4L16 5l3 3L8 19l-4 1z" {...p} />
+        </Svg>
+      );
+    case 'close':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M6 6l12 12M18 6L6 18" {...p} />
         </Svg>
       );
     case 'search':

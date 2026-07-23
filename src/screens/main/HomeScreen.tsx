@@ -281,7 +281,6 @@ const styles = StyleSheet.create({
     ...weight('bold'),
   },
   hero: {
-    marginHorizontal: -20,
     borderRadius: 22,
     padding: 22,
     marginBottom: spacing.base,

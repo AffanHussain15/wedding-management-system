@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ScreenContainer, AppText, Card, BackButton, FilterChip, Icon } from '@components';
 import { useWedding } from '@store';
 import { TASK_FILTERS } from '@constants';
-import type { Task } from '@types';
+import type { ID, Task } from '@types';
 import { colors, radius, spacing, typography } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
 
@@ -32,18 +32,26 @@ export function TasksScreen(): React.JSX.Element {
 
       <View style={styles.list}>
         {tasks.map(t => (
-          <TaskRow key={t.id} task={t} onToggle={() => actions.toggleTask(t.id)} />
+          <TaskRow key={t.id} task={t} onToggle={actions.toggleTask} />
         ))}
       </View>
     </ScreenContainer>
   );
 }
 
-function TaskRow({ task, onToggle }: { task: Task; onToggle: () => void }) {
+// Memoized: toggling one task keeps every other row's props referentially
+// identical (the reducer only replaces the toggled task), so they skip render.
+const TaskRow = React.memo(function TaskRow({
+  task,
+  onToggle,
+}: {
+  task: Task;
+  onToggle: (id: ID) => void;
+}) {
   return (
     <Card style={styles.row}>
       <Pressable
-        onPress={onToggle}
+        onPress={() => onToggle(task.id)}
         hitSlop={8}
         style={[
           styles.checkbox,
@@ -67,7 +75,7 @@ function TaskRow({ task, onToggle }: { task: Task; onToggle: () => void }) {
       </View>
     </Card>
   );
-}
+});
 
 const styles = StyleSheet.create({
   content: {

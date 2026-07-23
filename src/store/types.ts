@@ -10,6 +10,7 @@ import type {
   WeddingFunction,
   Task,
   Reminder,
+  SeatingTable,
   WeddingDetails,
   RsvpStatus,
   FunctionName,
@@ -24,6 +25,7 @@ export interface WeddingState {
   functions: WeddingFunction[];
   tasks: Task[];
   reminders: Reminder[];
+  tables: SeatingTable[];
 }
 
 export type WeddingAction =
@@ -39,4 +41,9 @@ export type WeddingAction =
   | { type: 'TOGGLE_TASK'; id: ID }
   | { type: 'TOGGLE_FUNCTION_SELECTED'; name: FunctionName }
   | { type: 'UPDATE_WEDDING'; changes: Partial<WeddingDetails> }
+  | { type: 'ADD_TABLE'; table: SeatingTable }
+  | { type: 'REMOVE_TABLE'; id: ID }
+  | { type: 'RENAME_TABLE'; id: ID; name: string }
+  | { type: 'ASSIGN_GUEST'; tableId: ID; guestId: ID }
+  | { type: 'UNASSIGN_GUEST'; guestId: ID }
   | { type: 'RESET' };

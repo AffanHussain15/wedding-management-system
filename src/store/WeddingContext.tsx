@@ -39,6 +39,11 @@ export interface WeddingActions {
   toggleTask: (id: ID) => void;
   toggleFunctionSelected: (name: FunctionName) => void;
   updateWedding: (changes: Partial<WeddingDetails>) => void;
+  addTable: (name: string) => void;
+  removeTable: (id: ID) => void;
+  renameTable: (id: ID, name: string) => void;
+  assignGuest: (tableId: ID, guestId: ID) => void;
+  unassignGuest: (guestId: ID) => void;
   reset: () => void;
 }
 
@@ -105,6 +110,20 @@ export function WeddingProvider({ children }: PropsWithChildren): React.JSX.Elem
       toggleFunctionSelected: name => dispatch({ type: 'TOGGLE_FUNCTION_SELECTED', name }),
 
       updateWedding: changes => dispatch({ type: 'UPDATE_WEDDING', changes }),
+
+      addTable: name =>
+        dispatch({
+          type: 'ADD_TABLE',
+          table: { id: nextId(), name: name.trim() || 'New Table', guestIds: [] },
+        }),
+
+      removeTable: id => dispatch({ type: 'REMOVE_TABLE', id }),
+
+      renameTable: (id, name) => dispatch({ type: 'RENAME_TABLE', id, name: name.trim() }),
+
+      assignGuest: (tableId, guestId) => dispatch({ type: 'ASSIGN_GUEST', tableId, guestId }),
+
+      unassignGuest: guestId => dispatch({ type: 'UNASSIGN_GUEST', guestId }),
 
       reset: () => dispatch({ type: 'RESET' }),
     }),

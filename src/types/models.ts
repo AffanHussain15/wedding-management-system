@@ -54,6 +54,13 @@ export interface BudgetCategory {
   spent: number;
 }
 
+/** A seating table/section with the guests assigned to it. */
+export interface SeatingTable {
+  id: ID;
+  name: string;
+  guestIds: ID[];
+}
+
 export interface WeddingFunction {
   id: ID;
   name: FunctionName;
