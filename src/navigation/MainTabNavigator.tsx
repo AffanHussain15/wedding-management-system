@@ -2,10 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
-import {
-  createBottomTabNavigator,
-  type BottomTabBarProps,
-} from '@react-navigation/bottom-tabs';
+import { createBottomTabNavigator, type BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@components';
@@ -86,8 +83,7 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
             }
           };
 
-          const onLongPress = () =>
-            navigation.emit({ type: 'tabLongPress', target: route.key });
+          const onLongPress = () => navigation.emit({ type: 'tabLongPress', target: route.key });
 
           return (
             <TabButton
@@ -106,9 +102,7 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
 
 export function MainTabNavigator(): React.JSX.Element {
   return (
-    <Tab.Navigator
-      screenOptions={{ headerShown: false }}
-      tabBar={props => <FloatingTabBar {...props} />}>
+    <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={FloatingTabBar}>
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Vendors" component={VendorsScreen} />
       <Tab.Screen name="Guests" component={GuestsScreen} />

@@ -126,9 +126,7 @@ export function weddingReducer(state: WeddingState, action: WeddingAction): Wedd
     case 'RENAME_TABLE':
       return {
         ...state,
-        tables: state.tables.map(t =>
-          t.id === action.id ? { ...t, name: action.name } : t,
-        ),
+        tables: state.tables.map(t => (t.id === action.id ? { ...t, name: action.name } : t)),
       };
 
     case 'ASSIGN_GUEST':

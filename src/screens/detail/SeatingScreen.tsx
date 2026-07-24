@@ -79,8 +79,7 @@ export function SeatingScreen(): React.JSX.Element {
                 <View style={styles.tableTitle}>
                   <AppText variant="title">{table.name}</AppText>
                   <AppText variant="caption" color={colors.textSecondary} style={styles.count}>
-                    {table.guestIds.length}{' '}
-                    {table.guestIds.length === 1 ? 'guest' : 'guests'}
+                    {table.guestIds.length} {table.guestIds.length === 1 ? 'guest' : 'guests'}
                   </AppText>
                 </View>
               )}
@@ -92,10 +91,16 @@ export function SeatingScreen(): React.JSX.Element {
                   </Pressable>
                 ) : (
                   <>
-                    <Pressable onPress={() => startRename(table)} hitSlop={8} style={styles.iconBtn}>
+                    <Pressable
+                      onPress={() => startRename(table)}
+                      hitSlop={8}
+                      style={styles.iconBtn}>
                       <Icon name="pencil" size={16} color={colors.textSecondary} />
                     </Pressable>
-                    <Pressable onPress={() => deleteTable(table.id)} hitSlop={8} style={styles.iconBtn}>
+                    <Pressable
+                      onPress={() => deleteTable(table.id)}
+                      hitSlop={8}
+                      style={styles.iconBtn}>
                       <Icon name="trash" size={16} color={colors.danger} />
                     </Pressable>
                   </>
@@ -108,10 +113,7 @@ export function SeatingScreen(): React.JSX.Element {
                 const g = guestById.get(id);
                 if (!g) return null;
                 return (
-                  <Pressable
-                    key={id}
-                    style={styles.chip}
-                    onPress={() => actions.unassignGuest(id)}>
+                  <Pressable key={id} style={styles.chip} onPress={() => actions.unassignGuest(id)}>
                     <Avatar name={g.name} size={22} />
                     <AppText variant="caption" color={colors.text} style={styles.chipName}>
                       {g.name}
@@ -141,9 +143,7 @@ export function SeatingScreen(): React.JSX.Element {
         Unassigned · {unassigned.length}
       </AppText>
       <AppText variant="caption" color={colors.textSecondary} style={styles.hint}>
-        {activeTable
-          ? `Tap to seat at “${activeTable.name}”.`
-          : 'Add a table to start seating.'}
+        {activeTable ? `Tap to seat at “${activeTable.name}”.` : 'Add a table to start seating.'}
       </AppText>
 
       <View style={styles.guests}>

@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, ScrollView, SectionList, StyleSheet, View } from 'react-native';
 
 import {
   ScreenContainer,
@@ -15,7 +15,7 @@ import {
 } from '@components';
 import { useWedding, selectGuestCounts } from '@store';
 import { GUEST_FILTERS, RSVP_STATUSES } from '@constants';
-import type { Guest, RsvpStatus } from '@types';
+import type { Guest, ID, RsvpStatus } from '@types';
 import { colors, radius, spacing, typography } from '@theme';
 import { rsvpStatusStyle } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
@@ -34,16 +34,25 @@ export function GuestsScreen(): React.JSX.Element {
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  const showToast = (msg: string) => {
+  // Stable callbacks so the memoized rows don't re-render on unrelated changes.
+  const showToast = useCallback((msg: string) => {
     setToast(msg);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setToast(''), 1800);
-  };
+  }, []);
 
-  const cycleRsvp = (id: number, current: RsvpStatus) => {
-    const nextIdx = (RSVP_STATUSES.indexOf(current) + 1) % RSVP_STATUSES.length;
-    actions.setGuestRsvp(id, RSVP_STATUSES[nextIdx]);
-  };
+  const cycleRsvp = useCallback(
+    (id: ID, current: RsvpStatus) => {
+      const nextIdx = (RSVP_STATUSES.indexOf(current) + 1) % RSVP_STATUSES.length;
+      actions.setGuestRsvp(id, RSVP_STATUSES[nextIdx]);
+    },
+    [actions],
+  );
+
+  const invite = useCallback(
+    (name: string) => showToast(`Invite sent to ${name.split(' ')[0]}`),
+    [showToast],
+  );
 
   const guests = useMemo(
     () =>
@@ -55,60 +64,74 @@ export function GuestsScreen(): React.JSX.Element {
     [state.guests, filter, search],
   );
 
+  const sections = useMemo(() => [{ data: guests }], [guests]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: Guest }) => (
+      <GuestRow guest={item} onCycleRsvp={cycleRsvp} onInvite={invite} />
+    ),
+    [cycleRsvp, invite],
+  );
+
+  const renderFilterBar = useCallback(
+    () => (
+      <View style={styles.filterBar}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtersContent}>
+          {GUEST_FILTERS.map(f => (
+            <FilterChip key={f} label={f} active={f === filter} onPress={() => setFilter(f)} />
+          ))}
+        </ScrollView>
+      </View>
+    ),
+    [filter],
+  );
+
   return (
     <View style={styles.flex}>
       <ScreenContainer padded={false} edges={['top']}>
-        <ScrollView
+        <SectionList
           style={styles.flex}
           contentContainerStyle={styles.content}
-          stickyHeaderIndices={[3]}
+          sections={sections}
+          keyExtractor={item => String(item.id)}
+          renderItem={renderItem}
+          renderSectionHeader={renderFilterBar}
+          stickySectionHeadersEnabled
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled">
-          <AppText style={[typography.serifValue, styles.title]}>Guests / Mehmaan</AppText>
-
-          <View style={styles.stats}>
-            <MiniStat value={counts.confirmed} label="Confirmed" color={colors.successText} />
-            <MiniStat value={counts.pending} label="Pending" color={colors.warning} />
-            <MiniStat value={counts.notComing} label="Not Coming" color={colors.danger} />
-          </View>
-
-          <View style={styles.searchWrap}>
-            <SearchBar value={search} onChangeText={setSearch} placeholder="Search guests" />
-          </View>
-
-          <View style={styles.filterBar}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.filtersContent}>
-              {GUEST_FILTERS.map(f => (
-                <FilterChip key={f} label={f} active={f === filter} onPress={() => setFilter(f)} />
-              ))}
-            </ScrollView>
-          </View>
-
-          <View style={styles.list}>
-            {guests.map(g => (
-              <GuestRow
-                key={g.id}
-                guest={g}
-                onCycleRsvp={() => cycleRsvp(g.id, g.rsvp)}
-                onInvite={() => showToast(`Invite sent to ${g.name.split(' ')[0]}`)}
-              />
-            ))}
-            {guests.length === 0 ? (
-              <AppText variant="callout" color={colors.textMuted} center style={styles.empty}>
-                No guests match your search.
-              </AppText>
-            ) : null}
-          </View>
-        </ScrollView>
+          keyboardShouldPersistTaps="handled"
+          ItemSeparatorComponent={ItemSeparator}
+          ListHeaderComponent={
+            <View>
+              <AppText style={[typography.serifValue, styles.title]}>Guests / Mehmaan</AppText>
+              <View style={styles.stats}>
+                <MiniStat value={counts.confirmed} label="Confirmed" color={colors.successText} />
+                <MiniStat value={counts.pending} label="Pending" color={colors.warning} />
+                <MiniStat value={counts.notComing} label="Not Coming" color={colors.danger} />
+              </View>
+              <View style={styles.searchWrap}>
+                <SearchBar value={search} onChangeText={setSearch} placeholder="Search guests" />
+              </View>
+            </View>
+          }
+          ListEmptyComponent={
+            <AppText variant="callout" color={colors.textMuted} center style={styles.empty}>
+              No guests match your search.
+            </AppText>
+          }
+        />
       </ScreenContainer>
 
       <Fab onPress={() => nav.navigate('AddGuest')} />
       <Toast message={toast} visible={!!toast} />
     </View>
   );
+}
+
+function ItemSeparator(): React.JSX.Element {
+  return <View style={styles.separator} />;
 }
 
 function MiniStat({ value, label, color }: { value: number; label: string; color: string }) {
@@ -122,15 +145,13 @@ function MiniStat({ value, label, color }: { value: number; label: string; color
   );
 }
 
-function GuestRow({
-  guest,
-  onCycleRsvp,
-  onInvite,
-}: {
+interface GuestRowProps {
   guest: Guest;
-  onCycleRsvp: () => void;
-  onInvite: () => void;
-}) {
+  onCycleRsvp: (id: ID, current: RsvpStatus) => void;
+  onInvite: (name: string) => void;
+}
+
+const GuestRow = React.memo(({ guest, onCycleRsvp, onInvite }: GuestRowProps) => {
   const rsvp = rsvpStatusStyle(guest.rsvp);
 
   return (
@@ -144,15 +165,15 @@ function GuestRow({
           {guest.group}
         </AppText>
       </View>
-      <Pressable onPress={onCycleRsvp} hitSlop={6}>
+      <Pressable onPress={() => onCycleRsvp(guest.id, guest.rsvp)} hitSlop={6}>
         <StatusBadge label={guest.rsvp} bg={rsvp.bg} color={rsvp.text} />
       </Pressable>
-      <Pressable style={styles.invite} onPress={onInvite} hitSlop={6}>
+      <Pressable style={styles.invite} onPress={() => onInvite(guest.name)} hitSlop={6}>
         <Icon name="send" size={14} color={colors.primary} />
       </Pressable>
     </Card>
   );
-}
+});
 
 const styles = StyleSheet.create({
   flex: {
@@ -187,15 +208,15 @@ const styles = StyleSheet.create({
   filterBar: {
     backgroundColor: colors.background,
     marginHorizontal: -20,
+    paddingBottom: spacing.base,
   },
   filtersContent: {
     paddingHorizontal: 20,
     paddingVertical: spacing.xs,
     gap: spacing.sm,
   },
-  list: {
-    gap: spacing.md,
-    marginTop: spacing.base,
+  separator: {
+    height: spacing.md,
   },
   row: {
     flexDirection: 'row',

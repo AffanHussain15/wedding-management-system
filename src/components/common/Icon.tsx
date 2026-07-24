@@ -1,4 +1,4 @@
-/** Line icons rendered with react-native-svg (paths taken from the design). */
+/** Line icons rendered with react-native-svg (Feather/Lucide-style geometry). */
 
 import React from 'react';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
@@ -56,30 +56,31 @@ export function Icon({
     case 'bell':
       return (
         <Svg {...svgProps}>
-          <Path d="M6 10a6 6 0 1 1 12 0c0 3 1 4.5 2 6H4c1-1.5 2-3 2-6z" {...p} />
+          <Path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" {...p} />
+          <Path d="M13.73 21a2 2 0 0 1-3.46 0" {...p} />
         </Svg>
       );
     case 'tasks':
       return (
         <Svg {...svgProps}>
-          <Rect x={4} y={4} width={16} height={16} rx={3} {...p} />
-          <Path d="M8 12l2 2 4-4" {...p} />
+          <Path d="M9 11l3 3L22 4" {...p} />
+          <Path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" {...p} />
         </Svg>
       );
     case 'seating':
       return (
         <Svg {...svgProps}>
-          <Rect x={4} y={4} width={7} height={7} rx={1} {...p} />
-          <Rect x={13} y={4} width={7} height={7} rx={1} {...p} />
-          <Rect x={4} y={13} width={7} height={7} rx={1} {...p} />
-          <Rect x={13} y={13} width={7} height={7} rx={1} {...p} />
+          <Rect x={3} y={3} width={7} height={7} rx={1.5} {...p} />
+          <Rect x={14} y={3} width={7} height={7} rx={1.5} {...p} />
+          <Rect x={3} y={14} width={7} height={7} rx={1.5} {...p} />
+          <Rect x={14} y={14} width={7} height={7} rx={1.5} {...p} />
         </Svg>
       );
     case 'profile':
       return (
         <Svg {...svgProps}>
-          <Circle cx={12} cy={8} r={4} {...p} />
-          <Path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" {...p} />
+          <Circle cx={12} cy={7} r={4} {...p} />
+          <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" {...p} />
         </Svg>
       );
     case 'check':
@@ -91,22 +92,21 @@ export function Icon({
     case 'chevronRight':
       return (
         <Svg {...svgProps}>
-          <Path d="M9 6l6 6-6 6" {...p} />
+          <Path d="M9 18l6-6-6-6" {...p} />
         </Svg>
       );
     case 'link':
       return (
         <Svg {...svgProps}>
-          <Circle cx={8} cy={16} r={3} {...p} />
-          <Circle cx={16} cy={8} r={3} {...p} />
-          <Path d="M10 14l4-4" {...p} />
+          <Path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" {...p} />
+          <Path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" {...p} />
         </Svg>
       );
     case 'code':
       return (
         <Svg {...svgProps}>
-          <Rect x={4} y={4} width={16} height={16} rx={3} {...p} />
-          <Path d="M9 12h6M12 9v6" {...p} />
+          <Path d="M16 18l6-6-6-6" {...p} />
+          <Path d="M8 6l-6 6 6 6" {...p} />
         </Svg>
       );
     case 'plus':
@@ -118,33 +118,36 @@ export function Icon({
     case 'trash':
       return (
         <Svg {...svgProps}>
-          <Path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" {...p} />
+          <Path d="M3 6h18" {...p} />
+          <Path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" {...p} />
+          <Path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" {...p} />
+          <Path d="M10 11v6M14 11v6" {...p} />
         </Svg>
       );
     case 'pencil':
       return (
         <Svg {...svgProps}>
-          <Path d="M14 5l5 5M4 20l1-4L16 5l3 3L8 19l-4 1z" {...p} />
+          <Path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" {...p} />
         </Svg>
       );
     case 'close':
       return (
         <Svg {...svgProps}>
-          <Path d="M6 6l12 12M18 6L6 18" {...p} />
+          <Path d="M18 6L6 18M6 6l12 12" {...p} />
         </Svg>
       );
     case 'search':
       return (
         <Svg {...svgProps}>
-          <Circle cx={11} cy={11} r={7} {...p} />
-          <Path d="M20 20l-4-4" {...p} />
+          <Circle cx={11} cy={11} r={8} {...p} />
+          <Path d="M21 21l-4.35-4.35" {...p} />
         </Svg>
       );
     case 'phone':
       return (
         <Svg {...svgProps}>
           <Path
-            d="M4 5a1 1 0 011-1h3l2 5-2 1a11 11 0 005 5l1-2 5 2v3a1 1 0 01-1 1A16 16 0 014 5z"
+            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
             {...p}
           />
         </Svg>
@@ -152,60 +155,64 @@ export function Icon({
     case 'message':
       return (
         <Svg {...svgProps}>
-          <Rect x={3} y={5} width={18} height={14} rx={3} {...p} />
-          <Path d="M3 7l9 6 9-6" {...p} />
+          <Path
+            d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"
+            {...p}
+          />
+          <Path d="M22 6l-10 7L2 6" {...p} />
         </Svg>
       );
     case 'send':
       return (
         <Svg {...svgProps}>
-          <Path d="M21 3L10 14M21 3l-7 18-4-8-8-4 19-6z" {...p} />
+          <Path d="M22 2L11 13" {...p} />
+          <Path d="M22 2l-7 20-4-9-9-4 20-7z" {...p} />
         </Svg>
       );
     case 'card':
       return (
         <Svg {...svgProps}>
-          <Rect x={3} y={6} width={18} height={13} rx={2} {...p} />
-          <Path d="M3 10h18" {...p} />
+          <Rect x={2} y={5} width={20} height={14} rx={2} {...p} />
+          <Path d="M2 10h20" {...p} />
         </Svg>
       );
     case 'calendar':
       return (
         <Svg {...svgProps}>
-          <Rect x={4} y={5} width={16} height={15} rx={2} {...p} />
-          <Path d="M8 3v4M16 3v4M4 10h16" {...p} />
+          <Rect x={3} y={4} width={18} height={18} rx={2} {...p} />
+          <Path d="M16 2v4M8 2v4M3 10h18" {...p} />
         </Svg>
       );
     case 'home':
       return (
         <Svg {...svgProps}>
-          <Path d="M4 11 12 4l8 7" {...p} />
-          <Path d="M6 10v9h12v-9" {...p} />
+          <Path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" {...p} />
+          <Path d="M9 22V12h6v10" {...p} />
         </Svg>
       );
     case 'vendors':
       return (
         <Svg {...svgProps}>
-          <Path d="M4 8l1.5-4h13L20 8" {...p} />
-          <Path d="M4 8h16v11H4z" {...p} />
-          <Path d="M9 19v-5h6v5" {...p} />
+          <Path d="M4 9l1.2-4.5A1 1 0 0 1 6.16 4h11.68a1 1 0 0 1 .96.72L20 9" {...p} />
+          <Path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9" {...p} />
+          <Path d="M9 20v-5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5" {...p} />
         </Svg>
       );
     case 'guests':
       return (
         <Svg {...svgProps}>
-          <Circle cx={9} cy={9} r={3.2} {...p} />
-          <Path d="M3.5 19c0-3.6 2.5-6 5.5-6s5.5 2.4 5.5 6" {...p} />
-          <Circle cx={17} cy={9.5} r={2.4} {...p} />
-          <Path d="M15.5 13.3c2 .5 3.3 2.4 3.3 5.7" {...p} />
+          <Path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" {...p} />
+          <Circle cx={9} cy={7} r={4} {...p} />
+          <Path d="M23 21v-2a4 4 0 0 0-3-3.87" {...p} />
+          <Path d="M16 3.13a4 4 0 0 1 0 7.75" {...p} />
         </Svg>
       );
     case 'budget':
       return (
         <Svg {...svgProps}>
-          <Rect x={3} y={7} width={18} height={12} rx={2} {...p} />
-          <Path d="M3 10h18" {...p} />
-          <Circle cx={16} cy={14.5} r={1.1} fill={color} />
+          <Rect x={2} y={5} width={20} height={14} rx={2} {...p} />
+          <Path d="M2 10h20" {...p} />
+          <Circle cx={17} cy={15} r={1.35} fill={color} />
         </Svg>
       );
     case 'timeline':

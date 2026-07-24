@@ -28,18 +28,13 @@ export function GradientView({
 
   const onLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
-    setSize(prev =>
-      prev.width === width && prev.height === height ? prev : { width, height },
-    );
+    setSize(prev => (prev.width === width && prev.height === height ? prev : { width, height }));
   };
 
   return (
     <View style={[styles.wrap, style]} onLayout={onLayout}>
       {size.width > 0 && size.height > 0 ? (
-        <Svg
-          style={StyleSheet.absoluteFill}
-          width={size.width}
-          height={size.height}>
+        <Svg style={StyleSheet.absoluteFill} width={size.width} height={size.height}>
           <Defs>
             <LinearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
               {gradientColors.map((c, i) => (
@@ -47,13 +42,7 @@ export function GradientView({
               ))}
             </LinearGradient>
           </Defs>
-          <Rect
-            x="0"
-            y="0"
-            width={size.width}
-            height={size.height}
-            fill="url(#grad)"
-          />
+          <Rect x="0" y="0" width={size.width} height={size.height} fill="url(#grad)" />
         </Svg>
       ) : null}
       {children}

@@ -41,7 +41,7 @@ export function TasksScreen(): React.JSX.Element {
 
 // Memoized: toggling one task keeps every other row's props referentially
 // identical (the reducer only replaces the toggled task), so they skip render.
-const TaskRow = React.memo(function TaskRow({
+const TaskRow = React.memo(function TaskRowItem({
   task,
   onToggle,
 }: {
