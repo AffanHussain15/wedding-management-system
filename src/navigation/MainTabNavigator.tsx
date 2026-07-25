@@ -102,7 +102,14 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
 
 export function MainTabNavigator(): React.JSX.Element {
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={FloatingTabBar}>
+    <Tab.Navigator
+      screenOptions={{ headerShown: false }}
+      // Must stay a render prop: react-navigation *calls* `tabBar(props)`
+      // instead of rendering it, so passing the component directly
+      // (`tabBar={FloatingTabBar}`) runs its hooks outside a component render
+      // and crashes with "Invalid hook call" as soon as the tabs mount.
+      // eslint-disable-next-line react/no-unstable-nested-components
+      tabBar={props => <FloatingTabBar {...props} />}>
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Vendors" component={VendorsScreen} />
       <Tab.Screen name="Guests" component={GuestsScreen} />
