@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, SectionList, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, SectionList, StyleSheet, View } from 'react-native';
 
 import {
   ScreenContainer,
@@ -12,8 +12,12 @@ import {
   Icon,
   Toast,
   Fab,
+  LoadingState,
+  ErrorState,
+  EmptyState,
 } from '@components';
 import { useWedding, selectGuestCounts } from '@store';
+import { canContribute } from '@services';
 import { GUEST_FILTERS, RSVP_STATUSES } from '@constants';
 import type { Guest, ID, RsvpStatus } from '@types';
 import { colors, radius, spacing, typography } from '@theme';
@@ -24,7 +28,7 @@ type Filter = (typeof GUEST_FILTERS)[number];
 
 export function GuestsScreen(): React.JSX.Element {
   const nav = useAppNavigation();
-  const { state, actions } = useWedding();
+  const { state, actions, loading, refreshing, error, refresh, hasData } = useWedding();
   const counts = selectGuestCounts(state);
 
   const [search, setSearch] = useState('');
@@ -38,31 +42,50 @@ export function GuestsScreen(): React.JSX.Element {
   const showToast = useCallback((msg: string) => {
     setToast(msg);
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => setToast(''), 1800);
+    timer.current = setTimeout(() => setToast(''), 2400);
   }, []);
 
+  const mayEdit = canContribute(state.wedding.role);
+
   const cycleRsvp = useCallback(
-    (id: ID, current: RsvpStatus) => {
+    async (id: ID, current: RsvpStatus) => {
+      if (!mayEdit) {
+        showToast('You have read-only access.');
+        return;
+      }
       const nextIdx = (RSVP_STATUSES.indexOf(current) + 1) % RSVP_STATUSES.length;
-      actions.setGuestRsvp(id, RSVP_STATUSES[nextIdx]);
+      const result = await actions.setGuestRsvp(id, RSVP_STATUSES[nextIdx]);
+      if (!result.ok) showToast(result.message);
     },
-    [actions],
+    [actions, mayEdit, showToast],
   );
 
   const invite = useCallback(
-    (name: string) => showToast(`Invite sent to ${name.split(' ')[0]}`),
-    [showToast],
+    async (guest: Guest) => {
+      if (!mayEdit) {
+        showToast('You have read-only access.');
+        return;
+      }
+      const result = await actions.sendGuestInvite(guest.id);
+      // The 24h resend cooldown surfaces as RATE_LIMITED, which is worth
+      // showing verbatim rather than as a generic failure.
+      showToast(
+        result.ok
+          ? `Invite queued for ${guest.name.split(' ')[0]}`
+          : result.message,
+      );
+    },
+    [actions, mayEdit, showToast],
   );
 
-  const guests = useMemo(
-    () =>
-      state.guests.filter(
-        g =>
-          (filter === 'All' || g.rsvp === filter) &&
-          g.name.toLowerCase().includes(search.toLowerCase()),
-      ),
-    [state.guests, filter, search],
-  );
+  const guests = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return state.guests.filter(
+      g =>
+        (filter === 'All' || g.rsvp === filter) &&
+        (query === '' || g.name.toLowerCase().includes(query)),
+    );
+  }, [state.guests, filter, search]);
 
   const sections = useMemo(() => [{ data: guests }], [guests]);
 
@@ -89,6 +112,22 @@ export function GuestsScreen(): React.JSX.Element {
     [filter],
   );
 
+  if (loading && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <LoadingState message="Loading guests…" />
+      </ScreenContainer>
+    );
+  }
+
+  if (error && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <ErrorState message={error} onRetry={refresh} />
+      </ScreenContainer>
+    );
+  }
+
   return (
     <View style={styles.flex}>
       <ScreenContainer padded={false} edges={['top']}>
@@ -96,13 +135,21 @@ export function GuestsScreen(): React.JSX.Element {
           style={styles.flex}
           contentContainerStyle={styles.content}
           sections={sections}
-          keyExtractor={item => String(item.id)}
+          keyExtractor={item => item.id}
           renderItem={renderItem}
           renderSectionHeader={renderFilterBar}
           stickySectionHeadersEnabled
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           ItemSeparatorComponent={ItemSeparator}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={refresh}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
+            />
+          }
           ListHeaderComponent={
             <View>
               <AppText style={[typography.serifValue, styles.title]}>Guests / Mehmaan</AppText>
@@ -111,20 +158,35 @@ export function GuestsScreen(): React.JSX.Element {
                 <MiniStat value={counts.pending} label="Pending" color={colors.warning} />
                 <MiniStat value={counts.notComing} label="Not Coming" color={colors.danger} />
               </View>
+              {/* Entries can each cover several people, so both numbers matter. */}
+              <AppText variant="caption" color={colors.textMuted} style={styles.heads}>
+                {counts.confirmedHeads} of {counts.totalHeads} people confirmed across{' '}
+                {counts.total} {counts.total === 1 ? 'entry' : 'entries'}
+              </AppText>
               <View style={styles.searchWrap}>
                 <SearchBar value={search} onChangeText={setSearch} placeholder="Search guests" />
               </View>
             </View>
           }
           ListEmptyComponent={
-            <AppText variant="callout" color={colors.textMuted} center style={styles.empty}>
-              No guests match your search.
-            </AppText>
+            state.guests.length === 0 ? (
+              <EmptyState
+                icon="guests"
+                title="No guests yet"
+                message="Add your guest list to track RSVPs and head counts."
+                actionLabel={mayEdit ? 'Add Guest' : undefined}
+                onAction={mayEdit ? () => nav.navigate('AddGuest') : undefined}
+              />
+            ) : (
+              <AppText variant="callout" color={colors.textMuted} center style={styles.empty}>
+                No guests match your search.
+              </AppText>
+            )
           }
         />
       </ScreenContainer>
 
-      <Fab onPress={() => nav.navigate('AddGuest')} />
+      {mayEdit ? <Fab onPress={() => nav.navigate('AddGuest')} /> : null}
       <Toast message={toast} visible={!!toast} />
     </View>
   );
@@ -148,7 +210,7 @@ function MiniStat({ value, label, color }: { value: number; label: string; color
 interface GuestRowProps {
   guest: Guest;
   onCycleRsvp: (id: ID, current: RsvpStatus) => void;
-  onInvite: (name: string) => void;
+  onInvite: (guest: Guest) => void;
 }
 
 const GuestRow = React.memo(({ guest, onCycleRsvp, onInvite }: GuestRowProps) => {
@@ -163,12 +225,13 @@ const GuestRow = React.memo(({ guest, onCycleRsvp, onInvite }: GuestRowProps) =>
         </AppText>
         <AppText variant="caption" color={colors.textSecondary}>
           {guest.group}
+          {guest.groupSize > 1 ? ` · ${guest.groupSize} people` : ''}
         </AppText>
       </View>
       <Pressable onPress={() => onCycleRsvp(guest.id, guest.rsvp)} hitSlop={6}>
         <StatusBadge label={guest.rsvp} bg={rsvp.bg} color={rsvp.text} />
       </Pressable>
-      <Pressable style={styles.invite} onPress={() => onInvite(guest.name)} hitSlop={6}>
+      <Pressable style={styles.invite} onPress={() => onInvite(guest)} hitSlop={6}>
         <Icon name="send" size={14} color={colors.primary} />
       </Pressable>
     </Card>
@@ -190,7 +253,7 @@ const styles = StyleSheet.create({
   stats: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   miniStat: {
     flex: 1,
@@ -201,6 +264,9 @@ const styles = StyleSheet.create({
   },
   miniLabel: {
     marginTop: spacing.xxs,
+  },
+  heads: {
+    marginBottom: spacing.md,
   },
   searchWrap: {
     marginBottom: spacing.md,

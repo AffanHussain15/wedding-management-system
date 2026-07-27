@@ -1,7 +1,14 @@
 /** Safe-area screen shell with the app background and optional scroll. */
 
 import React, { type PropsWithChildren } from 'react';
-import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { colors, layout } from '@theme';
@@ -13,6 +20,10 @@ export interface ScreenContainerProps extends PropsWithChildren {
   backgroundColor?: string;
   style?: StyleProp<ViewStyle>;
   contentContainerStyle?: StyleProp<ViewStyle>;
+  /** Enables pull-to-refresh on the scroll view. Requires `scroll`. */
+  onRefresh?: () => void;
+  /** Whether the refresh spinner is showing. */
+  refreshing?: boolean;
 }
 
 export function ScreenContainer({
@@ -23,6 +34,8 @@ export function ScreenContainer({
   backgroundColor = colors.background,
   style,
   contentContainerStyle,
+  onRefresh,
+  refreshing = false,
 }: ScreenContainerProps): React.JSX.Element {
   const paddingStyle = padded ? styles.padded : undefined;
 
@@ -33,7 +46,17 @@ export function ScreenContainer({
           style={styles.flex}
           contentContainerStyle={[styles.scrollContent, paddingStyle, contentContainerStyle]}
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled">
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            onRefresh ? (
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.primary}
+                colors={[colors.primary]}
+              />
+            ) : undefined
+          }>
           {children}
         </ScrollView>
       ) : (

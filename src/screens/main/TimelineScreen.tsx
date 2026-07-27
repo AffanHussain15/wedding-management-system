@@ -1,8 +1,18 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { ScreenContainer, AppText, Card, StatusBadge } from '@components';
+import {
+  ScreenContainer,
+  AppText,
+  Card,
+  StatusBadge,
+  Fab,
+  LoadingState,
+  ErrorState,
+  EmptyState,
+} from '@components';
 import { useWedding } from '@store';
+import { canContribute } from '@services';
 import type { WeddingFunction } from '@types';
 import { colors, radius, spacing, typography } from '@theme';
 import { formatDate, functionDotColor, functionStatusStyle, functionStatusLabel } from '@utils';
@@ -10,51 +20,99 @@ import { useAppNavigation } from '@navigation/hooks';
 
 export function TimelineScreen(): React.JSX.Element {
   const nav = useAppNavigation();
-  const { state } = useWedding();
+  const { state, loading, refreshing, error, refresh, hasData } = useWedding();
+
+  // Creating an event is allowed for FAMILY_MEMBER too, unlike vendors.
+  const mayAdd = canContribute(state.wedding.role);
+
+  if (loading && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <LoadingState message="Loading timeline…" />
+      </ScreenContainer>
+    );
+  }
+
+  if (error && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <ErrorState message={error} onRetry={refresh} />
+      </ScreenContainer>
+    );
+  }
 
   return (
-    <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
-      <AppText style={[typography.serifValue, styles.title]}>Timeline</AppText>
+    <View style={styles.screen}>
+      <ScreenContainer
+        scroll
+        padded={false}
+        edges={['top']}
+        contentContainerStyle={styles.content}
+        onRefresh={refresh}
+        refreshing={refreshing}>
+        <AppText style={[typography.serifValue, styles.title]}>Timeline</AppText>
 
-      <View style={styles.track}>
-        <View style={styles.line} />
-        {state.functions.map(fn => (
-          <TimelineItem
-            key={fn.id}
-            fn={fn}
-            onPress={() => nav.navigate('FunctionDetail', { functionId: fn.id })}
+        {state.functions.length > 0 ? (
+          <View style={styles.track}>
+            <View style={styles.line} />
+            {state.functions.map(fn => (
+              <TimelineItem
+                key={fn.id}
+                fn={fn}
+                onPress={() => nav.navigate('FunctionDetail', { functionId: fn.id })}
+              />
+            ))}
+          </View>
+        ) : (
+          <EmptyState
+            icon="timeline"
+            title="No functions yet"
+            message="Add each function — Mehndi, Baraat, Walima — to see them on one timeline."
+            actionLabel={mayAdd ? 'Add Function' : undefined}
+            onAction={mayAdd ? () => nav.navigate('AddFunction') : undefined}
           />
-        ))}
-      </View>
-    </ScreenContainer>
+        )}
+      </ScreenContainer>
+      {mayAdd ? <Fab onPress={() => nav.navigate('AddFunction')} /> : null}
+    </View>
   );
 }
 
 function TimelineItem({ fn, onPress }: { fn: WeddingFunction; onPress: () => void }) {
   const status = functionStatusStyle(fn.status);
+  // The list endpoint doesn't return startTime, so the time line is only shown
+  // once the detail screen has been opened; here date and venue are enough.
+  const meta = [formatDate(fn.date, 'monthDay', 'Date not set'), fn.time]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <View style={styles.item}>
       <View style={[styles.dot, { backgroundColor: functionDotColor(fn.status) }]} />
       <Card onPress={onPress} style={styles.card}>
         <View style={styles.cardTop}>
-          <AppText variant="title" style={styles.name}>
+          <AppText variant="title" style={styles.name} numberOfLines={1}>
             {fn.name}
           </AppText>
           <StatusBadge label={functionStatusLabel(fn.status)} bg={status.bg} color={status.text} />
         </View>
         <AppText variant="caption" color={colors.textSecondary}>
-          {formatDate(fn.date, 'monthDay')} · {fn.time}
+          {meta}
         </AppText>
-        <AppText variant="caption" color={colors.textSecondary} style={styles.venue}>
-          {fn.venue}
-        </AppText>
+        {fn.venue ? (
+          <AppText variant="caption" color={colors.textSecondary} style={styles.venue}>
+            {fn.venue}
+          </AppText>
+        ) : null}
       </Card>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   content: {
     paddingHorizontal: 20,
     paddingTop: spacing.xs,

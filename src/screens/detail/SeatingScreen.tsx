@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ScreenContainer, AppText, BackButton, Button, Input, Icon, Avatar } from '@components';
+import {
+  ScreenContainer,
+  AppText,
+  BackButton,
+  Button,
+  Input,
+  Icon,
+  Avatar,
+  FormBanner,
+  LoadingState,
+  ErrorState,
+  EmptyState,
+} from '@components';
 import { useWedding } from '@store';
 import type { ID, SeatingTable } from '@types';
 import { colors, radius, shadows, spacing, typography, weight } from '@theme';
@@ -9,7 +21,7 @@ import { useAppNavigation } from '@navigation/hooks';
 
 export function SeatingScreen(): React.JSX.Element {
   const nav = useAppNavigation();
-  const { state, actions } = useWedding();
+  const { state, actions, loading, error, refresh, hasData } = useWedding();
   const { guests, tables } = state;
 
   // Which table new taps seat guests at, and which one is being renamed.
@@ -47,6 +59,22 @@ export function SeatingScreen(): React.JSX.Element {
     if (effectiveActiveId != null) actions.assignGuest(effectiveActiveId, guestId);
   };
 
+  if (loading && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <LoadingState message="Loading guests…" />
+      </ScreenContainer>
+    );
+  }
+
+  if (error && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <ErrorState message={error} onRetry={refresh} />
+      </ScreenContainer>
+    );
+  }
+
   return (
     <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
       <BackButton onPress={() => nav.goBack()} />
@@ -54,6 +82,26 @@ export function SeatingScreen(): React.JSX.Element {
       <AppText variant="callout" color={colors.textSecondary} style={styles.subtitle}>
         Pick a table, then tap guests below to seat them.
       </AppText>
+
+      {/*
+        There is no seating model in the backend schema, so these tables live
+        only on this device and are lost on restart. Saying so is better than
+        letting someone spend an hour arranging tables that won't persist.
+      */}
+      <FormBanner
+        tone="warning"
+        message="Seating is saved on this device only — the server has no seating model yet, so it won't sync to your family or survive a restart."
+      />
+
+      {guests.length === 0 ? (
+        <EmptyState
+          icon="guests"
+          title="No guests to seat"
+          message="Add guests first, then come back to arrange the tables."
+          actionLabel="Add Guest"
+          onAction={() => nav.navigate('AddGuest')}
+        />
+      ) : null}
 
       {tables.map(table => {
         const active = table.id === effectiveActiveId;

@@ -8,21 +8,37 @@ export type MainTabParamList = {
   Timeline: undefined;
 };
 
+/**
+ * Ids are the server's UUID strings, so route params are `string`.
+ *
+ * `RootNavigator` splits this stack by auth state: while signed out only the
+ * onboarding routes are registered, and while signed in only the app routes —
+ * so a screen can never be reached without the session it needs.
+ */
 export type RootStackParamList = {
-  Splash: undefined;
+  // Unauthenticated
   Onboarding: undefined;
   Signup: undefined;
   Login: undefined;
-  FamilyLink: undefined;
+  ForgotPassword: undefined;
+  ResetPassword: { email?: string } | undefined;
+
+  // Authenticated, before a wedding exists
   Setup: undefined;
+  SelectWedding: undefined;
+
+  // Authenticated
   Main: NavigatorScreenParams<MainTabParamList> | undefined;
-  VendorDetail: { vendorId: number };
+  FamilyLink: undefined;
+  VendorDetail: { vendorId: string };
   AddVendor: undefined;
   AddGuest: undefined;
   AddExpense: undefined;
-  FunctionDetail: { functionId: number };
+  FunctionDetail: { functionId: string };
+  AddFunction: undefined;
   Reminders: undefined;
   Tasks: undefined;
+  AddTask: undefined;
   Seating: undefined;
   Profile: undefined;
 };

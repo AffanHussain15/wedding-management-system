@@ -13,6 +13,8 @@ import {
   SectionHeader,
   Icon,
   Fab,
+  LoadingState,
+  ErrorState,
 } from '@components';
 import {
   useWedding,
@@ -22,9 +24,10 @@ import {
   selectGuestCounts,
   selectVendorStats,
   selectNextFunction,
+  selectReminders,
 } from '@store';
 import { colors, radius, shadows, spacing, typography, weight } from '@theme';
-import { formatDate, functionDotColor } from '@utils';
+import { formatDate, formatNumber, functionDotColor } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 // Translucent cream tones for text over the maroon hero gradient.
@@ -33,7 +36,7 @@ const HERO_DAYS = 'rgba(253,246,233,0.75)';
 
 export function HomeScreen(): React.JSX.Element {
   const nav = useAppNavigation();
-  const { state } = useWedding();
+  const { state, loading, refreshing, error, refresh, hasData } = useWedding();
   const { wedding } = state;
 
   const daysLeft = selectDaysLeft(state);
@@ -42,16 +45,42 @@ export function HomeScreen(): React.JSX.Element {
   const guests = selectGuestCounts(state);
   const vendors = selectVendorStats(state);
   const next = selectNextFunction(state);
+  const reminders = selectReminders(state);
 
   const weddingDate = formatDate(wedding.weddingDate, 'long');
-  const initials = `${wedding.bride[0] ?? ''}${wedding.groom[0] ?? ''}`.toUpperCase();
+  const initials =
+    `${wedding.bride[0] ?? ''}${wedding.groom[0] ?? ''}`.toUpperCase() || '–';
+  // The venue/city line has to survive either part being unset.
+  const location = [wedding.venue, wedding.city].filter(Boolean).join(', ');
 
   const goTab = (screen: 'Vendors' | 'Guests' | 'Budget' | 'Timeline') =>
     nav.navigate('Main', { screen });
 
+  if (loading && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <LoadingState message="Loading your wedding…" />
+      </ScreenContainer>
+    );
+  }
+
+  if (error && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <ErrorState message={error} onRetry={refresh} />
+      </ScreenContainer>
+    );
+  }
+
   return (
     <View style={styles.screen}>
-      <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
+      <ScreenContainer
+        scroll
+        padded={false}
+        edges={['top']}
+        contentContainerStyle={styles.content}
+        onRefresh={refresh}
+        refreshing={refreshing}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.flexShrink}>
@@ -86,15 +115,21 @@ export function HomeScreen(): React.JSX.Element {
               strokeWidth={1.4}
             />
           </Svg>
-          <AppText style={styles.heroLabel}>COUNTDOWN TO BARAAT</AppText>
-          <View style={styles.heroRow}>
-            <AppText style={[typography.serifDisplay, { color: colors.goldSoft }]}>
-              {daysLeft}
+          <AppText style={styles.heroLabel}>COUNTDOWN TO THE BIG DAY</AppText>
+          {wedding.weddingDate ? (
+            <View style={styles.heroRow}>
+              <AppText style={[typography.serifDisplay, { color: colors.goldSoft }]}>
+                {daysLeft}
+              </AppText>
+              <AppText style={styles.heroDays}>days to go</AppText>
+            </View>
+          ) : (
+            <AppText style={[typography.serifTitle, { color: colors.goldSoft }]}>
+              Set your date
             </AppText>
-            <AppText style={styles.heroDays}>days to go</AppText>
-          </View>
+          )}
           <AppText style={styles.heroSub}>
-            {weddingDate} · {wedding.venue}, {wedding.city}
+            {[weddingDate, location].filter(Boolean).join(' · ')}
           </AppText>
         </GradientView>
 
@@ -115,9 +150,12 @@ export function HomeScreen(): React.JSX.Element {
 
         {/* Stat grid */}
         <View style={styles.grid}>
+          {/* With no budget set the API returns null percentUsed, so show
+              spend instead of a meaningless 0%. */}
           <StatCard
             label="Budget Used / Bajat"
-            value={`${budget.pctUsed}%`}
+            value={budget.allotted === null ? `Rs ${formatNumber(budget.spent)}` : `${budget.pctUsed}%`}
+            caption={budget.allotted === null ? 'no budget set' : undefined}
             onPress={() => goTab('Budget')}
             footer={<ProgressBar progress={budget.pctUsed} height={5} style={styles.statBar} />}
           />
@@ -150,29 +188,42 @@ export function HomeScreen(): React.JSX.Element {
         </View>
 
         {/* Functions */}
-        <SectionHeader title="Functions" style={styles.sectionSpaced} />
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.functionsRow}
-          contentContainerStyle={styles.functionsContent}>
-          {state.functions.map(fn => (
-            <Pressable
-              key={fn.id}
-              style={styles.functionCard}
-              onPress={() => nav.navigate('FunctionDetail', { functionId: fn.id })}>
-              <View style={[styles.functionDot, { backgroundColor: functionDotColor(fn.status) }]}>
-                {fn.status === 'done' ? (
-                  <Icon name="check" size={14} color={colors.textOnPrimary} />
-                ) : null}
-              </View>
-              <AppText style={styles.functionName}>{fn.name}</AppText>
-              <AppText variant="caption" color={colors.textMuted}>
-                {formatDate(fn.date, 'short')}
-              </AppText>
-            </Pressable>
-          ))}
-        </ScrollView>
+        <SectionHeader
+          title="Functions"
+          actionLabel="Add"
+          onAction={() => nav.navigate('AddFunction')}
+          style={styles.sectionSpaced}
+        />
+        {state.functions.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.functionsRow}
+            contentContainerStyle={styles.functionsContent}>
+            {state.functions.map(fn => (
+              <Pressable
+                key={fn.id}
+                style={styles.functionCard}
+                onPress={() => nav.navigate('FunctionDetail', { functionId: fn.id })}>
+                <View style={[styles.functionDot, { backgroundColor: functionDotColor(fn.status) }]}>
+                  {fn.status === 'done' ? (
+                    <Icon name="check" size={14} color={colors.textOnPrimary} />
+                  ) : null}
+                </View>
+                <AppText style={styles.functionName} numberOfLines={1}>
+                  {fn.name}
+                </AppText>
+                <AppText variant="caption" color={colors.textMuted}>
+                  {formatDate(fn.date, 'short', '—')}
+                </AppText>
+              </Pressable>
+            ))}
+          </ScrollView>
+        ) : (
+          <AppText variant="caption" color={colors.textMuted}>
+            No functions yet — add your Mehndi, Baraat and Walima to build the timeline.
+          </AppText>
+        )}
 
         {/* Reminders */}
         <SectionHeader
@@ -182,17 +233,23 @@ export function HomeScreen(): React.JSX.Element {
           style={styles.sectionSpaced}
         />
         <View style={styles.reminders}>
-          {state.reminders.slice(0, 2).map(rm => (
-            <View key={rm.id} style={styles.reminderCard}>
-              <View style={styles.reminderDot} />
-              <AppText variant="callout" style={styles.flexShrink}>
-                {rm.text}
-              </AppText>
-              <AppText variant="caption" color={colors.textMuted}>
-                {rm.date}
-              </AppText>
-            </View>
-          ))}
+          {reminders.length > 0 ? (
+            reminders.slice(0, 2).map(rm => (
+              <View key={rm.id} style={styles.reminderCard}>
+                <View style={styles.reminderDot} />
+                <AppText variant="callout" style={styles.flexShrink}>
+                  {rm.text}
+                </AppText>
+                <AppText variant="caption" color={colors.textMuted}>
+                  {rm.date}
+                </AppText>
+              </View>
+            ))
+          ) : (
+            <AppText variant="caption" color={colors.textMuted}>
+              Nothing needs attention right now.
+            </AppText>
+          )}
         </View>
 
         {/* More tools */}

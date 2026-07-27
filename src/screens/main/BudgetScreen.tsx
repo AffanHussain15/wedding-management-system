@@ -9,39 +9,73 @@ import {
   ProgressBar,
   StatusBadge,
   Fab,
+  LoadingState,
+  ErrorState,
+  EmptyState,
+  SectionHeader,
 } from '@components';
 import { useWedding, selectBudgetTotals } from '@store';
-import type { BudgetCategory } from '@types';
-import { colors, radius, spacing, typography, weight } from '@theme';
-import { formatNumber, percentage, getChartColor } from '@utils';
+import { canEdit } from '@services';
+import type { BudgetCategory, Expense } from '@types';
+import { colors, radius, spacing, statusColors, typography, weight } from '@theme';
+import { formatDate, formatNumber, percentage, getChartColor } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 export function BudgetScreen(): React.JSX.Element {
   const nav = useAppNavigation();
-  const { state } = useWedding();
+  const { state, loading, refreshing, error, refresh, hasData } = useWedding();
   const totals = selectBudgetTotals(state);
+
+  const mayEdit = canEdit(state.wedding.role);
+  const hasBudget = totals.allotted !== null;
 
   const segments = state.budget.map((c, i) => ({
     value: c.spent,
     color: getChartColor(i),
   }));
 
+  if (loading && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <LoadingState message="Loading budget…" />
+      </ScreenContainer>
+    );
+  }
+
+  if (error && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <ErrorState message={error} onRetry={refresh} />
+      </ScreenContainer>
+    );
+  }
+
   return (
     <View style={styles.screen}>
-      <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
+      <ScreenContainer
+        scroll
+        padded={false}
+        edges={['top']}
+        contentContainerStyle={styles.content}
+        onRefresh={refresh}
+        refreshing={refreshing}>
         <AppText style={[typography.serifValue, styles.title]}>Budget / Bajat</AppText>
 
         <Card style={styles.summary}>
           <DonutChart segments={segments} size={84} strokeWidth={14}>
             <AppText style={styles.donutLabel} color={colors.primary}>
-              {totals.pctUsed}%
+              {hasBudget ? `${totals.pctUsed}%` : '—'}
             </AppText>
           </DonutChart>
           <View style={styles.totals}>
+            {/*
+              The backend stores one wedding-level budget, so "Total budget" can
+              legitimately be unset — showing Rs 0 would read as a real figure.
+            */}
             <TotalRow
               label="Total budget"
-              value={`Rs ${formatNumber(totals.allotted)}`}
-              color={colors.text}
+              value={hasBudget ? `Rs ${formatNumber(totals.allotted as number)}` : 'Not set'}
+              color={hasBudget ? colors.text : colors.textMuted}
             />
             <TotalRow
               label="Spent"
@@ -50,19 +84,58 @@ export function BudgetScreen(): React.JSX.Element {
             />
             <TotalRow
               label="Remaining"
-              value={`Rs ${formatNumber(totals.remaining)}`}
-              color={colors.successText}
+              value={totals.remaining === null ? '—' : `Rs ${formatNumber(totals.remaining)}`}
+              color={
+                totals.remaining !== null && totals.remaining < 0
+                  ? colors.danger
+                  : colors.successText
+              }
             />
           </View>
         </Card>
 
-        <View style={styles.list}>
-          {state.budget.map((c, i) => (
-            <CategoryCard key={c.name} category={c} color={getChartColor(i)} />
-          ))}
-        </View>
+        {!hasBudget && mayEdit ? (
+          <AppText variant="caption" color={colors.textMuted} style={styles.hint}>
+            Set a total budget from your Profile to track how much is left.
+          </AppText>
+        ) : null}
+
+        {/* --- Spend by category --------------------------------------- */}
+        <SectionHeader title="By category" style={styles.section} />
+        {state.budget.length > 0 ? (
+          <View style={styles.list}>
+            {state.budget.map((c, i) => (
+              <CategoryCard
+                key={c.key}
+                category={c}
+                color={getChartColor(i)}
+                totalSpent={totals.spent}
+              />
+            ))}
+          </View>
+        ) : (
+          <EmptyState
+            icon="budget"
+            title="No expenses yet"
+            message="Log an expense, or record a vendor payment — those appear here automatically."
+            actionLabel={mayEdit ? 'Add Expense' : undefined}
+            onAction={mayEdit ? () => nav.navigate('AddExpense') : undefined}
+          />
+        )}
+
+        {/* --- Recent expenses ---------------------------------------- */}
+        {state.expenses.length > 0 ? (
+          <>
+            <SectionHeader title="Recent expenses" style={styles.section} />
+            <View style={styles.list}>
+              {state.expenses.slice(0, 10).map(expense => (
+                <ExpenseRow key={expense.id} expense={expense} />
+              ))}
+            </View>
+          </>
+        ) : null}
       </ScreenContainer>
-      <Fab onPress={() => nav.navigate('AddExpense')} />
+      {mayEdit ? <Fab onPress={() => nav.navigate('AddExpense')} /> : null}
     </View>
   );
 }
@@ -80,9 +153,21 @@ function TotalRow({ label, value, color }: { label: string; value: string; color
   );
 }
 
-function CategoryCard({ category, color }: { category: BudgetCategory; color: string }) {
-  const pct = percentage(category.spent, category.allotted);
-  const over = category.spent > category.allotted;
+/**
+ * The API has no per-category allocation — only a single wedding-level budget —
+ * so this shows each category's share of total spend rather than progress
+ * against a target that doesn't exist server-side.
+ */
+function CategoryCard({
+  category,
+  color,
+  totalSpent,
+}: {
+  category: BudgetCategory;
+  color: string;
+  totalSpent: number;
+}) {
+  const share = percentage(category.spent, totalSpent);
 
   return (
     <Card style={styles.category}>
@@ -93,22 +178,50 @@ function CategoryCard({ category, color }: { category: BudgetCategory; color: st
             {category.name}
           </AppText>
         </View>
-        {over ? <StatusBadge label="Overspent" bg={colors.dangerBg} color={colors.danger} /> : null}
+        <AppText variant="caption" color={colors.textSecondary}>
+          {share}% of spend
+        </AppText>
       </View>
       <View style={styles.categoryMeta}>
-        <AppText variant="caption" color={colors.textSecondary}>
-          Rs {formatNumber(category.spent)} of {formatNumber(category.allotted)}
-        </AppText>
-        <AppText variant="caption" color={colors.textSecondary}>
-          {pct}%
+        <AppText variant="caption" color={colors.text}>
+          Rs {formatNumber(category.spent)}
         </AppText>
       </View>
       <ProgressBar
-        progress={pct}
+        progress={share}
         height={6}
-        color={over ? colors.danger : color}
+        color={color}
         trackColor="rgba(109,15,43,0.08)"
       />
+    </Card>
+  );
+}
+
+function ExpenseRow({ expense }: { expense: Expense }): React.JSX.Element {
+  return (
+    <Card style={styles.expense}>
+      <View style={styles.expenseBody}>
+        <AppText variant="label" color={colors.text} numberOfLines={1}>
+          {expense.title}
+        </AppText>
+        <AppText variant="caption" color={colors.textSecondary}>
+          {expense.categoryName} · {formatDate(expense.date, 'monthDay', '—')} · {expense.method}
+        </AppText>
+      </View>
+      <View style={styles.expenseRight}>
+        <AppText variant="label" color={colors.text}>
+          Rs {formatNumber(expense.amount)}
+        </AppText>
+        {/* Vendor-synced items are read-only server-side; label them so the
+            missing edit/delete affordance makes sense. */}
+        {expense.fromVendorPayment ? (
+          <StatusBadge
+            label="Vendor"
+            bg={statusColors.advance.bg}
+            color={statusColors.advance.text}
+          />
+        ) : null}
+      </View>
     </Card>
   );
 }
@@ -130,7 +243,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.lg,
     borderRadius: radius.xl,
-    marginBottom: spacing.base,
   },
   donutLabel: {
     fontSize: 13,
@@ -146,6 +258,12 @@ const styles = StyleSheet.create({
   },
   totalValue: {
     ...weight('bold'),
+  },
+  hint: {
+    marginTop: spacing.sm,
+  },
+  section: {
+    marginTop: spacing.lg,
   },
   list: {
     gap: spacing.md,
@@ -163,6 +281,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    flexShrink: 1,
   },
   dot: {
     width: 9,
@@ -173,5 +292,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: spacing.sm,
+  },
+  expense: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    borderRadius: radius.md,
+  },
+  expenseBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  expenseRight: {
+    alignItems: 'flex-end',
+    gap: spacing.xxs,
   },
 });

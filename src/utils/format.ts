@@ -57,35 +57,65 @@ export const getInitials = (name: string): string =>
     .join('')
     .toUpperCase();
 
-const parseDate = (iso: string): Date => {
+/**
+ * "YYYY-MM-DD" → local Date, or null when absent/malformed. API dates can be
+ * null (an unset wedding date), which reaches here as '', so every caller has
+ * to tolerate a missing value rather than rendering "January 1, 1900".
+ */
+const parseDate = (iso: string): Date | null => {
+  if (!iso) return null;
   const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y, (m ?? 1) - 1, d ?? 1);
+  if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return null;
+  const date = new Date(y, m - 1, d);
+  return Number.isNaN(date.getTime()) ? null : date;
 };
 
 /**
  * "2027-02-14" → "February 14, 2027" (long), "February 14" (monthDay),
- * or "Feb 14" (short).
+ * or "Feb 14" (short). Returns `fallback` for an empty or invalid date.
  */
-export const formatDate = (iso: string, style: 'long' | 'short' | 'monthDay' = 'long'): string => {
+export const formatDate = (
+  iso: string,
+  style: 'long' | 'short' | 'monthDay' = 'long',
+  fallback = 'Date not set',
+): string => {
   const d = parseDate(iso);
+  if (!d) return fallback;
   const month = (style === 'short' ? MONTHS_SHORT : MONTHS_LONG)[d.getMonth()];
   if (style === 'long') return `${month} ${d.getDate()}, ${d.getFullYear()}`;
   return `${month} ${d.getDate()}`;
 };
 
-/** Whole days from today until the given ISO date (never negative). */
+/** Whole days from today until the given ISO date (never negative; 0 if unset). */
 export const daysUntil = (iso: string): number => {
+  const target = parseDate(iso);
+  if (!target) return 0;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  return Math.max(0, Math.ceil((parseDate(iso).getTime() - today.getTime()) / MS_PER_DAY));
+  return Math.max(0, Math.ceil((target.getTime() - today.getTime()) / MS_PER_DAY));
 };
 
-/** "today" | "tomorrow" | "in N days". */
+/** "today" | "tomorrow" | "in N days", or '' when the date is unset. */
 export const relativeDay = (iso: string): string => {
+  if (!parseDate(iso)) return '';
   const days = daysUntil(iso);
   if (days === 0) return 'today';
   if (days === 1) return 'tomorrow';
   return `in ${days} days`;
+};
+
+/** Today as "YYYY-MM-DD", for date defaults in forms. */
+export const todayIso = (): string => {
+  const now = new Date();
+  const month = `${now.getMonth() + 1}`.padStart(2, '0');
+  const day = `${now.getDate()}`.padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
+};
+
+/** "YYYY-MM-DD" → full ISO timestamp for the API, or undefined when empty. */
+export const toApiDate = (iso: string): string | undefined => {
+  const d = parseDate(iso);
+  return d ? d.toISOString() : undefined;
 };
 
 export const clamp = (value: number, min = 0, max = 100): number =>

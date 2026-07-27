@@ -1,9 +1,28 @@
-import React from 'react';
+/**
+ * Reminders.
+ *
+ * The backend's notifications and background-jobs modules aren't implemented
+ * yet — there is no reminders endpoint to call — so rather than invent rows,
+ * this derives the same signals client-side from data the API *does* return:
+ * vendor balances due, upcoming functions, and overdue or due-soon tasks.
+ */
+
+import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { ScreenContainer, AppText, Card, BackButton, Icon, type IconName } from '@components';
-import { useWedding } from '@store';
-import type { Reminder, ReminderType } from '@types';
+import {
+  ScreenContainer,
+  AppText,
+  Card,
+  BackButton,
+  Icon,
+  EmptyState,
+  LoadingState,
+  ErrorState,
+  type IconName,
+} from '@components';
+import { useWedding, selectReminders, type DerivedReminder } from '@store';
+import type { ReminderType } from '@types';
 import { colors, radius, spacing, typography } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
 
@@ -15,23 +34,61 @@ const META: Record<ReminderType, { icon: IconName; bg: string; color: string }> 
 
 export function RemindersScreen(): React.JSX.Element {
   const nav = useAppNavigation();
-  const { state } = useWedding();
+  const { state, loading, refreshing, error, refresh, hasData } = useWedding();
+
+  // Derived in a selector so the Home screen's preview and this list can never
+  // disagree about what needs attention.
+  const reminders = useMemo(() => selectReminders(state), [state]);
+
+  if (loading && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <LoadingState message="Loading reminders…" />
+      </ScreenContainer>
+    );
+  }
+
+  if (error && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <ErrorState message={error} onRetry={refresh} />
+      </ScreenContainer>
+    );
+  }
 
   return (
-    <ScreenContainer scroll padded={false} edges={['top']} contentContainerStyle={styles.content}>
+    <ScreenContainer
+      scroll
+      padded={false}
+      edges={['top']}
+      contentContainerStyle={styles.content}
+      onRefresh={refresh}
+      refreshing={refreshing}>
       <BackButton onPress={() => nav.goBack()} />
       <AppText style={[typography.serifValue, styles.title]}>Reminders & Alerts</AppText>
+      <AppText variant="caption" color={colors.textMuted} style={styles.note}>
+        Worked out on this device from your vendors, functions and tasks. Push and
+        email reminders arrive when the backend's notifications module ships.
+      </AppText>
 
-      <View style={styles.list}>
-        {state.reminders.map(r => (
-          <ReminderRow key={r.id} reminder={r} />
-        ))}
-      </View>
+      {reminders.length > 0 ? (
+        <View style={styles.list}>
+          {reminders.map(reminder => (
+            <ReminderRow key={reminder.id} reminder={reminder} />
+          ))}
+        </View>
+      ) : (
+        <EmptyState
+          icon="bell"
+          title="Nothing needs attention"
+          message="No outstanding balances, upcoming functions or tasks due soon."
+        />
+      )}
     </ScreenContainer>
   );
 }
 
-function ReminderRow({ reminder }: { reminder: Reminder }) {
+function ReminderRow({ reminder }: { reminder: DerivedReminder }) {
   const meta = META[reminder.type];
 
   return (
@@ -43,7 +100,10 @@ function ReminderRow({ reminder }: { reminder: Reminder }) {
         <AppText variant="label" color={colors.text}>
           {reminder.text}
         </AppText>
-        <AppText variant="caption" color={colors.textSecondary} style={styles.sub}>
+        <AppText
+          variant="caption"
+          color={reminder.date === 'Overdue' ? colors.danger : colors.textSecondary}
+          style={styles.sub}>
           {reminder.date}
         </AppText>
       </View>
@@ -59,6 +119,9 @@ const styles = StyleSheet.create({
   },
   title: {
     marginTop: spacing.base,
+    marginBottom: spacing.xs,
+  },
+  note: {
     marginBottom: spacing.lg,
   },
   list: {

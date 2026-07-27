@@ -1,9 +1,13 @@
 export { SplashScreen } from './onboarding/SplashScreen';
+export { ProfileErrorScreen } from './onboarding/ProfileErrorScreen';
 export { OnboardingScreen } from './onboarding/OnboardingScreen';
 export { SignupScreen } from './onboarding/SignupScreen';
 export { LoginScreen } from './onboarding/LoginScreen';
+export { ForgotPasswordScreen } from './onboarding/ForgotPasswordScreen';
+export { ResetPasswordScreen } from './onboarding/ResetPasswordScreen';
 export { FamilyLinkScreen } from './onboarding/FamilyLinkScreen';
 export { SetupScreen } from './onboarding/SetupScreen';
+export { SelectWeddingScreen } from './onboarding/SelectWeddingScreen';
 
 export { HomeScreen } from './main/HomeScreen';
 export { VendorsScreen } from './main/VendorsScreen';
@@ -16,7 +20,9 @@ export { AddVendorScreen } from './detail/AddVendorScreen';
 export { AddGuestScreen } from './detail/AddGuestScreen';
 export { AddExpenseScreen } from './detail/AddExpenseScreen';
 export { FunctionDetailScreen } from './detail/FunctionDetailScreen';
+export { AddFunctionScreen } from './detail/AddFunctionScreen';
 export { RemindersScreen } from './detail/RemindersScreen';
 export { TasksScreen } from './detail/TasksScreen';
+export { AddTaskScreen } from './detail/AddTaskScreen';
 export { SeatingScreen } from './detail/SeatingScreen';
 export { ProfileScreen } from './detail/ProfileScreen';

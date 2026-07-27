@@ -8,6 +8,10 @@ export interface StatusStyle {
   text: string;
 }
 
+/**
+ * Local mirror of the backend's derived vendor status, for optimistic UI only.
+ * The server value returned by the API is authoritative.
+ */
 export const derivePaymentStatus = (cost: number, advance: number): PaymentStatus => {
   if (cost > 0 && advance >= cost) return 'Paid';
   if (advance > 0) return 'Advance';
@@ -42,8 +46,12 @@ export const functionStatusStyle = (status: FunctionStatus): StatusStyle => {
   switch (status) {
     case 'done':
       return statusColors.done;
-    case 'upcoming':
+    case 'next':
       return statusColors.upcoming;
+    case 'postponed':
+      return statusColors.advance;
+    case 'cancelled':
+      return statusColors.notComing;
     default:
       return statusColors.planned;
   }
@@ -53,10 +61,14 @@ export const functionStatusLabel = (status: FunctionStatus): string => {
   switch (status) {
     case 'done':
       return 'Done';
-    case 'upcoming':
-      return 'Upcoming';
+    case 'next':
+      return 'Next Up';
+    case 'postponed':
+      return 'Postponed';
+    case 'cancelled':
+      return 'Cancelled';
     default:
-      return 'Planned';
+      return 'Upcoming';
   }
 };
 
@@ -65,8 +77,12 @@ export const functionDotColor = (status: FunctionStatus): string => {
   switch (status) {
     case 'done':
       return colors.success;
-    case 'upcoming':
+    case 'next':
       return colors.accent;
+    case 'postponed':
+      return colors.primaryLight;
+    case 'cancelled':
+      return colors.danger;
     default:
       return '#D9CBAE';
   }

@@ -1,26 +1,44 @@
 /**
- * Root stack: onboarding/auth flow (no header) → Main tabs → detail screens
- * (with header, pushed over the tabs). Detail "Add" screens present modally.
+ * Root stack, gated on auth state.
+ *
+ * Rather than one flat stack anything can navigate into, exactly one of four
+ * trees is mounted at a time:
+ *
+ *   1. session still loading  → SplashScreen (rendered directly, not a route)
+ *   2. signed out             → onboarding / login / password-reset
+ *   3. signed in, no wedding  → wedding picker or setup wizard
+ *   4. signed in with wedding → the app
+ *
+ * Because the signed-out routes don't exist while authenticated (and vice
+ * versa), logging in or out swaps the whole tree — no `reset()` calls, and no
+ * way to reach an app screen without a session.
  */
 
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { colors, typography } from '@theme';
+import { useAuth } from '@store';
 import {
   SplashScreen,
+  ProfileErrorScreen,
   OnboardingScreen,
   SignupScreen,
   LoginScreen,
+  ForgotPasswordScreen,
+  ResetPasswordScreen,
   FamilyLinkScreen,
   SetupScreen,
+  SelectWeddingScreen,
   VendorDetailScreen,
   AddVendorScreen,
   AddGuestScreen,
   AddExpenseScreen,
   FunctionDetailScreen,
+  AddFunctionScreen,
   RemindersScreen,
   TasksScreen,
+  AddTaskScreen,
   SeatingScreen,
   ProfileScreen,
 } from '@screens';
@@ -31,9 +49,24 @@ import type { RootStackParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator(): React.JSX.Element {
+  const { ready, isAuthenticated, needsWeddingSetup, activeWeddingId, weddings, profileError } =
+    useAuth();
+
+  // Hold the branded splash until the stored session has been read, so an
+  // already-signed-in user never sees the login screen flash by.
+  if (!ready) return <SplashScreen />;
+
+  // Signed in, but we couldn't load which weddings they belong to and have no
+  // remembered one either. Offer a retry rather than dropping into the setup
+  // wizard, which would invite them to create a duplicate wedding.
+  if (isAuthenticated && profileError && !activeWeddingId) {
+    return <ProfileErrorScreen />;
+  }
+
+  const noWeddingSelected = needsWeddingSetup || !activeWeddingId;
+
   return (
     <Stack.Navigator
-      initialRouteName="Splash"
       screenOptions={{
         headerStyle: { backgroundColor: colors.primary },
         headerTintColor: colors.textOnPrimary,
@@ -41,38 +74,70 @@ export function RootNavigator(): React.JSX.Element {
         headerShadowVisible: false,
         contentStyle: { backgroundColor: colors.background },
       }}>
-      <Stack.Group screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Splash" component={SplashScreen} />
-        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-        <Stack.Screen name="Signup" component={SignupScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="FamilyLink" component={FamilyLinkScreen} />
-        <Stack.Screen name="Setup" component={SetupScreen} />
-        <Stack.Screen name="Main" component={MainTabNavigator} />
-      </Stack.Group>
+      {!isAuthenticated ? (
+        <Stack.Group screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          <Stack.Screen name="Signup" component={SignupScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+        </Stack.Group>
+      ) : noWeddingSelected ? (
+        <Stack.Group screenOptions={{ headerShown: false }}>
+          {/*
+            Signed in with nothing selected. Existing members get the picker
+            first; a brand-new account goes straight into setup.
+          */}
+          {weddings.length > 0 ? (
+            <Stack.Screen name="SelectWedding" component={SelectWeddingScreen} />
+          ) : null}
+          <Stack.Screen name="Setup" component={SetupScreen} />
+          <Stack.Screen name="FamilyLink" component={FamilyLinkScreen} />
+        </Stack.Group>
+      ) : (
+        <>
+          <Stack.Group screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Main" component={MainTabNavigator} />
+            <Stack.Screen name="VendorDetail" component={VendorDetailScreen} />
+            <Stack.Screen name="FunctionDetail" component={FunctionDetailScreen} />
+            <Stack.Screen name="Reminders" component={RemindersScreen} />
+            <Stack.Screen name="Tasks" component={TasksScreen} />
+            <Stack.Screen name="Seating" component={SeatingScreen} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
+            <Stack.Screen name="FamilyLink" component={FamilyLinkScreen} />
+            <Stack.Screen name="SelectWedding" component={SelectWeddingScreen} />
+            <Stack.Screen name="Setup" component={SetupScreen} />
+          </Stack.Group>
 
-      <Stack.Group screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="VendorDetail" component={VendorDetailScreen} />
-        <Stack.Screen name="FunctionDetail" component={FunctionDetailScreen} />
-        <Stack.Screen name="Reminders" component={RemindersScreen} />
-        <Stack.Screen name="Tasks" component={TasksScreen} />
-        <Stack.Screen name="Seating" component={SeatingScreen} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
-      </Stack.Group>
-
-      <Stack.Group screenOptions={{ presentation: 'modal' }}>
-        <Stack.Screen
-          name="AddVendor"
-          component={AddVendorScreen}
-          options={{ title: 'Add Vendor' }}
-        />
-        <Stack.Screen name="AddGuest" component={AddGuestScreen} options={{ title: 'Add Guest' }} />
-        <Stack.Screen
-          name="AddExpense"
-          component={AddExpenseScreen}
-          options={{ title: 'Add Expense' }}
-        />
-      </Stack.Group>
+          <Stack.Group screenOptions={{ presentation: 'modal' }}>
+            <Stack.Screen
+              name="AddVendor"
+              component={AddVendorScreen}
+              options={{ title: 'Add Vendor' }}
+            />
+            <Stack.Screen
+              name="AddGuest"
+              component={AddGuestScreen}
+              options={{ title: 'Add Guest' }}
+            />
+            <Stack.Screen
+              name="AddExpense"
+              component={AddExpenseScreen}
+              options={{ title: 'Add Expense' }}
+            />
+            <Stack.Screen
+              name="AddFunction"
+              component={AddFunctionScreen}
+              options={{ title: 'Add Function' }}
+            />
+            <Stack.Screen
+              name="AddTask"
+              component={AddTaskScreen}
+              options={{ title: 'Add Task' }}
+            />
+          </Stack.Group>
+        </>
+      )}
     </Stack.Navigator>
   );
 }

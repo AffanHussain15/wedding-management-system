@@ -1,127 +1,105 @@
 /**
- * Pure reducer. Id generation and status derivation happen in the action
- * creators (see WeddingContext), so this stays deterministic and testable.
+ * Pure reducer over `WeddingState`. Network calls, id generation and API
+ * mapping all happen in `WeddingContext`, so this stays deterministic and
+ * testable.
  */
 
-import {
-  seedWedding,
-  seedVendors,
-  seedGuests,
-  seedBudget,
-  seedFunctions,
-  seedTasks,
-  seedReminders,
-  seedTables,
-} from '@data';
-import { GUEST_GROUPS } from '@constants';
-import type { GuestGroup } from '@types';
-import type { WeddingState, WeddingAction } from './types';
+import type { SeatingTable, WeddingDetails } from '@types';
+import type { WeddingAction, WeddingState } from './types';
+
+const emptyWedding: WeddingDetails = {
+  id: null,
+  bride: '',
+  groom: '',
+  weddingDate: '',
+  city: '',
+  venue: '',
+  totalBudget: null,
+  estimatedGuests: null,
+  role: null,
+};
 
 export const initialState: WeddingState = {
-  wedding: seedWedding,
-  vendors: seedVendors,
-  guests: seedGuests,
-  budget: seedBudget,
-  functions: seedFunctions,
-  tasks: seedTasks,
-  reminders: seedReminders,
-  tables: seedTables,
+  wedding: emptyWedding,
+  vendors: [],
+  budget: [],
+  budgetOverview: {
+    totalBudget: null,
+    totalSpent: 0,
+    remaining: null,
+    percentUsed: null,
+  },
+  expenses: [],
+  guests: [],
+  functions: [],
+  tasks: [],
+  members: [],
+  reminders: [],
+  tables: [],
 };
 
-const nextGroup = (group: GuestGroup): GuestGroup => {
-  const idx = GUEST_GROUPS.indexOf(group);
-  return GUEST_GROUPS[(idx + 1) % GUEST_GROUPS.length];
-};
+/**
+ * Drops guests that no longer exist server-side from local seating tables, so
+ * a refresh can't leave a table pointing at a deleted guest. Returns the same
+ * array reference when nothing changed, to keep memoized rows from re-rendering.
+ */
+function pruneTables(tables: SeatingTable[], guestIds: Set<string>): SeatingTable[] {
+  let changed = false;
+  const next = tables.map(table => {
+    const kept = table.guestIds.filter(id => guestIds.has(id));
+    if (kept.length === table.guestIds.length) return table;
+    changed = true;
+    return { ...table, guestIds: kept };
+  });
+  return changed ? next : tables;
+}
 
 export function weddingReducer(state: WeddingState, action: WeddingAction): WeddingState {
   switch (action.type) {
-    case 'ADD_VENDOR':
-      return { ...state, vendors: [...state.vendors, action.vendor] };
-
-    case 'UPDATE_VENDOR':
+    case 'HYDRATE': {
+      const { snapshot } = action;
       return {
         ...state,
-        vendors: state.vendors.map(v => (v.id === action.id ? { ...v, ...action.changes } : v)),
+        ...snapshot,
+        tables: pruneTables(state.tables, new Set(snapshot.guests.map(g => g.id))),
       };
+    }
 
-    case 'REMOVE_VENDOR':
+    case 'SET_WEDDING':
+      return { ...state, wedding: action.wedding };
+
+    case 'SET_VENDORS':
+      return { ...state, vendors: action.vendors };
+
+    case 'SET_GUESTS':
       return {
         ...state,
-        vendors: state.vendors.filter(v => v.id !== action.id),
+        guests: action.guests,
+        tables: pruneTables(state.tables, new Set(action.guests.map(g => g.id))),
       };
 
-    case 'ADD_GUEST':
-      return { ...state, guests: [...state.guests, action.guest] };
-
-    case 'SET_GUEST_RSVP':
+    case 'SET_BUDGET':
       return {
         ...state,
-        guests: state.guests.map(g => (g.id === action.id ? { ...g, rsvp: action.rsvp } : g)),
+        budget: action.budget,
+        budgetOverview: action.overview,
+        expenses: action.expenses,
       };
 
-    case 'CYCLE_GUEST_GROUP':
-      return {
-        ...state,
-        guests: state.guests.map(g =>
-          g.id === action.id ? { ...g, group: nextGroup(g.group) } : g,
-        ),
-      };
+    case 'SET_FUNCTIONS':
+      return { ...state, functions: action.functions };
 
-    case 'REMOVE_GUEST':
-      return {
-        ...state,
-        guests: state.guests.filter(g => g.id !== action.id),
-        // Keep seating consistent: drop the guest from any table.
-        tables: state.tables.map(t =>
-          t.guestIds.includes(action.id)
-            ? { ...t, guestIds: t.guestIds.filter(gid => gid !== action.id) }
-            : t,
-        ),
-      };
+    case 'SET_TASKS':
+      return { ...state, tasks: action.tasks };
 
-    case 'ADD_EXPENSE':
-      return {
-        ...state,
-        budget: state.budget.map(c =>
-          c.name === action.category ? { ...c, spent: c.spent + action.amount } : c,
-        ),
-      };
-
-    case 'ADD_TASK':
-      return { ...state, tasks: [...state.tasks, action.task] };
-
-    case 'TOGGLE_TASK':
-      return {
-        ...state,
-        tasks: state.tasks.map(t => (t.id === action.id ? { ...t, done: !t.done } : t)),
-      };
-
-    case 'TOGGLE_FUNCTION_SELECTED':
-      return {
-        ...state,
-        wedding: {
-          ...state.wedding,
-          functionsSelected: {
-            ...state.wedding.functionsSelected,
-            [action.name]: !state.wedding.functionsSelected[action.name],
-          },
-        },
-      };
-
-    case 'UPDATE_WEDDING':
-      return {
-        ...state,
-        wedding: { ...state.wedding, ...action.changes },
-      };
+    case 'SET_MEMBERS':
+      return { ...state, members: action.members };
 
     case 'ADD_TABLE':
       return { ...state, tables: [...state.tables, action.table] };
 
     case 'REMOVE_TABLE':
-      return {
-        ...state,
-        tables: state.tables.filter(t => t.id !== action.id),
-      };
+      return { ...state, tables: state.tables.filter(t => t.id !== action.id) };
 
     case 'RENAME_TABLE':
       return {
@@ -130,18 +108,15 @@ export function weddingReducer(state: WeddingState, action: WeddingAction): Wedd
       };
 
     case 'ASSIGN_GUEST':
-      // A guest sits at exactly one table: remove from all, then add to target.
       return {
         ...state,
         tables: state.tables.map(t => {
-          if (t.id === action.tableId) {
-            return t.guestIds.includes(action.guestId)
-              ? t
-              : { ...t, guestIds: [...t.guestIds, action.guestId] };
+          // Remove from every other table first, so a guest is seated once.
+          const without = t.guestIds.filter(id => id !== action.guestId);
+          if (t.id !== action.tableId) {
+            return without.length === t.guestIds.length ? t : { ...t, guestIds: without };
           }
-          return t.guestIds.includes(action.guestId)
-            ? { ...t, guestIds: t.guestIds.filter(gid => gid !== action.guestId) }
-            : t;
+          return { ...t, guestIds: [...without, action.guestId] };
         }),
       };
 
@@ -150,7 +125,7 @@ export function weddingReducer(state: WeddingState, action: WeddingAction): Wedd
         ...state,
         tables: state.tables.map(t =>
           t.guestIds.includes(action.guestId)
-            ? { ...t, guestIds: t.guestIds.filter(gid => gid !== action.guestId) }
+            ? { ...t, guestIds: t.guestIds.filter(id => id !== action.guestId) }
             : t,
         ),
       };

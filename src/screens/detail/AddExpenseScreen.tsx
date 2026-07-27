@@ -1,44 +1,90 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { ScreenContainer, AppText, Button, Input, FilterChip } from '@components';
+import {
+  ScreenContainer,
+  AppText,
+  Button,
+  Input,
+  FilterChip,
+  FieldError,
+  FormBanner,
+} from '@components';
 import { useWedding } from '@store';
-import { EXPENSE_TYPES } from '@constants';
-import type { ExpenseType } from '@types';
+import { BUDGET_CATEGORIES, PAYMENT_METHODS } from '@constants';
+import type { BudgetCategoryName, PaymentMethodLabel } from '@types';
 import { colors, spacing } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
 
 export function AddExpenseScreen(): React.JSX.Element {
   const nav = useAppNavigation();
-  const { state, actions } = useWedding();
+  const { actions } = useWedding();
 
-  const [category, setCategory] = useState(state.budget[0]?.name ?? '');
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState<BudgetCategoryName>('Catering');
   const [amount, setAmount] = useState('');
-  const [type, setType] = useState<ExpenseType>('Advance');
+  const [method, setMethod] = useState<PaymentMethodLabel>('Cash');
+  const [notes, setNotes] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [banner, setBanner] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  const save = () => {
-    actions.addExpense(category, parseFloat(amount) || 0);
+  const save = async () => {
+    const next: Record<string, string> = {};
+    // The API requires a 2–150 character title and a positive amount.
+    if (title.trim().length < 2) next.title = 'Enter a title of at least 2 characters.';
+    const value = Number(amount);
+    if (!(value > 0)) next.amount = 'Enter an amount greater than zero.';
+    setErrors(next);
+    setBanner(null);
+    if (Object.keys(next).length > 0) return;
+
+    setSaving(true);
+    const result = await actions.addExpense({
+      category,
+      title: title.trim(),
+      amount: value,
+      method,
+      ...(notes.trim() ? { notes: notes.trim() } : {}),
+    });
+    setSaving(false);
+
+    if (!result.ok) {
+      setErrors(result.error.fieldErrors);
+      setBanner(result.message);
+      return;
+    }
     nav.goBack();
   };
 
   return (
     <ScreenContainer scroll padded={false} contentContainerStyle={styles.content}>
       <View style={styles.form}>
+        <FormBanner message={banner} />
+
+        <Input
+          label="What was it for?"
+          placeholder="e.g. Mehndi stage decor"
+          value={title}
+          onChangeText={setTitle}
+          autoCapitalize="sentences"
+          editable={!saving}
+        />
+        <FieldError message={errors.title} />
+
         <View>
           <AppText variant="label" color={colors.textSecondary} style={styles.label}>
             Category
           </AppText>
+          {/* Fixed server-side enum, so every option is always offered — not
+              only the categories that already have spend against them. */}
           <View style={styles.chips}>
-            {state.budget.map(c => (
-              <FilterChip
-                key={c.name}
-                label={c.name}
-                active={c.name === category}
-                onPress={() => setCategory(c.name)}
-              />
+            {BUDGET_CATEGORIES.map(c => (
+              <FilterChip key={c} label={c} active={c === category} onPress={() => setCategory(c)} />
             ))}
           </View>
         </View>
+        <FieldError message={errors.category} />
 
         <Input
           label="Amount (Rs)"
@@ -46,27 +92,38 @@ export function AddExpenseScreen(): React.JSX.Element {
           value={amount}
           onChangeText={setAmount}
           keyboardType="number-pad"
+          editable={!saving}
         />
+        <FieldError message={errors.amount} />
 
         <View>
           <AppText variant="label" color={colors.textSecondary} style={styles.label}>
-            Type
+            Paid by
           </AppText>
-          <View style={styles.typeRow}>
-            {EXPENSE_TYPES.map(t => (
+          <View style={styles.chipRow}>
+            {PAYMENT_METHODS.map(m => (
               <FilterChip
-                key={t}
-                label={t}
-                active={t === type}
-                onPress={() => setType(t)}
-                style={styles.typeChip}
+                key={m}
+                label={m}
+                active={m === method}
+                onPress={() => setMethod(m)}
+                style={styles.chip}
               />
             ))}
           </View>
         </View>
+
+        <Input
+          label="Notes (optional)"
+          placeholder="Anything worth remembering"
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+          editable={!saving}
+        />
       </View>
 
-      <Button label="Save Expense" onPress={save} style={styles.cta} />
+      <Button label="Save Expense" onPress={save} loading={saving} style={styles.cta} />
     </ScreenContainer>
   );
 }
@@ -88,12 +145,13 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: spacing.sm,
   },
-  typeRow: {
+  chipRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm,
   },
-  typeChip: {
-    flex: 1,
+  chip: {
+    flexGrow: 1,
   },
   cta: {
     marginTop: spacing.xl,

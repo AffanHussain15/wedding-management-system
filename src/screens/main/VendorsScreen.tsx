@@ -10,10 +10,14 @@ import {
   StatusBadge,
   Avatar,
   Fab,
+  LoadingState,
+  ErrorState,
+  EmptyState,
 } from '@components';
 import { useWedding } from '@store';
+import { canEdit } from '@services';
 import { VENDOR_FILTERS } from '@constants';
-import type { PaymentStatus, Vendor } from '@types';
+import type { Vendor } from '@types';
 import { colors, radius, spacing, typography } from '@theme';
 import { paymentStatusStyle, balanceOf, formatNumber } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
@@ -22,19 +26,39 @@ type Filter = (typeof VENDOR_FILTERS)[number];
 
 export function VendorsScreen(): React.JSX.Element {
   const nav = useAppNavigation();
-  const { state } = useWedding();
+  const { state, loading, error, refresh, hasData } = useWedding();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<Filter>('All');
 
-  const vendors = useMemo(
-    () =>
-      state.vendors.filter(
-        v =>
-          (filter === 'All' || v.status === filter) &&
-          v.name.toLowerCase().includes(search.toLowerCase()),
-      ),
-    [state.vendors, filter, search],
-  );
+  // Filtered locally: the full list is already in the store, and status is a
+  // derived value the API would only recompute the same way.
+  const vendors = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return state.vendors.filter(
+      v =>
+        (filter === 'All' || v.status === filter) &&
+        (query === '' || v.name.toLowerCase().includes(query)),
+    );
+  }, [state.vendors, filter, search]);
+
+  const mayAdd = canEdit(state.wedding.role);
+  const noVendorsAtAll = state.vendors.length === 0;
+
+  if (loading && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <LoadingState message="Loading vendors…" />
+      </ScreenContainer>
+    );
+  }
+
+  if (error && !hasData) {
+    return (
+      <ScreenContainer edges={['top']}>
+        <ErrorState message={error} onRetry={refresh} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <View style={styles.screen}>
@@ -70,22 +94,34 @@ export function VendorsScreen(): React.JSX.Element {
                 onPress={() => nav.navigate('VendorDetail', { vendorId: v.id })}
               />
             ))}
+
             {vendors.length === 0 ? (
-              <AppText variant="callout" color={colors.textMuted} center style={styles.empty}>
-                No vendors match your search.
-              </AppText>
+              noVendorsAtAll ? (
+                <EmptyState
+                  icon="vendors"
+                  title="No vendors yet"
+                  message="Add your caterer, photographer and decorator to start tracking payments."
+                  actionLabel={mayAdd ? 'Add Vendor' : undefined}
+                  onAction={mayAdd ? () => nav.navigate('AddVendor') : undefined}
+                />
+              ) : (
+                <AppText variant="callout" color={colors.textMuted} center style={styles.empty}>
+                  No vendors match your search.
+                </AppText>
+              )
             ) : null}
           </View>
         </ScrollView>
       </ScreenContainer>
-      <Fab onPress={() => nav.navigate('AddVendor')} />
+      {/* Creating a vendor is OWNER/CO_OWNER only, so don't offer it otherwise. */}
+      {mayAdd ? <Fab onPress={() => nav.navigate('AddVendor')} /> : null}
     </View>
   );
 }
 
 function VendorRow({ vendor, onPress }: { vendor: Vendor; onPress: () => void }) {
-  const status = paymentStatusStyle(vendor.status as PaymentStatus);
-  const rating = vendor.rating > 0 ? `${vendor.rating.toFixed(1)} ★` : 'New';
+  const status = paymentStatusStyle(vendor.status);
+  const balance = balanceOf(vendor.cost, vendor.advance);
 
   return (
     <Card onPress={onPress} style={styles.row}>
@@ -98,14 +134,28 @@ function VendorRow({ vendor, onPress }: { vendor: Vendor; onPress: () => void })
           <StatusBadge label={vendor.status} bg={status.bg} color={status.text} />
         </View>
         <AppText variant="caption" color={colors.textSecondary} style={styles.rowMeta}>
-          {vendor.category} · {rating}
+          {vendor.category}
         </AppText>
-        <AppText variant="caption" color={colors.textSecondary}>
-          Balance:{' '}
-          <AppText variant="caption" color={colors.text}>
-            Rs {formatNumber(balanceOf(vendor.cost, vendor.advance))}
+        {/* A vendor with no agreed price has no meaningful balance to show. */}
+        {vendor.cost > 0 ? (
+          <AppText variant="caption" color={colors.textSecondary}>
+            Balance:{' '}
+            <AppText variant="caption" color={colors.text}>
+              Rs {formatNumber(balance)}
+            </AppText>
           </AppText>
-        </AppText>
+        ) : vendor.advance > 0 ? (
+          <AppText variant="caption" color={colors.textSecondary}>
+            Paid:{' '}
+            <AppText variant="caption" color={colors.text}>
+              Rs {formatNumber(vendor.advance)}
+            </AppText>
+          </AppText>
+        ) : (
+          <AppText variant="caption" color={colors.textMuted}>
+            No price set
+          </AppText>
+        )}
       </View>
     </Card>
   );

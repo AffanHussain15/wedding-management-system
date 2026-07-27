@@ -1,8 +1,13 @@
 /**
- * Client-side id generator. Starts above the seed-record id range (1–12) so
- * generated ids never collide. Kept out of the reducer to keep it pure.
+ * Client-side id generator for records that exist only on the device (seating
+ * tables, local reminders). Server records always carry a UUID from the API,
+ * so these are prefixed to make the origin obvious in logs and to guarantee
+ * they can never collide with a server id.
  */
 
-let counter = 1000;
+let counter = 0;
 
-export const nextId = (): number => (counter += 1);
+export const nextId = (): string => `local-${(counter += 1)}`;
+
+/** True for an id from `nextId`, i.e. a record never persisted server-side. */
+export const isLocalId = (id: string): boolean => id.startsWith('local-');

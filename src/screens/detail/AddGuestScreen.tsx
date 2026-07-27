@@ -1,12 +1,23 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { ScreenContainer, AppText, Button, Input, FilterChip } from '@components';
+import {
+  ScreenContainer,
+  AppText,
+  Button,
+  Input,
+  FilterChip,
+  FieldError,
+  FormBanner,
+} from '@components';
 import { useWedding } from '@store';
 import { GUEST_GROUPS, GUEST_SIDES } from '@constants';
 import type { GuestGroup, GuestSide } from '@types';
 import { colors, spacing } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
+
+/** The API only accepts E.164 phone numbers, e.g. +923001234567. */
+const E164_RULE = /^\+[1-9]\d{1,14}$/;
 
 export function AddGuestScreen(): React.JSX.Element {
   const nav = useAppNavigation();
@@ -14,40 +25,87 @@ export function AddGuestScreen(): React.JSX.Element {
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [group, setGroup] = useState<GuestGroup>('Family');
-  const [side, setSide] = useState<GuestSide>('Bride');
+  const [groupSize, setGroupSize] = useState('1');
+  const [group, setGroup] = useState<GuestGroup>('Mixed');
+  const [side, setSide] = useState<GuestSide>('Both');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [banner, setBanner] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  const save = () => {
-    actions.addGuest({
-      name: name.trim() || 'New Guest',
-      phone: phone.trim() || '—',
+  const save = async () => {
+    const next: Record<string, string> = {};
+    if (name.trim().length < 2) next.name = 'Enter a name of at least 2 characters.';
+    if (phone.trim() && !E164_RULE.test(phone.trim())) {
+      next.phone = 'Use international format, e.g. +923001234567.';
+    }
+    // The API constrains groupSize to an integer between 1 and 50.
+    const size = Number(groupSize);
+    if (!Number.isInteger(size) || size < 1 || size > 50) {
+      next.groupSize = 'Enter a whole number between 1 and 50.';
+    }
+    setErrors(next);
+    setBanner(null);
+    if (Object.keys(next).length > 0) return;
+
+    setSaving(true);
+    const result = await actions.addGuest({
+      name: name.trim(),
+      phone: phone.trim(),
       group,
       side,
+      groupSize: size,
     });
+    setSaving(false);
+
+    if (!result.ok) {
+      setErrors(result.error.fieldErrors);
+      setBanner(result.message);
+      return;
+    }
     nav.goBack();
   };
 
   return (
     <ScreenContainer scroll padded={false} contentContainerStyle={styles.content}>
       <View style={styles.form}>
+        <FormBanner message={banner} />
+
         <Input
           label="Guest name"
-          placeholder="Full name"
+          placeholder="Full name, or e.g. Khan Family"
           value={name}
           onChangeText={setName}
           autoCapitalize="words"
+          editable={!saving}
         />
+        <FieldError message={errors.name} />
+
         <Input
           label="Phone"
-          placeholder="03xx-xxxxxxx"
+          placeholder="+923001234567"
           value={phone}
           onChangeText={setPhone}
           keyboardType="phone-pad"
+          autoCapitalize="none"
+          editable={!saving}
         />
+        <FieldError message={errors.phone} />
+
+        {/* One entry can cover a whole family, which is what the head counts
+            on the Guests screen are based on. */}
+        <Input
+          label="How many people?"
+          placeholder="1"
+          value={groupSize}
+          onChangeText={setGroupSize}
+          keyboardType="number-pad"
+          editable={!saving}
+        />
+        <FieldError message={errors.groupSize} />
 
         <View>
           <AppText variant="label" color={colors.textSecondary} style={styles.label}>
-            Seating group
+            Gathering
           </AppText>
           <View style={styles.chipRow}>
             {GUEST_GROUPS.map(g => (
@@ -80,7 +138,7 @@ export function AddGuestScreen(): React.JSX.Element {
         </View>
       </View>
 
-      <Button label="Save Guest" onPress={save} style={styles.cta} />
+      <Button label="Save Guest" onPress={save} loading={saving} style={styles.cta} />
     </ScreenContainer>
   );
 }
