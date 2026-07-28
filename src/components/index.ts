@@ -40,6 +40,12 @@ export type { ProgressBarProps } from './common/ProgressBar';
 export { Icon } from './common/Icon';
 export type { IconProps, IconName } from './common/Icon';
 
+export { StripedPlaceholder } from './common/StripedPlaceholder';
+export type { StripedPlaceholderProps } from './common/StripedPlaceholder';
+
+export { LinkedCircles } from './common/LinkedCircles';
+export type { LinkedCirclesProps } from './common/LinkedCircles';
+
 export { ProgressRing } from './common/ProgressRing';
 export type { ProgressRingProps } from './common/ProgressRing';
 

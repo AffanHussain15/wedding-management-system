@@ -17,6 +17,7 @@ import {
   Button,
   Card,
   Avatar,
+  LinkedCircles,
   Input,
   FilterChip,
   FieldError,
@@ -100,10 +101,12 @@ export function FamilyLinkScreen(): React.JSX.Element {
     <ScreenContainer scroll padded={false} contentContainerStyle={styles.root}>
       <BackButton onPress={() => nav.goBack()} />
 
-      <AppText style={[typography.serifValue, styles.title]}>
+      <LinkedCircles leftLabel="You" rightLabel="Partner" size={96} style={styles.pair} />
+
+      <AppText style={[typography.serifValue, styles.title]} center>
         You're not planning this alone
       </AppText>
-      <AppText variant="callout" color={colors.textSecondary} style={styles.subtitle}>
+      <AppText variant="callout" color={colors.textSecondary} center style={styles.subtitle}>
         Link your partner and family to one shared workspace — a single source of
         truth for everyone.
       </AppText>
@@ -256,8 +259,11 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
+  pair: {
+    marginTop: spacing.lg,
+  },
   title: {
-    marginTop: spacing.base,
+    marginTop: spacing.lg,
   },
   subtitle: {
     marginTop: spacing.sm,

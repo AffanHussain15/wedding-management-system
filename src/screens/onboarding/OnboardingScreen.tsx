@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { PanResponder, Pressable, StyleSheet, View } from 'react-native';
 
-import { ScreenContainer, AppText, Button } from '@components';
-import { colors, radius, spacing, typography } from '@theme';
+import { ScreenContainer, AppText, Button, StripedPlaceholder } from '@components';
+import { colors, spacing, typography } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
 
-const SLIDES = [
+/** Horizontal travel that commits to a slide change, in px. */
+const SWIPE_THRESHOLD = 40;
+
+interface Slide {
+  title: string;
+  body: string;
+  image: string;
+}
+
+const SLIDES: Slide[] = [
   {
     title: 'Manage every vendor in one place',
     body: 'Track bookings, payments, and contacts for caterers, decor, photography and more.',
@@ -31,6 +40,23 @@ export function OnboardingScreen(): React.JSX.Element {
 
   const next = () => (isLast ? nav.replace('Signup') : setIndex(i => i + 1));
 
+  // Swipe left/right to page through the slides. `setIndex` is stable, so the
+  // responder can be built once.
+  const swipe = useRef(
+    PanResponder.create({
+      // Claim the gesture only once it reads as horizontal, so dot taps still land.
+      onMoveShouldSetPanResponder: (_e, g) =>
+        Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderRelease: (_e, g) => {
+        if (g.dx <= -SWIPE_THRESHOLD) {
+          setIndex(i => Math.min(i + 1, SLIDES.length - 1));
+        } else if (g.dx >= SWIPE_THRESHOLD) {
+          setIndex(i => Math.max(i - 1, 0));
+        }
+      },
+    }),
+  ).current;
+
   return (
     <ScreenContainer padded={false} contentContainerStyle={styles.root}>
       <View style={styles.top}>
@@ -41,12 +67,12 @@ export function OnboardingScreen(): React.JSX.Element {
         </Pressable>
       </View>
 
-      <View style={styles.center}>
-        <View style={styles.illustration}>
+      <View style={styles.center} {...swipe.panHandlers}>
+        <StripedPlaceholder height={190}>
           <AppText variant="caption" color={colors.textMuted}>
             {slide.image}
           </AppText>
-        </View>
+        </StripedPlaceholder>
 
         <View>
           <AppText style={[typography.serifTitle, styles.title]} center>
@@ -59,10 +85,15 @@ export function OnboardingScreen(): React.JSX.Element {
 
         <View style={styles.dots}>
           {SLIDES.map((_, i) => (
-            <View
+            <Pressable
               key={i}
-              style={[styles.dot, i === index ? styles.dotActive : styles.dotInactive]}
-            />
+              onPress={() => setIndex(i)}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel={`Go to slide ${i + 1} of ${SLIDES.length}`}
+              accessibilityState={{ selected: i === index }}>
+              <View style={[styles.dot, i === index ? styles.dotActive : styles.dotInactive]} />
+            </Pressable>
           ))}
         </View>
       </View>
@@ -95,14 +126,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     gap: spacing.xl,
-  },
-  illustration: {
-    width: '100%',
-    height: 190,
-    borderRadius: radius.card,
-    backgroundColor: colors.surfaceSand,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   title: {
     marginBottom: spacing.sm,
