@@ -33,6 +33,7 @@ import {
   VendorDetailScreen,
   AddVendorScreen,
   AddGuestScreen,
+  ImportContactsScreen,
   AddExpenseScreen,
   FunctionDetailScreen,
   AddFunctionScreen,
@@ -78,8 +79,19 @@ export function RootNavigator(): React.JSX.Element {
 
   const noWeddingSelected = needsWeddingSetup || !activeWeddingId;
 
+  // `Setup`, `SelectWedding` and `FamilyLink` are deliberately registered in
+  // both the noWeddingSelected and authenticated trees below (so an
+  // already-signed-in user can still reach them, e.g. "Create Another
+  // Wedding"). That means when `noWeddingSelected` flips — e.g. finishing the
+  // setup wizard — "Setup" is a valid route in the *new* tree too, so the
+  // navigator has no reason to move off it on its own; only forcing a fresh
+  // mount (via `key`) makes it land on that tree's first screen instead of
+  // silently staying put until the app is restarted.
+  const mode = !isAuthenticated ? 'guest' : noWeddingSelected ? 'setup' : 'app';
+
   return (
     <Stack.Navigator
+      key={mode}
       screenOptions={{
         headerStyle: { backgroundColor: colors.primary },
         headerTintColor: colors.textOnPrimary,
@@ -132,6 +144,11 @@ export function RootNavigator(): React.JSX.Element {
               name="AddGuest"
               component={AddGuestScreen}
               options={{ title: 'Add Guest' }}
+            />
+            <Stack.Screen
+              name="ImportContacts"
+              component={ImportContactsScreen}
+              options={{ title: 'Import Contacts' }}
             />
             <Stack.Screen
               name="AddExpense"

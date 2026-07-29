@@ -5,3 +5,6 @@ export { useMutation } from './useMutation';
 export type { Mutation, MutationResult, MutationState } from './useMutation';
 
 export { useDebouncedValue } from './useDebouncedValue';
+
+export { useGuestPhotoCache } from './useGuestPhotoCache';
+export type { GuestPhotoCache } from './useGuestPhotoCache';

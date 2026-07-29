@@ -29,6 +29,7 @@ export type IconName =
   | 'guests'
   | 'budget'
   | 'timeline'
+  | 'contacts'
   // Wedding functions — see `functionIcon` for the name → glyph mapping.
   | 'dholki'
   | 'mayun'
@@ -228,6 +229,14 @@ export function Icon({
           <Path d="M4 9h16" {...p} />
           <Path d="M8 3v4M16 3v4" {...p} />
         </Svg>
+      );
+    case 'contacts':
+      return (
+        <Svg {...svgProps}>
+          <Rect x={4} y={2} width={16} height={20} rx={2} {...p} />
+          <Circle cx={12} cy={10} r={2.5} {...p} />
+          <Path d="M8 17a4 4 0 0 1 8 0" {...p} />
+          </Svg>
       );
     // Dholki — a drum: barrel sides, an elliptical head, and its lacing.
     case 'dholki':

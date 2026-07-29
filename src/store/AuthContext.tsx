@@ -242,23 +242,27 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
       return { ...prev, weddings: [...prev.weddings, wedding] };
     });
 
-    // Reconcile with the server in the background — deliberately not via
-    // `loadProfile`, which would overwrite `weddings` outright. Right after
-    // creation the membership may not have caught up in a read yet, and a
-    // stale response must not erase the wedding we already know exists (or
-    // touch `activeWeddingId`, which we just explicitly set).
-    try {
-      const me = await api.users.me();
-      if (!mounted.current) return;
-      const weddings = me.weddings.some(w => w.id === wedding.id)
-        ? me.weddings
-        : [...me.weddings, wedding];
-      setProfile({ ...me, weddings });
-      setProfileError(null);
-      setProfileLoaded(true);
-    } catch (error) {
-      if (mounted.current) setProfileError(errorMessage(error));
-    }
+    // Reconcile with the server in the background — not awaited, so this
+    // function resolves (and navigation proceeds) without waiting on a
+    // second network round trip. Deliberately not via `loadProfile`, which
+    // would overwrite `weddings` outright: right after creation the
+    // membership may not have caught up in a read yet, and a stale response
+    // must not erase the wedding we already know exists (or touch
+    // `activeWeddingId`, which we just explicitly set).
+    (async () => {
+      try {
+        const me = await api.users.me();
+        if (!mounted.current) return;
+        const weddings = me.weddings.some(w => w.id === wedding.id)
+          ? me.weddings
+          : [...me.weddings, wedding];
+        setProfile({ ...me, weddings });
+        setProfileError(null);
+        setProfileLoaded(true);
+      } catch (error) {
+        if (mounted.current) setProfileError(errorMessage(error));
+      }
+    })();
   }, []);
 
   const value = useMemo<AuthContextValue>(

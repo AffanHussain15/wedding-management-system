@@ -45,7 +45,7 @@ import {
   weddingFromApi,
 } from '@services';
 import { GUEST_GROUPS, PAGE_SIZE } from '@constants';
-import { nextId, toApiDate } from '@utils';
+import { nextId, normalizePhone, phoneMatchKey, toApiDate } from '@utils';
 import type {
   ExpenseInput,
   FunctionInput,
@@ -67,17 +67,37 @@ export type ActionResult =
 
 const succeeded = (warning?: string | null): ActionResult => ({ ok: true, warning });
 
+function toApiError(error: unknown): ApiError {
+  return error instanceof ApiError
+    ? error
+    : new ApiError({
+        status: 0,
+        code: 'INTERNAL_ERROR',
+        message: error instanceof Error ? error.message : 'Something went wrong.',
+      });
+}
+
 function failed(error: unknown): ActionResult {
-  const apiError =
-    error instanceof ApiError
-      ? error
-      : new ApiError({
-          status: 0,
-          code: 'INTERNAL_ERROR',
-          message: error instanceof Error ? error.message : 'Something went wrong.',
-        });
+  const apiError = toApiError(error);
   return { ok: false, error: apiError, message: errorMessage(apiError) };
 }
+
+/** A device contact selected for import — just enough to create a guest. */
+export interface ContactImportCandidate {
+  name: string;
+  /** Raw phone number as read off the device, not yet normalized. */
+  phone: string;
+}
+
+export type ImportGuestsResult =
+  | {
+      ok: true;
+      importedCount: number;
+      duplicateCount: number;
+      noNumberCount: number;
+      failedCount: number;
+    }
+  | { ok: false; error: ApiError; message: string };
 
 export interface WeddingActions {
   // Vendors
@@ -93,6 +113,14 @@ export interface WeddingActions {
   cycleGuestGroup: (id: ID) => Promise<ActionResult>;
   removeGuest: (id: ID) => Promise<ActionResult>;
   sendGuestInvite: (id: ID) => Promise<ActionResult>;
+  /**
+   * Bulk-creates guests from imported contacts. Contacts with no phone number
+   * are skipped up front; contacts whose (country-code-agnostic) phone number
+   * already matches an existing guest are skipped as duplicates. Each
+   * remaining contact is created individually — there is no bulk-JSON
+   * endpoint — so a handful of failures don't abort the rest of the batch.
+   */
+  importGuests: (contacts: ContactImportCandidate[]) => Promise<ImportGuestsResult>;
 
   // Budget
   addExpense: (input: ExpenseInput) => Promise<ActionResult>;
@@ -459,6 +487,75 @@ export function WeddingProvider({
         write(async id => {
           await api.guests.sendInvite(id, guestId);
         }),
+
+      importGuests: async candidates => {
+        const id = weddingId;
+        if (!id) {
+          const apiError = toApiError(new Error('No wedding selected.'));
+          return { ok: false, error: apiError, message: errorMessage(apiError) };
+        }
+
+        // Country-code-agnostic, so a contact saved without one still matches
+        // an existing guest entered with one (or vice versa).
+        const existingKeys = new Set(
+          stateRef.current.guests.map(g => phoneMatchKey(g.phone)).filter(Boolean),
+        );
+        const seen = new Set<string>();
+        const toCreate: { name: string; phone: string }[] = [];
+        let noNumberCount = 0;
+        let duplicateCount = 0;
+
+        for (const contact of candidates) {
+          const phone = normalizePhone(contact.phone);
+          if (!phone) {
+            noNumberCount += 1;
+            continue;
+          }
+          const key = phoneMatchKey(phone);
+          if (!key || existingKeys.has(key) || seen.has(key)) {
+            duplicateCount += 1;
+            continue;
+          }
+          seen.add(key);
+          toCreate.push({ name: contact.name, phone });
+        }
+
+        let importedCount = 0;
+        let failedCount = 0;
+
+        try {
+          // Small concurrent batches: fast for large lists without opening
+          // hundreds of connections at once.
+          const CHUNK_SIZE = 5;
+          for (let i = 0; i < toCreate.length; i += CHUNK_SIZE) {
+            const chunk = toCreate.slice(i, i + CHUNK_SIZE);
+            const results = await Promise.allSettled(
+              chunk.map(contact =>
+                api.guests.create(id, {
+                  name: contact.name,
+                  phone: contact.phone,
+                  groupSize: 1,
+                  side: guestSideToApi('Both'),
+                  gathering: gatheringToApi('Mixed'),
+                }),
+              ),
+            );
+            for (const result of results) {
+              if (result.status === 'fulfilled') importedCount += 1;
+              else failedCount += 1;
+            }
+          }
+
+          if (importedCount > 0) {
+            await reloadGuests(id);
+          }
+        } catch (err) {
+          const apiError = toApiError(err);
+          return { ok: false, error: apiError, message: errorMessage(apiError) };
+        }
+
+        return { ok: true, importedCount, duplicateCount, noNumberCount, failedCount };
+      },
 
       // --- Budget ----------------------------------------------------------
 
