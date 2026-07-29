@@ -8,6 +8,7 @@ import {
   AppText,
   Button,
   Input,
+  DateField,
   FilterChip,
   FieldError,
   FormBanner,
@@ -15,10 +16,9 @@ import {
 import { useWedding } from '@store';
 import { FUNCTION_NAMES } from '@constants';
 import { colors, spacing } from '@theme';
-import { toApiDate } from '@utils';
+import { todayIso } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 /** The API stores startTime as "HH:mm" on a 24-hour clock. */
 const TIME_RULE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -38,8 +38,8 @@ export function AddFunctionScreen(): React.JSX.Element {
     const next: Record<string, string> = {};
     // The API requires a 2–100 character name and a real date.
     if (name.trim().length < 2) next.name = 'Enter a name of at least 2 characters.';
-    if (!ISO_DATE.test(date.trim())) next.eventDate = 'Use the format YYYY-MM-DD.';
-    else if (!toApiDate(date.trim())) next.eventDate = "That date doesn't exist.";
+    // The calendar only yields real days, so the date can only be missing.
+    if (!date.trim()) next.eventDate = 'Pick a date for this function.';
     if (time.trim() && !TIME_RULE.test(time.trim())) {
       next.startTime = 'Use 24-hour HH:mm, e.g. 19:30.';
     }
@@ -96,13 +96,15 @@ export function AddFunctionScreen(): React.JSX.Element {
           </View>
         </View>
 
-        <Input
+        <DateField
           label="Date"
-          placeholder="YYYY-MM-DD"
+          title="Pick the function date"
+          placeholder="Tap to pick a date"
           value={date}
-          onChangeText={setDate}
-          autoCapitalize="none"
-          editable={!saving}
+          onChange={setDate}
+          disabled={saving}
+          // Functions are scheduled forward; a past one can't be planned.
+          min={todayIso()}
         />
         <FieldError message={errors.eventDate} />
 

@@ -346,13 +346,22 @@ export function memberFromApi(row: WeddingMember): Member {
 
 const COUPLE_SEPARATOR = ' & ';
 
+/**
+ * Separators to split a stored name on. The app writes " & ", but a wedding
+ * created elsewhere — Postman, a seed, an earlier build — may use "&" without
+ * spaces, "and", "aur" or "+". Reading only " & " silently dropped the groom
+ * from those, so the Dulha's name never reached the screens.
+ */
+const COUPLE_SEPARATORS = /\s*(?:&|\+|\band\b|\baur\b)\s*/i;
+
 /** "Ayesha & Danyal" → { bride: 'Ayesha', groom: 'Danyal' }. */
 export function splitCoupleName(name: string): { bride: string; groom: string } {
-  const index = name.indexOf(COUPLE_SEPARATOR);
-  if (index === -1) return { bride: name.trim(), groom: '' };
+  const trimmed = name.trim();
+  const match = COUPLE_SEPARATORS.exec(trimmed);
+  if (!match) return { bride: trimmed, groom: '' };
   return {
-    bride: name.slice(0, index).trim(),
-    groom: name.slice(index + COUPLE_SEPARATOR.length).trim(),
+    bride: trimmed.slice(0, match.index).trim(),
+    groom: trimmed.slice(match.index + match[0].length).trim(),
   };
 }
 

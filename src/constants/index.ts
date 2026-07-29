@@ -96,3 +96,10 @@ export const FUNCTION_VENDOR_MAP: Record<
 
 /** Page size for list screens; the API caps `limit` at 100. */
 export const PAGE_SIZE = 100;
+
+/**
+ * The API validates every phone field as E.164 (`@Matches` server-side), and an
+ * empty string fails that check rather than clearing the value — so callers
+ * must omit a blank phone instead of sending it.
+ */
+export const E164_PHONE = /^\+[1-9]\d{1,14}$/;

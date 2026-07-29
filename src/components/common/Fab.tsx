@@ -92,6 +92,10 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     borderWidth: 2,
     borderColor: colors.accentBright,
+    // Same reason as Button's primary variant: the gradient only paints once
+    // it has measured itself, and Android needs a background to cast a round
+    // shadow rather than a square one.
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: colors.primary,

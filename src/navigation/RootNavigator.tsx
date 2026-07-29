@@ -50,12 +50,25 @@ import type { RootStackParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator(): React.JSX.Element {
-  const { ready, isAuthenticated, needsWeddingSetup, activeWeddingId, weddings, profileError } =
-    useAuth();
+  const {
+    ready,
+    isAuthenticated,
+    needsWeddingSetup,
+    activeWeddingId,
+    weddings,
+    profileError,
+    profileLoaded,
+  } = useAuth();
 
   // Hold the branded splash until the stored session has been read, so an
   // already-signed-in user never sees the login screen flash by.
   if (!ready) return <SplashScreen />;
+
+  // Signed in, but `GET /users/me` hasn't answered yet and there's no
+  // remembered wedding to fall back on. Keep waiting: treating unknown
+  // memberships as "none" would drop an existing couple into the setup wizard
+  // for as long as the request takes.
+  if (isAuthenticated && !profileLoaded && !activeWeddingId) return <SplashScreen />;
 
   // Signed in, but we couldn't load which weddings they belong to and have no
   // remembered one either. Offer a retry rather than dropping into the setup

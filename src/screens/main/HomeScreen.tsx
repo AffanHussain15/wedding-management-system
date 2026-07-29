@@ -26,8 +26,9 @@ import {
   selectNextFunction,
   selectReminders,
 } from '@store';
-import { colors, radius, shadows, spacing, typography, weight } from '@theme';
-import { formatDate, formatNumber, functionDotColor } from '@utils';
+import { joinCoupleName } from '@services';
+import { colors, layout, radius, shadows, spacing, typography, weight } from '@theme';
+import { formatDate, formatNumber, functionDotColor, functionIcon, todayIso } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 // Translucent cream tones for text over the maroon hero gradient.
@@ -40,6 +41,9 @@ export function HomeScreen(): React.JSX.Element {
   const { wedding } = state;
 
   const daysLeft = selectDaysLeft(state);
+  // Compared as ISO strings against the local day, so a wedding earlier today
+  // still counts as today rather than past.
+  const isPast = !!wedding.weddingDate && wedding.weddingDate < todayIso();
   const progress = selectOverallProgress(state);
   const budget = selectBudgetTotals(state);
   const guests = selectGuestCounts(state);
@@ -47,7 +51,12 @@ export function HomeScreen(): React.JSX.Element {
   const next = selectNextFunction(state);
   const reminders = selectReminders(state);
 
-  const weddingDate = formatDate(wedding.weddingDate, 'long');
+  // Dulhan first, then Dulha. `joinCoupleName` drops the separator when one
+  // side is missing, so a half-filled name never renders a dangling "&".
+  const couple = joinCoupleName(wedding.bride, wedding.groom) || 'Your wedding';
+  // Empty fallback: the hero already says "Set your date" when there is none,
+  // so the line below it shouldn't repeat "Date not set".
+  const weddingDate = formatDate(wedding.weddingDate, 'long', '');
   const initials =
     `${wedding.bride[0] ?? ''}${wedding.groom[0] ?? ''}`.toUpperCase() || '–';
   // The venue/city line has to survive either part being unset.
@@ -87,15 +96,21 @@ export function HomeScreen(): React.JSX.Element {
             <AppText variant="caption" color={colors.textSecondary}>
               Welcome back / Ghar
             </AppText>
-            <AppText style={typography.serifTitle}>
-              {wedding.bride} & {wedding.groom}
-            </AppText>
+            <AppText style={typography.serifTitle}>{couple}</AppText>
           </View>
           <View style={styles.headerActions}>
-            <Pressable style={styles.iconButton} onPress={() => nav.navigate('Reminders')}>
+            <Pressable
+              style={styles.iconButton}
+              onPress={() => nav.navigate('Reminders')}
+              accessibilityRole="button"
+              accessibilityLabel="Reminders">
               <Icon name="bell" size={18} />
             </Pressable>
-            <Pressable style={styles.initialsButton} onPress={() => nav.navigate('Profile')}>
+            <Pressable
+              style={styles.initialsButton}
+              onPress={() => nav.navigate('Profile')}
+              accessibilityRole="button"
+              accessibilityLabel="Your profile">
               <AppText color={colors.textOnPrimary} style={styles.initials}>
                 {initials}
               </AppText>
@@ -116,17 +131,30 @@ export function HomeScreen(): React.JSX.Element {
             />
           </Svg>
           <AppText style={styles.heroLabel}>COUNTDOWN TO THE BIG DAY</AppText>
-          {wedding.weddingDate ? (
+          {/* `daysUntil` floors at 0, so a date that has already passed and the
+              date itself both come through as 0 — which rendered as the
+              nonsensical "0 days to go". Each gets its own line instead. */}
+          {!wedding.weddingDate ? (
+            <AppText style={[typography.serifTitle, { color: colors.goldSoft }]}>
+              Set your date
+            </AppText>
+          ) : isPast ? (
+            <AppText style={[typography.serifTitle, { color: colors.goldSoft }]}>
+              Mubarak ho!
+            </AppText>
+          ) : daysLeft === 0 ? (
+            <AppText style={[typography.serifTitle, { color: colors.goldSoft }]}>
+              It's today!
+            </AppText>
+          ) : (
             <View style={styles.heroRow}>
               <AppText style={[typography.serifDisplay, { color: colors.goldSoft }]}>
                 {daysLeft}
               </AppText>
-              <AppText style={styles.heroDays}>days to go</AppText>
+              <AppText style={styles.heroDays}>
+                {daysLeft === 1 ? 'day to go' : 'days to go'}
+              </AppText>
             </View>
-          ) : (
-            <AppText style={[typography.serifTitle, { color: colors.goldSoft }]}>
-              Set your date
-            </AppText>
           )}
           <AppText style={styles.heroSub}>
             {[weddingDate, location].filter(Boolean).join(' · ')}
@@ -206,9 +234,14 @@ export function HomeScreen(): React.JSX.Element {
                 style={styles.functionCard}
                 onPress={() => nav.navigate('FunctionDetail', { functionId: fn.id })}>
                 <View style={[styles.functionDot, { backgroundColor: functionDotColor(fn.status) }]}>
-                  {fn.status === 'done' ? (
-                    <Icon name="check" size={14} color={colors.textOnPrimary} />
-                  ) : null}
+                  {/* A finished function keeps the tick; the rest show what kind
+                      of function they are. */}
+                  <Icon
+                    name={fn.status === 'done' ? 'check' : functionIcon(fn.name)}
+                    size={17}
+                    color={colors.textOnPrimary}
+                    strokeWidth={1.9}
+                  />
                 </View>
                 <AppText style={styles.functionName} numberOfLines={1}>
                   {fn.name}
@@ -301,7 +334,8 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: spacing.xs,
-    paddingBottom: spacing.xxl,
+    // Clears the floating Fab, which would otherwise sit over the last row.
+    paddingBottom: layout.fabClearance,
   },
   flexShrink: {
     flexShrink: 1,

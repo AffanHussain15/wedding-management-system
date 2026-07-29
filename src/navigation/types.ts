@@ -34,12 +34,14 @@ export type RootStackParamList = {
   AddVendor: undefined;
   AddGuest: undefined;
   ImportContacts: undefined;
-  AddExpense: undefined;
+  /** With `expenseId` the screen edits that entry instead of creating one. */
+  AddExpense: { expenseId?: string } | undefined;
   FunctionDetail: { functionId: string };
   AddFunction: undefined;
   Reminders: undefined;
   Tasks: undefined;
-  AddTask: undefined;
+  /** `eventId` pre-selects the function, when opened from its detail screen. */
+  AddTask: { eventId?: string } | undefined;
   Seating: undefined;
   Profile: undefined;
 };

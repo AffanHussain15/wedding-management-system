@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
+/**
+ * Logs a new expense, or edits an existing one when the route carries an
+ * `expenseId` — the fields are the same either way, so one screen covers both.
+ */
+
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useRoute, type RouteProp } from '@react-navigation/native';
 
 import {
   ScreenContainer,
@@ -14,20 +20,40 @@ import { useWedding } from '@store';
 import { BUDGET_CATEGORIES, PAYMENT_METHODS } from '@constants';
 import type { BudgetCategoryName, PaymentMethodLabel } from '@types';
 import { colors, spacing } from '@theme';
+import type { RootStackParamList } from '@navigation/types';
 import { useAppNavigation } from '@navigation/hooks';
 
 export function AddExpenseScreen(): React.JSX.Element {
   const nav = useAppNavigation();
-  const { actions } = useWedding();
+  const { params } = useRoute<RouteProp<RootStackParamList, 'AddExpense'>>();
+  const { state, actions } = useWedding();
 
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<BudgetCategoryName>('Catering');
-  const [amount, setAmount] = useState('');
-  const [method, setMethod] = useState<PaymentMethodLabel>('Cash');
-  const [notes, setNotes] = useState('');
+  const expenseId = params?.expenseId;
+  // `existing` only seeds the fields. The route param — not this lookup — drives
+  // create-vs-edit, so a background refresh that drops the row from local state
+  // mid-edit can't turn a save into a duplicate new expense.
+  const existing = expenseId ? state.expenses.find(e => e.id === expenseId) : undefined;
+  const isEdit = !!expenseId;
+
+  const [title, setTitle] = useState(existing?.title ?? '');
+  // `categoryName` is a free label for OTHER, so fall back rather than leaving
+  // every chip inactive.
+  const [category, setCategory] = useState<BudgetCategoryName>(() => {
+    const label = existing?.categoryName as BudgetCategoryName | undefined;
+    if (!label) return 'Catering';
+    return BUDGET_CATEGORIES.includes(label) ? label : 'Other';
+  });
+  const [amount, setAmount] = useState(existing ? String(existing.amount) : '');
+  const [method, setMethod] = useState<PaymentMethodLabel>(existing?.method ?? 'Cash');
+  const [notes, setNotes] = useState(existing?.notes ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // The header title is set on the route, so editing has to override it.
+  useEffect(() => {
+    nav.setOptions({ title: isEdit ? 'Edit Expense' : 'Add Expense' });
+  }, [nav, isEdit]);
 
   const save = async () => {
     const next: Record<string, string> = {};
@@ -40,13 +66,17 @@ export function AddExpenseScreen(): React.JSX.Element {
     if (Object.keys(next).length > 0) return;
 
     setSaving(true);
-    const result = await actions.addExpense({
+    const input = {
       category,
       title: title.trim(),
       amount: value,
       method,
-      ...(notes.trim() ? { notes: notes.trim() } : {}),
-    });
+      // Sent even when blank, so clearing a note actually clears it.
+      notes: notes.trim(),
+    };
+    const result = expenseId
+      ? await actions.updateExpense(expenseId, input)
+      : await actions.addExpense(input);
     setSaving(false);
 
     if (!result.ok) {
@@ -61,6 +91,16 @@ export function AddExpenseScreen(): React.JSX.Element {
     <ScreenContainer scroll padded={false} contentContainerStyle={styles.content}>
       <View style={styles.form}>
         <FormBanner message={banner} />
+        {/* The server refuses amount edits on items it created from a vendor
+            payment, so say where the real edit lives. */}
+        <FormBanner
+          tone="warning"
+          message={
+            existing?.fromVendorPayment
+              ? 'This entry mirrors a vendor payment. Change the payment on the vendor to change the amount.'
+              : null
+          }
+        />
 
         <Input
           label="What was it for?"
@@ -92,7 +132,7 @@ export function AddExpenseScreen(): React.JSX.Element {
           value={amount}
           onChangeText={setAmount}
           keyboardType="number-pad"
-          editable={!saving}
+          editable={!saving && !existing?.fromVendorPayment}
         />
         <FieldError message={errors.amount} />
 
@@ -123,7 +163,12 @@ export function AddExpenseScreen(): React.JSX.Element {
         />
       </View>
 
-      <Button label="Save Expense" onPress={save} loading={saving} style={styles.cta} />
+      <Button
+        label={isEdit ? 'Save Changes' : 'Save Expense'}
+        onPress={save}
+        loading={saving}
+        style={styles.cta}
+      />
     </ScreenContainer>
   );
 }

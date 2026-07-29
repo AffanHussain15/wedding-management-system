@@ -15,6 +15,7 @@ import {
   AppText,
   Button,
   Input,
+  DateField,
   FilterChip,
   FieldError,
   FormBanner,
@@ -24,12 +25,10 @@ import { useAuth } from '@store';
 import { useMutation } from '@hooks';
 import { FUNCTION_NAMES } from '@constants';
 import { colors, radius, spacing, typography } from '@theme';
-import { formatDate, toApiDate } from '@utils';
+import { formatDate, toApiDate, todayIso } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 const STEP_TITLES = ['Tell us about the couple', 'Set your date & venue', 'Confirm your functions'];
-
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 type Selected = Record<string, boolean>;
 
@@ -101,12 +100,7 @@ export function SetupScreen(): React.JSX.Element {
       if (joinCoupleName(bride, groom).length < 2) next.bride = 'Names are too short.';
     }
     if (step === 1) {
-      const date = weddingDate.trim();
-      if (date && !ISO_DATE.test(date)) {
-        next.weddingDate = 'Use the format YYYY-MM-DD.';
-      } else if (date && !toApiDate(date)) {
-        next.weddingDate = "That date doesn't exist.";
-      }
+      // The date comes from the calendar, so it can only be a real day or ''.
       if (totalBudget.trim() && !(Number(totalBudget) > 0)) {
         next.totalBudget = 'Enter a positive amount, or leave it blank.';
       }
@@ -194,13 +188,16 @@ export function SetupScreen(): React.JSX.Element {
 
       {step === 1 ? (
         <View style={styles.form}>
-          <Input
+          <DateField
             label="Wedding date / Shaadi ki Tareekh"
+            title="Pick the wedding date"
             value={weddingDate}
-            onChangeText={setWeddingDate}
-            placeholder="YYYY-MM-DD"
-            autoCapitalize="none"
-            editable={!create.loading}
+            onChange={setWeddingDate}
+            placeholder="Tap to pick a date"
+            disabled={create.loading}
+            // A wedding is always ahead of you, and the API wants a future date.
+            min={todayIso()}
+            clearable
           />
           <FieldError message={errors.weddingDate} />
           <Input
@@ -335,6 +332,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     marginTop: spacing.xl,
+    // The row ends flush with the buttons, so on Android its bounds would clip
+    // the primary button's elevation shadow.
+    overflow: 'visible',
   },
   backBtn: {
     flex: 1,

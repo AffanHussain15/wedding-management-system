@@ -19,6 +19,12 @@ export const layout = {
   gutter: 12,
   tabBarHeight: 64,
   fabSize: 56,
+  /**
+   * Bottom padding a scrollable needs when a `Fab` floats over it: the button
+   * is `fabSize` tall and sits 24 up from the bottom, so anything less leaves
+   * the last row hidden underneath once the list is scrolled to the end.
+   */
+  fabClearance: 56 + 24 + 16,
 } as const;
 
 export type Spacing = typeof spacing;

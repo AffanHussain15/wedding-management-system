@@ -6,19 +6,19 @@ import {
   AppText,
   Button,
   Input,
+  PhoneInput,
   Icon,
   FieldError,
   FormBanner,
 } from '@components';
 import { useAuth } from '@store';
 import { useMutation } from '@hooks';
+import { isValidPhone, normalizePhone } from '@utils';
 import { colors, radius, spacing, typography } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
 
 /** Mirrors the backend's RegisterDto rule: 8+ chars, one uppercase, one digit. */
 const PASSWORD_RULE = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-/** The API only accepts E.164, e.g. +923001234567. */
-const E164_RULE = /^\+[1-9]\d{1,14}$/;
 
 export function SignupScreen(): React.JSX.Element {
   const nav = useAppNavigation();
@@ -49,8 +49,8 @@ export function SignupScreen(): React.JSX.Element {
     if (!PASSWORD_RULE.test(password)) {
       next.password = 'At least 8 characters, with one uppercase letter and one number.';
     }
-    if (phone.trim() && !E164_RULE.test(phone.trim())) {
-      next.phone = 'Use international format, e.g. +923001234567.';
+    if (!isValidPhone(phone)) {
+      next.phone = 'Enter a valid mobile number, e.g. 0300 1234567.';
     }
     setLocalErrors(next);
     if (Object.keys(next).length > 0) return;
@@ -60,13 +60,17 @@ export function SignupScreen(): React.JSX.Element {
       fullName: fullName.trim(),
       email: email.trim(),
       password,
-      ...(phone.trim() ? { phone: phone.trim() } : {}),
+      ...(normalizePhone(phone) ? { phone: normalizePhone(phone) } : {}),
     });
   };
 
   return (
     <ScreenContainer scroll padded={false} contentContainerStyle={styles.root}>
-      <Pressable style={styles.back} onPress={() => nav.navigate('Onboarding')}>
+      <Pressable
+        style={styles.back}
+        onPress={() => nav.navigate('Onboarding')}
+        accessibilityRole="button"
+        accessibilityLabel="Back to intro">
         <Icon name="chevronRight" size={18} color={colors.primary} />
       </Pressable>
 
@@ -100,13 +104,10 @@ export function SignupScreen(): React.JSX.Element {
         />
         <FieldError message={errors.email} />
 
-        <Input
+        <PhoneInput
           label="Phone (optional)"
-          placeholder="+923001234567"
           value={phone}
           onChangeText={setPhone}
-          keyboardType="phone-pad"
-          autoCapitalize="none"
           editable={!loading}
         />
         <FieldError message={errors.phone} />

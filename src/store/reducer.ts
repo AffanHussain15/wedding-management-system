@@ -4,7 +4,7 @@
  * testable.
  */
 
-import type { SeatingTable, WeddingDetails } from '@types';
+import type { SeatingTable, WeddingDetails, WeddingFunction } from '@types';
 import type { WeddingAction, WeddingState } from './types';
 
 const emptyWedding: WeddingDetails = {
@@ -54,6 +54,24 @@ function pruneTables(tables: SeatingTable[], guestIds: Set<string>): SeatingTabl
   return changed ? next : tables;
 }
 
+/**
+ * Chronological order, soonest first, with undated functions last.
+ *
+ * Enforced here rather than trusting the server's `sortBy=eventDate` default:
+ * the timeline renders this array positionally, and `selectNextFunction` used to
+ * fall back to its first entry, so any caller that passed a different `sortBy`
+ * — or any endpoint that stopped defaulting — would silently mis-order the
+ * timeline and name the wrong "Upcoming" function. Dates are zero-padded
+ * "YYYY-MM-DD", so a plain string compare sorts them correctly.
+ */
+function sortByDate(functions: WeddingFunction[]): WeddingFunction[] {
+  return [...functions].sort((a, b) => {
+    if (!a.date) return b.date ? 1 : 0;
+    if (!b.date) return -1;
+    return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+  });
+}
+
 export function weddingReducer(state: WeddingState, action: WeddingAction): WeddingState {
   switch (action.type) {
     case 'HYDRATE': {
@@ -61,6 +79,7 @@ export function weddingReducer(state: WeddingState, action: WeddingAction): Wedd
       return {
         ...state,
         ...snapshot,
+        functions: sortByDate(snapshot.functions),
         tables: pruneTables(state.tables, new Set(snapshot.guests.map(g => g.id))),
       };
     }
@@ -87,7 +106,7 @@ export function weddingReducer(state: WeddingState, action: WeddingAction): Wedd
       };
 
     case 'SET_FUNCTIONS':
-      return { ...state, functions: action.functions };
+      return { ...state, functions: sortByDate(action.functions) };
 
     case 'SET_TASKS':
       return { ...state, tasks: action.tasks };

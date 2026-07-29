@@ -124,6 +124,7 @@ export interface WeddingActions {
 
   // Budget
   addExpense: (input: ExpenseInput) => Promise<ActionResult>;
+  updateExpense: (id: ID, changes: Partial<ExpenseInput>) => Promise<ActionResult>;
   removeExpense: (id: ID) => Promise<ActionResult>;
 
   // Functions (API events)
@@ -396,7 +397,13 @@ export function WeddingProvider({
           const payload = {
             ...(changes.name !== undefined ? { name: changes.name } : {}),
             ...(changes.category !== undefined
-              ? { category: vendorCategoryToApi(changes.category) }
+              ? {
+                  category: vendorCategoryToApi(changes.category),
+                  // The API requires a label whenever the category is OTHER.
+                  ...(vendorCategoryToApi(changes.category) === 'OTHER'
+                    ? { customCategory: changes.category }
+                    : {}),
+                }
               : {}),
             ...(changes.phone !== undefined ? { phone: changes.phone } : {}),
             ...(changes.cost !== undefined ? { totalPrice: changes.cost } : {}),
@@ -566,6 +573,30 @@ export function WeddingProvider({
           await reloadBudget(id);
         }),
 
+      updateExpense: (itemId, changes) =>
+        write(async id => {
+          const category =
+            changes.category !== undefined ? budgetCategoryToApi(changes.category) : undefined;
+
+          await api.budget.updateItem(id, itemId, {
+            ...(category
+              ? {
+                  category,
+                  ...(category === 'OTHER' ? { customCategory: changes.category } : {}),
+                }
+              : {}),
+            ...(changes.title !== undefined ? { title: changes.title } : {}),
+            ...(changes.amount !== undefined ? { amount: changes.amount } : {}),
+            ...(changes.method !== undefined
+              ? { paymentMethod: paymentMethodToApi(changes.method) }
+              : {}),
+            ...(changes.notes !== undefined ? { notes: changes.notes } : {}),
+          });
+          // Editing an amount moves the category and overall totals, so the
+          // whole summary is refetched rather than patched locally.
+          await reloadBudget(id);
+        }),
+
       removeExpense: itemId =>
         write(async id => {
           await api.budget.removeItem(id, itemId);
@@ -592,7 +623,12 @@ export function WeddingProvider({
           await api.events.update(id, eventId, {
             ...(changes.name !== undefined ? { name: changes.name } : {}),
             ...(changes.date !== undefined ? { eventDate: toApiDate(changes.date) } : {}),
-            ...(changes.time !== undefined ? { startTime: changes.time } : {}),
+            // A blank time is omitted rather than sent. `startTime` is validated
+            // with `@Matches(HH:mm)` and NestJS's `@IsOptional()` only skips
+            // `undefined`/`null` — never '' — so an empty string is a 400, not a
+            // "clear this field". The upshot is that a start time can be changed
+            // but not removed; the API exposes no way to unset it.
+            ...(changes.time ? { startTime: changes.time } : {}),
             ...(changes.venue !== undefined ? { venueName: changes.venue } : {}),
           });
           await reloadFunctions(id);

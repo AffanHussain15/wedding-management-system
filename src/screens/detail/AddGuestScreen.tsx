@@ -7,6 +7,7 @@ import {
   Button,
   Icon,
   Input,
+  PhoneInput,
   FilterChip,
   FieldError,
   FormBanner,
@@ -14,11 +15,9 @@ import {
 import { useWedding } from '@store';
 import { GUEST_GROUPS, GUEST_SIDES } from '@constants';
 import type { GuestGroup, GuestSide } from '@types';
+import { isValidPhone, normalizePhone } from '@utils';
 import { colors, spacing } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
-
-/** The API only accepts E.164 phone numbers, e.g. +923001234567. */
-const E164_RULE = /^\+[1-9]\d{1,14}$/;
 
 export function AddGuestScreen(): React.JSX.Element {
   const nav = useAppNavigation();
@@ -36,8 +35,10 @@ export function AddGuestScreen(): React.JSX.Element {
   const save = async () => {
     const next: Record<string, string> = {};
     if (name.trim().length < 2) next.name = 'Enter a name of at least 2 characters.';
-    if (phone.trim() && !E164_RULE.test(phone.trim())) {
-      next.phone = 'Use international format, e.g. +923001234567.';
+    // The field collects the national number, so validate what it normalises to
+    // rather than the raw digits.
+    if (!isValidPhone(phone)) {
+      next.phone = 'Enter a valid mobile number, e.g. 0300 1234567.';
     }
     // The API constrains groupSize to an integer between 1 and 50.
     const size = Number(groupSize);
@@ -51,7 +52,7 @@ export function AddGuestScreen(): React.JSX.Element {
     setSaving(true);
     const result = await actions.addGuest({
       name: name.trim(),
-      phone: phone.trim(),
+      phone: normalizePhone(phone),
       group,
       side,
       groupSize: size,
@@ -89,13 +90,10 @@ export function AddGuestScreen(): React.JSX.Element {
         />
         <FieldError message={errors.name} />
 
-        <Input
-          label="Phone"
-          placeholder="+923001234567"
+        <PhoneInput
+          label="Phone (optional)"
           value={phone}
           onChangeText={setPhone}
-          keyboardType="phone-pad"
-          autoCapitalize="none"
           editable={!saving}
         />
         <FieldError message={errors.phone} />

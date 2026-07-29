@@ -20,7 +20,8 @@ const MONTHS_LONG = [
   'December',
 ] as const;
 
-const MONTHS_SHORT = [
+/** Month names for a calendar's month grid, January first. */
+export const MONTH_NAMES_SHORT = [
   'Jan',
   'Feb',
   'Mar',
@@ -62,7 +63,7 @@ export const getInitials = (name: string): string =>
  * null (an unset wedding date), which reaches here as '', so every caller has
  * to tolerate a missing value rather than rendering "January 1, 1900".
  */
-const parseDate = (iso: string): Date | null => {
+export const parseDate = (iso: string): Date | null => {
   if (!iso) return null;
   const [y, m, d] = iso.split('-').map(Number);
   if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return null;
@@ -81,7 +82,7 @@ export const formatDate = (
 ): string => {
   const d = parseDate(iso);
   if (!d) return fallback;
-  const month = (style === 'short' ? MONTHS_SHORT : MONTHS_LONG)[d.getMonth()];
+  const month = (style === 'short' ? MONTH_NAMES_SHORT : MONTHS_LONG)[d.getMonth()];
   if (style === 'long') return `${month} ${d.getDate()}, ${d.getFullYear()}`;
   return `${month} ${d.getDate()}`;
 };
@@ -104,18 +105,44 @@ export const relativeDay = (iso: string): string => {
   return `in ${days} days`;
 };
 
-/** Today as "YYYY-MM-DD", for date defaults in forms. */
-export const todayIso = (): string => {
-  const now = new Date();
-  const month = `${now.getMonth() + 1}`.padStart(2, '0');
-  const day = `${now.getDate()}`.padStart(2, '0');
-  return `${now.getFullYear()}-${month}-${day}`;
+/**
+ * Date → "YYYY-MM-DD" from the local calendar fields. Deliberately not
+ * `toISOString().slice(0, 10)`, which shifts to UTC and can land a day off.
+ */
+export const toIsoDate = (date: Date): string => {
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 };
 
-/** "YYYY-MM-DD" → full ISO timestamp for the API, or undefined when empty. */
+/** Today as "YYYY-MM-DD", for date defaults in forms. */
+export const todayIso = (): string => toIsoDate(new Date());
+
+/** "February 2027" — a calendar header. `month` is 0-based. */
+export const monthLabel = (year: number, month: number): string =>
+  `${MONTHS_LONG[month]} ${year}`;
+
+/** Days in a 0-based month (day 0 of the next month is this month's last). */
+export const daysInMonth = (year: number, month: number): number =>
+  new Date(year, month + 1, 0).getDate();
+
+/** Weekday of the 1st, 0 = Sunday — how many blanks the month grid starts with. */
+export const firstWeekdayOfMonth = (year: number, month: number): number =>
+  new Date(year, month, 1).getDay();
+
+/**
+ * "YYYY-MM-DD" → the value to send the API, or undefined when empty.
+ *
+ * Stays date-only instead of `toISOString()`. A local midnight converted to UTC
+ * lands on the *previous* day everywhere east of Greenwich — 2030-01-01 in
+ * Pakistan becomes 2029-12-31T19:00:00Z — and the API hands dates back by
+ * truncating at the 'T', so every date the user picked came back a day early.
+ * Every date field the app writes validates as `@IsDateString()` server-side,
+ * which accepts a bare date.
+ */
 export const toApiDate = (iso: string): string | undefined => {
   const d = parseDate(iso);
-  return d ? d.toISOString() : undefined;
+  return d ? toIsoDate(d) : undefined;
 };
 
 export const clamp = (value: number, min = 0, max = 100): number =>

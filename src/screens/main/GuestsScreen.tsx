@@ -21,7 +21,7 @@ import { canContribute } from '@services';
 import { useGuestPhotoCache } from '@hooks';
 import { GUEST_FILTERS, RSVP_STATUSES } from '@constants';
 import type { Guest, ID, RsvpStatus } from '@types';
-import { colors, radius, spacing, typography } from '@theme';
+import { colors, layout, radius, spacing, typography } from '@theme';
 import { rsvpStatusStyle } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
@@ -243,10 +243,19 @@ const GuestRow = React.memo(({ guest, photoUri, onCycleRsvp, onInvite }: GuestRo
           {guest.groupSize > 1 ? ` · ${guest.groupSize} people` : ''}
         </AppText>
       </View>
-      <Pressable onPress={() => onCycleRsvp(guest.id, guest.rsvp)} hitSlop={6}>
+      <Pressable
+        onPress={() => onCycleRsvp(guest.id, guest.rsvp)}
+        hitSlop={6}
+        accessibilityRole="button"
+        accessibilityLabel={`${guest.name} is ${guest.rsvp}. Change RSVP`}>
         <StatusBadge label={guest.rsvp} bg={rsvp.bg} color={rsvp.text} />
       </Pressable>
-      <Pressable style={styles.invite} onPress={() => onInvite(guest)} hitSlop={6}>
+      <Pressable
+        style={styles.invite}
+        onPress={() => onInvite(guest)}
+        hitSlop={6}
+        accessibilityRole="button"
+        accessibilityLabel={`Send invite to ${guest.name}`}>
         <Icon name="send" size={14} color={colors.primary} />
       </Pressable>
     </Card>
@@ -260,7 +269,8 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: spacing.xs,
-    paddingBottom: spacing.xxl,
+    // Clears the floating Fab, which would otherwise sit over the last row.
+    paddingBottom: layout.fabClearance,
   },
   title: {
     marginBottom: spacing.base,

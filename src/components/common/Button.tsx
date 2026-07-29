@@ -39,7 +39,12 @@ interface VariantStyle {
 }
 
 const VARIANTS: Record<ButtonVariant, VariantStyle> = {
-  primary: { bg: colors.transparent, text: colors.textOnPrimary },
+  // Painted maroon even though the gradient covers it: `GradientView` measures
+  // itself before it can draw, so a transparent base flashes an unpainted
+  // button on the first frame — and on Android an elevated view with no
+  // background has no rounded outline to cast its shadow from, which squares
+  // off the bottom corners.
+  primary: { bg: colors.primary, text: colors.textOnPrimary },
   secondary: { bg: colors.accent, text: colors.textOnAccent },
   outline: { bg: colors.transparent, text: colors.primary, border: colors.primary },
   ghost: { bg: colors.transparent, text: colors.primary },
@@ -87,7 +92,14 @@ export function Button({
       ) : (
         <View style={styles.content}>
           {leftIcon}
-          <AppText style={[typography.button, { color: v.text }]}>{label}</AppText>
+          {/* Single line, always: the button's height is fixed, so a wrapped
+              label overflows its box instead of growing it. Two of these side
+              by side in a card are narrow enough that "Save Changes" wrapped. */}
+          <AppText
+            numberOfLines={1}
+            style={[typography.button, styles.label, { color: v.text }]}>
+            {label}
+          </AppText>
           {rightIcon}
         </View>
       )}
@@ -104,7 +116,10 @@ const styles = StyleSheet.create({
   },
   md: {
     height: 54,
-    paddingHorizontal: spacing.xl,
+    // `base` rather than `xl`: two buttons sharing a row inside a card have
+    // ~90dp of text width left after 24dp gutters, which truncated ordinary
+    // two-word labels. Full-width buttons are unaffected either way.
+    paddingHorizontal: spacing.base,
   },
   sm: {
     height: 40,
@@ -124,8 +139,11 @@ const styles = StyleSheet.create({
   primaryShadow: {
     shadowColor: colors.primary,
     shadowOpacity: 0.28,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
+    // Reaches 6 + 14 = 20px below the button, which fits inside the smallest
+    // bottom padding the screens use (spacing.xl, 24). A taller lift gets
+    // sliced off at the container edge and reads as a cropped button.
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
     elevation: 6,
   },
   content: {
@@ -133,6 +151,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
+    // Lets the label shrink to the available width instead of pushing an icon
+    // out past the button's edge.
+    maxWidth: '100%',
+  },
+  label: {
+    flexShrink: 1,
   },
   pressed: {
     opacity: 0.9,

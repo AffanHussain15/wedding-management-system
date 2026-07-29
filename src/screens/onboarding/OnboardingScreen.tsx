@@ -1,61 +1,121 @@
-import React, { useRef, useState } from 'react';
-import { PanResponder, Pressable, StyleSheet, View } from 'react-native';
+/**
+ * Onboarding carousel.
+ *
+ * Paging is a native horizontal ScrollView rather than a PanResponder that
+ * swapped state on release: the cards now track the finger, rubber-band at the
+ * ends and settle with the platform's own fling curve. The dots and the Next
+ * button drive the same scroll offset, so every route to a slide animates.
+ */
 
-import { ScreenContainer, AppText, Button, StripedPlaceholder } from '@components';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+  type ImageSourcePropType,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
+
+import { ScreenContainer, AppText, Button } from '@components';
 import { colors, spacing, typography } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
 
-/** Horizontal travel that commits to a slide change, in px. */
-const SWIPE_THRESHOLD = 40;
+/** Screen gutter. Shared so the pager can cancel it and re-apply it per card. */
+const GUTTER = 24;
+
+/** Used only if an asset's dimensions can't be read; the current files' ratio. */
+const FALLBACK_RATIO = 1368 / 864;
 
 interface Slide {
   title: string;
   body: string;
-  image: string;
+  /**
+   * Required with a relative path, not the `@assets` alias: Metro resolves
+   * asset requires at bundle time and the module-resolver alias only covers the
+   * JS/TS extensions listed in babel.config.js.
+   */
+  image: ImageSourcePropType;
+  /** Spoken description of the artwork, for screen readers. */
+  alt: string;
+  /** Width ÷ height of `image`, filled in by `withRatio`. */
+  ratio: number;
+}
+
+function withRatio(slide: Omit<Slide, 'ratio'>): Slide {
+  const asset = Image.resolveAssetSource(slide.image);
+  return {
+    ...slide,
+    ratio: asset?.height ? asset.width / asset.height : FALLBACK_RATIO,
+  };
 }
 
 const SLIDES: Slide[] = [
-  {
+  withRatio({
     title: 'Manage every vendor in one place',
     body: 'Track bookings, payments, and contacts for caterers, decor, photography and more.',
-    image: 'Vendor management',
-  },
-  {
+    image: require('../../assets/images/onboarding-1-vendors.png'),
+    alt: 'A vendor list showing paid, advance and pending payment states',
+  }),
+  withRatio({
     title: 'Guests & budget, simplified',
     body: 'Real-time RSVP tracking and a visual budget breakdown — no spreadsheets.',
-    image: 'Guest list & budget',
-  },
-  {
+    image: require('../../assets/images/onboarding-2-guests-budget.png'),
+    alt: 'RSVP counts beside a budget breakdown chart',
+  }),
+  withRatio({
     title: 'Every function, on one timeline',
     body: 'From Dholki to Walima, keep your whole family in sync.',
-    image: 'Wedding timeline',
-  },
+    image: require('../../assets/images/onboarding-3-timeline.png'),
+    alt: 'A timeline of the Dholki, Mehndi, Baraat and Walima functions',
+  }),
 ];
 
 export function OnboardingScreen(): React.JSX.Element {
   const nav = useAppNavigation();
+  // Window width, not a measured layout: the page width has to be known on the
+  // first render or the cards start at zero width and the pager can't snap.
+  const { width } = useWindowDimensions();
+  const pager = useRef<ScrollView>(null);
   const [index, setIndex] = useState(0);
+  // Mirrors `index` for the scroll handler, which fires far more often than it
+  // needs to re-render and would otherwise close over a stale value.
+  const indexRef = useRef(0);
+
   const isLast = index === SLIDES.length - 1;
-  const slide = SLIDES[index];
+  const cardWidth = width - GUTTER * 2;
 
-  const next = () => (isLast ? nav.replace('Signup') : setIndex(i => i + 1));
+  const goTo = (target: number) => {
+    const clamped = Math.max(0, Math.min(target, SLIDES.length - 1));
+    pager.current?.scrollTo({ x: clamped * width, animated: true });
+    // Optimistic: the scroll handler confirms it, but the dots and the button
+    // label shouldn't wait for the animation to finish.
+    indexRef.current = clamped;
+    setIndex(clamped);
+  };
 
-  // Swipe left/right to page through the slides. `setIndex` is stable, so the
-  // responder can be built once.
-  const swipe = useRef(
-    PanResponder.create({
-      // Claim the gesture only once it reads as horizontal, so dot taps still land.
-      onMoveShouldSetPanResponder: (_e, g) =>
-        Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy),
-      onPanResponderRelease: (_e, g) => {
-        if (g.dx <= -SWIPE_THRESHOLD) {
-          setIndex(i => Math.min(i + 1, SLIDES.length - 1));
-        } else if (g.dx >= SWIPE_THRESHOLD) {
-          setIndex(i => Math.max(i - 1, 0));
-        }
-      },
-    }),
-  ).current;
+  const next = () => (isLast ? nav.replace('Signup') : goTo(index + 1));
+
+  // Page width is derived from the window, so a rotation leaves the old offset
+  // pointing between two cards. Re-align without animating.
+  useEffect(() => {
+    pager.current?.scrollTo({ x: indexRef.current * width, animated: false });
+  }, [width]);
+
+  // Flips the dots the moment a card passes the halfway line, so they track the
+  // finger instead of waiting for the fling to settle. Rounding clamps the
+  // rubber-band overscroll at both ends.
+  const onScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const page = Math.round(nativeEvent.contentOffset.x / width);
+    const clamped = Math.max(0, Math.min(page, SLIDES.length - 1));
+    if (clamped !== indexRef.current) {
+      indexRef.current = clamped;
+      setIndex(clamped);
+    }
+  };
 
   return (
     <ScreenContainer padded={false} contentContainerStyle={styles.root}>
@@ -67,27 +127,49 @@ export function OnboardingScreen(): React.JSX.Element {
         </Pressable>
       </View>
 
-      <View style={styles.center} {...swipe.panHandlers}>
-        <StripedPlaceholder height={190}>
-          <AppText variant="caption" color={colors.textMuted}>
-            {slide.image}
-          </AppText>
-        </StripedPlaceholder>
+      <View style={styles.center}>
+        <ScrollView
+          ref={pager}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          // Snappier settle than the default 'normal' drift.
+          decelerationRate="fast"
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          // Cancels the root gutter so the swipe area — and each card — spans
+          // the full screen; the gutter comes back inside the card.
+          style={styles.pager}>
+          {SLIDES.map(slide => (
+            <View key={slide.title} style={[styles.card, { width }]}>
+              <Image
+                source={slide.image}
+                // Explicit width: an Image left to size itself takes the asset's
+                // intrinsic 1368dp and overflows the card.
+                style={[styles.art, { width: cardWidth, aspectRatio: slide.ratio }]}
+                resizeMode="contain"
+                accessible
+                accessibilityRole="image"
+                accessibilityLabel={slide.alt}
+              />
 
-        <View>
-          <AppText style={[typography.serifTitle, styles.title]} center>
-            {slide.title}
-          </AppText>
-          <AppText variant="callout" color={colors.textSecondary} center style={styles.body}>
-            {slide.body}
-          </AppText>
-        </View>
+              <View style={{ width: cardWidth }}>
+                <AppText style={[typography.serifTitle, styles.title]} center>
+                  {slide.title}
+                </AppText>
+                <AppText variant="callout" color={colors.textSecondary} center style={styles.body}>
+                  {slide.body}
+                </AppText>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
 
         <View style={styles.dots}>
-          {SLIDES.map((_, i) => (
+          {SLIDES.map((slide, i) => (
             <Pressable
-              key={i}
-              onPress={() => setIndex(i)}
+              key={slide.title}
+              onPress={() => goTo(i)}
               hitSlop={12}
               accessibilityRole="button"
               accessibilityLabel={`Go to slide ${i + 1} of ${SLIDES.length}`}
@@ -115,9 +197,11 @@ export function OnboardingScreen(): React.JSX.Element {
 
 const styles = StyleSheet.create({
   root: {
-    paddingHorizontal: 24,
+    paddingHorizontal: GUTTER,
     paddingTop: spacing.sm,
-    paddingBottom: spacing.xl,
+    // Matches the other onboarding screens, and leaves room for the primary
+    // button's shadow below the last row.
+    paddingBottom: spacing.xxl,
   },
   top: {
     alignItems: 'flex-end',
@@ -126,6 +210,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     gap: spacing.xl,
+  },
+  pager: {
+    marginHorizontal: -GUTTER,
+  },
+  card: {
+    // Full screen width so paging snaps cleanly, with the contents centred at
+    // `cardWidth` — which restores the gutter the pager cancelled, keeping the
+    // artwork aligned with the Next button.
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xl,
+  },
+  art: {
+    maxHeight: 240,
   },
   title: {
     marginBottom: spacing.sm,
@@ -152,5 +250,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     gap: spacing.md,
+    marginBottom: spacing.sm,
+    overflow: 'visible',
   },
 });

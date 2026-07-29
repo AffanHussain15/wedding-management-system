@@ -14,6 +14,7 @@ import {
   Avatar,
   Button,
   Input,
+  DateField,
   Icon,
   StatusBadge,
   FieldError,
@@ -34,8 +35,6 @@ const ROLE_LABELS: Record<string, string> = {
   FAMILY_MEMBER: 'Family',
   VIEWER: 'Viewer',
 };
-
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function ProfileScreen(): React.JSX.Element {
   const nav = useAppNavigation();
@@ -81,9 +80,7 @@ export function ProfileScreen(): React.JSX.Element {
   const submit = async () => {
     const next: Record<string, string> = {};
     if (!bride.trim() && !groom.trim()) next.bride = 'Enter at least one name.';
-    if (date.trim() && !ISO_DATE.test(date.trim())) {
-      next.weddingDate = 'Use the format YYYY-MM-DD.';
-    }
+    // The date comes from the calendar, so it is either a real day or ''.
     if (budget.trim() && !(Number(budget) > 0)) {
       next.totalBudget = 'Enter a positive amount, or leave blank.';
     }
@@ -214,13 +211,21 @@ export function ProfileScreen(): React.JSX.Element {
             autoCapitalize="words"
             editable={!save.loading}
           />
-          <Input
+          {/* Deliberately unbounded. A `min` of today made every earlier day
+              untappable, so a user correcting a mistyped date — or whose device
+              clock runs ahead — could not select the day they wanted, and
+              tapping Done just re-committed the date already on file. It read as
+              "the date won't save". The backend accepts a past wedding date
+              (it only attaches a warning on create), so the UI shouldn't be
+              stricter than the API it writes to. */}
+          <DateField
             label="Wedding date"
+            title="Pick the wedding date"
             value={date}
-            onChangeText={setDate}
-            placeholder="YYYY-MM-DD"
-            autoCapitalize="none"
-            editable={!save.loading}
+            onChange={setDate}
+            placeholder="Tap to pick a date"
+            disabled={save.loading}
+            clearable
           />
           <FieldError message={errors.weddingDate} />
           <Input

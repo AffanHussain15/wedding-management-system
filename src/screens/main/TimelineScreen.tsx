@@ -6,6 +6,7 @@ import {
   AppText,
   Card,
   StatusBadge,
+  Icon,
   Fab,
   LoadingState,
   ErrorState,
@@ -14,8 +15,14 @@ import {
 import { useWedding } from '@store';
 import { canContribute } from '@services';
 import type { WeddingFunction } from '@types';
-import { colors, radius, spacing, typography } from '@theme';
-import { formatDate, functionDotColor, functionStatusStyle, functionStatusLabel } from '@utils';
+import { colors, layout, radius, spacing, typography } from '@theme';
+import {
+  formatDate,
+  functionDotColor,
+  functionIcon,
+  functionStatusStyle,
+  functionStatusLabel,
+} from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 export function TimelineScreen(): React.JSX.Element {
@@ -82,7 +89,9 @@ function TimelineItem({ fn, onPress }: { fn: WeddingFunction; onPress: () => voi
   const status = functionStatusStyle(fn.status);
   // The list endpoint doesn't return startTime, so the time line is only shown
   // once the detail screen has been opened; here date and venue are enough.
-  const meta = [formatDate(fn.date, 'monthDay', 'Date not set'), fn.time]
+  // 'long' keeps the year: without it a function in the wrong year looked
+  // identical to one a few weeks away.
+  const meta = [formatDate(fn.date, 'long', 'Date not set'), fn.time]
     .filter(Boolean)
     .join(' · ');
 
@@ -91,6 +100,15 @@ function TimelineItem({ fn, onPress }: { fn: WeddingFunction; onPress: () => voi
       <View style={[styles.dot, { backgroundColor: functionDotColor(fn.status) }]} />
       <Card onPress={onPress} style={styles.card}>
         <View style={styles.cardTop}>
+          {/* Tinted to the status dot, so the glyph and the rail read together. */}
+          <View style={[styles.badge, { backgroundColor: functionDotColor(fn.status) }]}>
+            <Icon
+              name={functionIcon(fn.name)}
+              size={15}
+              color={colors.textOnPrimary}
+              strokeWidth={1.9}
+            />
+          </View>
           <AppText variant="title" style={styles.name} numberOfLines={1}>
             {fn.name}
           </AppText>
@@ -116,7 +134,8 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: spacing.xs,
-    paddingBottom: spacing.xxl,
+    // Clears the floating Fab, which would otherwise sit over the last row.
+    paddingBottom: layout.fabClearance,
   },
   title: {
     marginBottom: spacing.lg,
@@ -155,6 +174,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: spacing.xxs,
+  },
+  badge: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
   },
   name: {
     flex: 1,
