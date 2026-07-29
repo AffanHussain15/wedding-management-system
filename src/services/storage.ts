@@ -1,17 +1,18 @@
 /**
  * Key/value persistence for the auth session.
  *
- * React Native ships no storage API, and adding a native module would force a
- * rebuild, so this resolves `@react-native-async-storage/async-storage`
- * lazily and falls back to an in-memory store when it isn't installed. The
- * app therefore runs today; installing the package upgrades it to real
- * persistence with no code change:
+ * React Native ships no storage API, so this is backed by
+ * `@react-native-async-storage/async-storage`, resolved at runtime rather than
+ * imported statically: the fallback below then keeps the JS bundle working even
+ * when the native side hasn't been rebuilt since the package was added.
  *
- *   npm i @react-native-async-storage/async-storage
- *   cd ios && pod install    # iOS only
+ * The fallback is in-memory, which means the session lasts only as long as the
+ * JS context — a reload logs the user out. So if a signed-in user keeps landing
+ * back on onboarding, the native module isn't linked; rebuild rather than
+ * chasing it through the auth code:
  *
- * Until then the session lives only for the lifetime of the JS context, i.e.
- * the user is logged out on every cold start.
+ *   cd ios && pod install && cd .. && npm run ios    # iOS
+ *   npm run android                                  # Android
  */
 
 export interface StorageAdapter {
@@ -33,21 +34,24 @@ const memoryAdapter: StorageAdapter = {
 };
 
 function resolveAdapter(): StorageAdapter {
+  let failure: unknown = null;
   try {
-    // Resolved at runtime on purpose: a static import of a package that may not
-    // be installed would fail the Metro bundle outright.
+    // Resolved at runtime on purpose: a static import would fail the whole
+    // Metro bundle when the package is absent or its native side is unlinked.
     const mod = require('@react-native-async-storage/async-storage');
     const impl: StorageAdapter | undefined = mod?.default ?? mod;
     if (impl && typeof impl.getItem === 'function') {
       return impl;
     }
-  } catch {
-    // Package not installed — fall through to the in-memory adapter.
+  } catch (error) {
+    failure = error;
   }
   if (__DEV__) {
     console.warn(
-      '[storage] @react-native-async-storage/async-storage not found; ' +
-        'the session will not survive an app restart.',
+      '[storage] AsyncStorage unavailable — the session will not survive a ' +
+        'reload. The package is a dependency, so this almost always means the ' +
+        'native module is not linked yet: rebuild the app (pod install on iOS).',
+      failure,
     );
   }
   return memoryAdapter;

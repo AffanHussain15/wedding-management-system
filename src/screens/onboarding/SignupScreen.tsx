@@ -12,13 +12,12 @@ import {
 } from '@components';
 import { useAuth } from '@store';
 import { useMutation } from '@hooks';
+import { E164_PHONE } from '@constants';
 import { colors, radius, spacing, typography } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
 
 /** Mirrors the backend's RegisterDto rule: 8+ chars, one uppercase, one digit. */
 const PASSWORD_RULE = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-/** The API only accepts E.164, e.g. +923001234567. */
-const E164_RULE = /^\+[1-9]\d{1,14}$/;
 
 export function SignupScreen(): React.JSX.Element {
   const nav = useAppNavigation();
@@ -49,7 +48,7 @@ export function SignupScreen(): React.JSX.Element {
     if (!PASSWORD_RULE.test(password)) {
       next.password = 'At least 8 characters, with one uppercase letter and one number.';
     }
-    if (phone.trim() && !E164_RULE.test(phone.trim())) {
+    if (phone.trim() && !E164_PHONE.test(phone.trim())) {
       next.phone = 'Use international format, e.g. +923001234567.';
     }
     setLocalErrors(next);

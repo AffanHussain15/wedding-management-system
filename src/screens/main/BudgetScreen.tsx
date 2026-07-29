@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import {
   ScreenContainer,
@@ -8,6 +8,7 @@ import {
   DonutChart,
   ProgressBar,
   StatusBadge,
+  Icon,
   Fab,
   LoadingState,
   ErrorState,
@@ -129,7 +130,16 @@ export function BudgetScreen(): React.JSX.Element {
             <SectionHeader title="Recent expenses" style={styles.section} />
             <View style={styles.list}>
               {state.expenses.slice(0, 10).map(expense => (
-                <ExpenseRow key={expense.id} expense={expense} />
+                <ExpenseRow
+                  key={expense.id}
+                  expense={expense}
+                  // Vendor-synced entries are owned by the vendor's payment.
+                  onEdit={
+                    mayEdit && !expense.fromVendorPayment
+                      ? () => nav.navigate('AddExpense', { expenseId: expense.id })
+                      : undefined
+                  }
+                />
               ))}
             </View>
           </>
@@ -197,9 +207,16 @@ function CategoryCard({
   );
 }
 
-function ExpenseRow({ expense }: { expense: Expense }): React.JSX.Element {
-  return (
-    <Card style={styles.expense}>
+function ExpenseRow({
+  expense,
+  onEdit,
+}: {
+  expense: Expense;
+  /** Omitted when the row can't be edited — by role, or by vendor ownership. */
+  onEdit?: () => void;
+}): React.JSX.Element {
+  const body = (
+    <>
       <View style={styles.expenseBody}>
         <AppText variant="label" color={colors.text} numberOfLines={1}>
           {expense.title}
@@ -213,7 +230,7 @@ function ExpenseRow({ expense }: { expense: Expense }): React.JSX.Element {
           Rs {formatNumber(expense.amount)}
         </AppText>
         {/* Vendor-synced items are read-only server-side; label them so the
-            missing edit/delete affordance makes sense. */}
+            missing edit affordance makes sense. */}
         {expense.fromVendorPayment ? (
           <StatusBadge
             label="Vendor"
@@ -222,7 +239,20 @@ function ExpenseRow({ expense }: { expense: Expense }): React.JSX.Element {
           />
         ) : null}
       </View>
-    </Card>
+      {onEdit ? <Icon name="pencil" size={15} color={colors.textMuted} /> : null}
+    </>
+  );
+
+  if (!onEdit) return <Card style={styles.expense}>{body}</Card>;
+
+  return (
+    <Pressable
+      onPress={onEdit}
+      accessibilityRole="button"
+      accessibilityLabel={`Edit ${expense.title}`}
+      style={({ pressed }) => pressed && styles.pressed}>
+      <Card style={styles.expense}>{body}</Card>
+    </Pressable>
   );
 }
 
@@ -306,5 +336,8 @@ const styles = StyleSheet.create({
   expenseRight: {
     alignItems: 'flex-end',
     gap: spacing.xxs,
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });

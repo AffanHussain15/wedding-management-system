@@ -11,13 +11,10 @@ import {
   FormBanner,
 } from '@components';
 import { useWedding } from '@store';
-import { GUEST_GROUPS, GUEST_SIDES } from '@constants';
+import { E164_PHONE, GUEST_GROUPS, GUEST_SIDES } from '@constants';
 import type { GuestGroup, GuestSide } from '@types';
 import { colors, spacing } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
-
-/** The API only accepts E.164 phone numbers, e.g. +923001234567. */
-const E164_RULE = /^\+[1-9]\d{1,14}$/;
 
 export function AddGuestScreen(): React.JSX.Element {
   const nav = useAppNavigation();
@@ -35,7 +32,7 @@ export function AddGuestScreen(): React.JSX.Element {
   const save = async () => {
     const next: Record<string, string> = {};
     if (name.trim().length < 2) next.name = 'Enter a name of at least 2 characters.';
-    if (phone.trim() && !E164_RULE.test(phone.trim())) {
+    if (phone.trim() && !E164_PHONE.test(phone.trim())) {
       next.phone = 'Use international format, e.g. +923001234567.';
     }
     // The API constrains groupSize to an integer between 1 and 50.

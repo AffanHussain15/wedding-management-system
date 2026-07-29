@@ -46,6 +46,11 @@ export interface AuthContextValue {
   profile: CurrentUser | null;
   weddings: WeddingMembershipSummary[];
   activeWeddingId: string | null;
+  /**
+   * False while `GET /users/me` is still in flight, so callers can tell "no
+   * weddings" apart from "memberships not known yet".
+   */
+  profileLoaded: boolean;
   /** Set when the user is signed in but belongs to no wedding yet. */
   needsWeddingSetup: boolean;
   /** Non-fatal message from the last profile load, for a retry banner. */
@@ -164,12 +169,15 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
 
   const applyAuthResult = useCallback(
     async (result: { user: Session['user']; accessToken: string; refreshToken: string }) => {
+      // Drop any previous user's profile *before* the session lands, so the
+      // render `setSession` triggers can't be decided on their memberships.
+      setProfile(null);
+      setProfileLoaded(false);
       await setSession({
         user: result.user,
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
       });
-      setProfileLoaded(false);
       // Fetch the profile immediately so the navigator knows whether to show
       // the app or the wedding-setup flow without an intermediate flash.
       await loadProfile();
@@ -261,6 +269,7 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
       profile,
       weddings: profile?.weddings ?? [],
       activeWeddingId,
+      profileLoaded,
       // Only meaningful once the profile has actually loaded, otherwise every
       // cold start would briefly claim the user has no weddings.
       needsWeddingSetup:

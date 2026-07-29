@@ -1,34 +1,54 @@
 import React, { useRef, useState } from 'react';
-import { PanResponder, Pressable, StyleSheet, View } from 'react-native';
+import {
+  Image,
+  PanResponder,
+  Pressable,
+  StyleSheet,
+  View,
+  type ImageSourcePropType,
+} from 'react-native';
 
-import { ScreenContainer, AppText, Button, StripedPlaceholder } from '@components';
+import { ScreenContainer, AppText, Button } from '@components';
 import { colors, spacing, typography } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
 
 /** Horizontal travel that commits to a slide change, in px. */
 const SWIPE_THRESHOLD = 40;
 
+/** Artwork aspect ratio (1370 × 864), so the box matches the file. */
+const ART_RATIO = 1370 / 864;
+
 interface Slide {
   title: string;
   body: string;
-  image: string;
+  /**
+   * Required with a relative path, not the `@assets` alias: Metro resolves
+   * asset requires at bundle time and the module-resolver alias only covers the
+   * JS/TS extensions listed in babel.config.js.
+   */
+  image: ImageSourcePropType;
+  /** Spoken description of the artwork, for screen readers. */
+  alt: string;
 }
 
 const SLIDES: Slide[] = [
   {
     title: 'Manage every vendor in one place',
     body: 'Track bookings, payments, and contacts for caterers, decor, photography and more.',
-    image: 'Vendor management',
+    image: require('../../assets/images/onboarding-1-vendors.png'),
+    alt: 'A vendor list showing paid, advance and pending payment states',
   },
   {
     title: 'Guests & budget, simplified',
     body: 'Real-time RSVP tracking and a visual budget breakdown — no spreadsheets.',
-    image: 'Guest list & budget',
+    image: require('../../assets/images/onboarding-2-guests-budget.png'),
+    alt: 'RSVP counts beside a budget breakdown chart',
   },
   {
     title: 'Every function, on one timeline',
     body: 'From Dholki to Walima, keep your whole family in sync.',
-    image: 'Wedding timeline',
+    image: require('../../assets/images/onboarding-3-timeline.png'),
+    alt: 'A timeline of the Dholki, Mehndi, Baraat and Walima functions',
   },
 ];
 
@@ -68,11 +88,16 @@ export function OnboardingScreen(): React.JSX.Element {
       </View>
 
       <View style={styles.center} {...swipe.panHandlers}>
-        <StripedPlaceholder height={190}>
-          <AppText variant="caption" color={colors.textMuted}>
-            {slide.image}
-          </AppText>
-        </StripedPlaceholder>
+        <Image
+          source={slide.image}
+          style={styles.art}
+          // The artwork carries its own cream card and rounded corners, so it is
+          // fitted rather than cropped.
+          resizeMode="contain"
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel={slide.alt}
+        />
 
         <View>
           <AppText style={[typography.serifTitle, styles.title]} center>
@@ -117,7 +142,9 @@ const styles = StyleSheet.create({
   root: {
     paddingHorizontal: 24,
     paddingTop: spacing.sm,
-    paddingBottom: spacing.xl,
+    // Matches the other onboarding screens, and leaves room for the primary
+    // button's shadow below the last row.
+    paddingBottom: spacing.xxl,
   },
   top: {
     alignItems: 'flex-end',
@@ -126,6 +153,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     gap: spacing.xl,
+  },
+  art: {
+    width: '100%',
+    aspectRatio: ART_RATIO,
+    // Caps the artwork on tall screens and lets it shrink on short ones, so the
+    // title, body and dots below it always fit without scrolling.
+    maxHeight: 240,
+    alignSelf: 'center',
   },
   title: {
     marginBottom: spacing.sm,
@@ -152,5 +187,9 @@ const styles = StyleSheet.create({
   },
   footer: {
     gap: spacing.md,
+    marginBottom: spacing.sm,
+    // Android clips a child's elevation shadow at its parent's bounds, and the
+    // footer ends flush with the button on the slides that have no login line.
+    overflow: 'visible',
   },
 });

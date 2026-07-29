@@ -39,7 +39,12 @@ interface VariantStyle {
 }
 
 const VARIANTS: Record<ButtonVariant, VariantStyle> = {
-  primary: { bg: colors.transparent, text: colors.textOnPrimary },
+  // Painted maroon even though the gradient covers it: `GradientView` measures
+  // itself before it can draw, so a transparent base flashes an unpainted
+  // button on the first frame — and on Android an elevated view with no
+  // background has no rounded outline to cast its shadow from, which squares
+  // off the bottom corners.
+  primary: { bg: colors.primary, text: colors.textOnPrimary },
   secondary: { bg: colors.accent, text: colors.textOnAccent },
   outline: { bg: colors.transparent, text: colors.primary, border: colors.primary },
   ghost: { bg: colors.transparent, text: colors.primary },
@@ -124,8 +129,11 @@ const styles = StyleSheet.create({
   primaryShadow: {
     shadowColor: colors.primary,
     shadowOpacity: 0.28,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
+    // Reaches 6 + 14 = 20px below the button, which fits inside the smallest
+    // bottom padding the screens use (spacing.xl, 24). A taller lift gets
+    // sliced off at the container edge and reads as a cropped button.
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
     elevation: 6,
   },
   content: {

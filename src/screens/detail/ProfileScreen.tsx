@@ -14,6 +14,7 @@ import {
   Avatar,
   Button,
   Input,
+  DateField,
   Icon,
   StatusBadge,
   FieldError,
@@ -25,7 +26,7 @@ import { api, canEdit } from '@services';
 import { useAuth, useWedding } from '@store';
 import { useMutation } from '@hooks';
 import { colors, radius, spacing, statusColors, typography } from '@theme';
-import { formatDate, formatNumber } from '@utils';
+import { formatDate, formatNumber, todayIso } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -34,8 +35,6 @@ const ROLE_LABELS: Record<string, string> = {
   FAMILY_MEMBER: 'Family',
   VIEWER: 'Viewer',
 };
-
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function ProfileScreen(): React.JSX.Element {
   const nav = useAppNavigation();
@@ -81,9 +80,7 @@ export function ProfileScreen(): React.JSX.Element {
   const submit = async () => {
     const next: Record<string, string> = {};
     if (!bride.trim() && !groom.trim()) next.bride = 'Enter at least one name.';
-    if (date.trim() && !ISO_DATE.test(date.trim())) {
-      next.weddingDate = 'Use the format YYYY-MM-DD.';
-    }
+    // The date comes from the calendar, so it is either a real day or ''.
     if (budget.trim() && !(Number(budget) > 0)) {
       next.totalBudget = 'Enter a positive amount, or leave blank.';
     }
@@ -214,13 +211,17 @@ export function ProfileScreen(): React.JSX.Element {
             autoCapitalize="words"
             editable={!save.loading}
           />
-          <Input
+          <DateField
             label="Wedding date"
+            title="Pick the wedding date"
             value={date}
-            onChangeText={setDate}
-            placeholder="YYYY-MM-DD"
-            autoCapitalize="none"
-            editable={!save.loading}
+            onChange={setDate}
+            placeholder="Tap to pick a date"
+            disabled={save.loading}
+            // Re-picking a date only moves it forward; an already-past date is
+            // left alone unless the user chooses a new one.
+            min={todayIso()}
+            clearable
           />
           <FieldError message={errors.weddingDate} />
           <Input

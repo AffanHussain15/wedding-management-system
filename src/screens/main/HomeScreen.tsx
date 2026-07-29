@@ -26,6 +26,7 @@ import {
   selectNextFunction,
   selectReminders,
 } from '@store';
+import { joinCoupleName } from '@services';
 import { colors, radius, shadows, spacing, typography, weight } from '@theme';
 import { formatDate, formatNumber, functionDotColor } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
@@ -47,7 +48,12 @@ export function HomeScreen(): React.JSX.Element {
   const next = selectNextFunction(state);
   const reminders = selectReminders(state);
 
-  const weddingDate = formatDate(wedding.weddingDate, 'long');
+  // Dulhan first, then Dulha. `joinCoupleName` drops the separator when one
+  // side is missing, so a half-filled name never renders a dangling "&".
+  const couple = joinCoupleName(wedding.bride, wedding.groom) || 'Your wedding';
+  // Empty fallback: the hero already says "Set your date" when there is none,
+  // so the line below it shouldn't repeat "Date not set".
+  const weddingDate = formatDate(wedding.weddingDate, 'long', '');
   const initials =
     `${wedding.bride[0] ?? ''}${wedding.groom[0] ?? ''}`.toUpperCase() || '–';
   // The venue/city line has to survive either part being unset.
@@ -87,9 +93,7 @@ export function HomeScreen(): React.JSX.Element {
             <AppText variant="caption" color={colors.textSecondary}>
               Welcome back / Ghar
             </AppText>
-            <AppText style={typography.serifTitle}>
-              {wedding.bride} & {wedding.groom}
-            </AppText>
+            <AppText style={typography.serifTitle}>{couple}</AppText>
           </View>
           <View style={styles.headerActions}>
             <Pressable style={styles.iconButton} onPress={() => nav.navigate('Reminders')}>
