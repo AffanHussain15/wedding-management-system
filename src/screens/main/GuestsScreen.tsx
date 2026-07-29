@@ -18,6 +18,7 @@ import {
 } from '@components';
 import { useWedding, selectGuestCounts } from '@store';
 import { canContribute } from '@services';
+import { useGuestPhotoCache } from '@hooks';
 import { GUEST_FILTERS, RSVP_STATUSES } from '@constants';
 import type { Guest, ID, RsvpStatus } from '@types';
 import { colors, radius, spacing, typography } from '@theme';
@@ -30,6 +31,7 @@ export function GuestsScreen(): React.JSX.Element {
   const nav = useAppNavigation();
   const { state, actions, loading, refreshing, error, refresh, hasData } = useWedding();
   const counts = selectGuestCounts(state);
+  const { getPhoto } = useGuestPhotoCache();
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<Filter>('All');
@@ -91,9 +93,14 @@ export function GuestsScreen(): React.JSX.Element {
 
   const renderItem = useCallback(
     ({ item }: { item: Guest }) => (
-      <GuestRow guest={item} onCycleRsvp={cycleRsvp} onInvite={invite} />
+      <GuestRow
+        guest={item}
+        photoUri={getPhoto(item.phone)}
+        onCycleRsvp={cycleRsvp}
+        onInvite={invite}
+      />
     ),
-    [cycleRsvp, invite],
+    [cycleRsvp, getPhoto, invite],
   );
 
   const renderFilterBar = useCallback(
@@ -186,7 +193,14 @@ export function GuestsScreen(): React.JSX.Element {
         />
       </ScreenContainer>
 
-      {mayEdit ? <Fab onPress={() => nav.navigate('AddGuest')} /> : null}
+      {mayEdit ? (
+        <Fab
+          actions={[
+            { label: 'Add Guest', onPress: () => nav.navigate('AddGuest') },
+            { label: 'Import from Contacts', onPress: () => nav.navigate('ImportContacts') },
+          ]}
+        />
+      ) : null}
       <Toast message={toast} visible={!!toast} />
     </View>
   );
@@ -209,16 +223,17 @@ function MiniStat({ value, label, color }: { value: number; label: string; color
 
 interface GuestRowProps {
   guest: Guest;
+  photoUri?: string;
   onCycleRsvp: (id: ID, current: RsvpStatus) => void;
   onInvite: (guest: Guest) => void;
 }
 
-const GuestRow = React.memo(({ guest, onCycleRsvp, onInvite }: GuestRowProps) => {
+const GuestRow = React.memo(({ guest, photoUri, onCycleRsvp, onInvite }: GuestRowProps) => {
   const rsvp = rsvpStatusStyle(guest.rsvp);
 
   return (
     <Card style={styles.row}>
-      <Avatar name={guest.name} size={40} />
+      <Avatar name={guest.name} photoUri={photoUri} size={40} />
       <View style={styles.rowBody}>
         <AppText variant="label" color={colors.text} numberOfLines={1}>
           {guest.name}

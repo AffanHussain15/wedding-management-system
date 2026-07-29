@@ -18,6 +18,7 @@ export { TimelineScreen } from './main/TimelineScreen';
 export { VendorDetailScreen } from './detail/VendorDetailScreen';
 export { AddVendorScreen } from './detail/AddVendorScreen';
 export { AddGuestScreen } from './detail/AddGuestScreen';
+export { ImportContactsScreen } from './detail/ImportContactsScreen';
 export { AddExpenseScreen } from './detail/AddExpenseScreen';
 export { FunctionDetailScreen } from './detail/FunctionDetailScreen';
 export { AddFunctionScreen } from './detail/AddFunctionScreen';

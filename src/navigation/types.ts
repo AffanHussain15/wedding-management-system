@@ -33,6 +33,7 @@ export type RootStackParamList = {
   VendorDetail: { vendorId: string };
   AddVendor: undefined;
   AddGuest: undefined;
+  ImportContacts: undefined;
   AddExpense: undefined;
   FunctionDetail: { functionId: string };
   AddFunction: undefined;

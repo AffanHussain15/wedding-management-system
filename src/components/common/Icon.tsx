@@ -28,7 +28,8 @@ export type IconName =
   | 'vendors'
   | 'guests'
   | 'budget'
-  | 'timeline';
+  | 'timeline'
+  | 'contacts';
 
 export interface IconProps {
   name: IconName;
@@ -221,6 +222,14 @@ export function Icon({
           <Rect x={4} y={5} width={16} height={15} rx={2} {...p} />
           <Path d="M4 9h16" {...p} />
           <Path d="M8 3v4M16 3v4" {...p} />
+        </Svg>
+      );
+    case 'contacts':
+      return (
+        <Svg {...svgProps}>
+          <Rect x={4} y={2} width={16} height={20} rx={2} {...p} />
+          <Circle cx={12} cy={10} r={2.5} {...p} />
+          <Path d="M8 17a4 4 0 0 1 8 0" {...p} />
         </Svg>
       );
   }

@@ -61,9 +61,14 @@ export type { Session } from './session';
 export { setUnauthorizedHandler } from './client';
 export type { ApiResponse, QueryParams, RequestOptions } from './client';
 
-// Storage (for swapping in a secure/persistent adapter)
-export { isPersistent, setStorageAdapter } from './storage';
+// Storage (for swapping in a secure/persistent adapter, or reading/writing
+// arbitrary local-only data such as the imported-guest photo cache)
+export { isPersistent, setStorageAdapter, readJson, writeJson } from './storage';
 export type { StorageAdapter } from './storage';
+
+// Device contacts (Import Contacts flow)
+export { requestContactsAccess, getDeviceContacts } from './contacts';
+export type { ContactsPermissionStatus, DeviceContact } from './contacts';
 
 // Config
 export { API_BASE_URL, API_HOST } from './config';

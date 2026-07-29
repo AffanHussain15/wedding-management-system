@@ -5,6 +5,7 @@ import {
   ScreenContainer,
   AppText,
   Button,
+  Icon,
   Input,
   FilterChip,
   FieldError,
@@ -69,6 +70,14 @@ export function AddGuestScreen(): React.JSX.Element {
     <ScreenContainer scroll padded={false} contentContainerStyle={styles.content}>
       <View style={styles.form}>
         <FormBanner message={banner} />
+
+        <Button
+          label="Import from Contacts"
+          variant="outline"
+          leftIcon={<Icon name="contacts" size={16} color={colors.primary} />}
+          onPress={() => nav.replace('ImportContacts')}
+          disabled={saving}
+        />
 
         <Input
           label="Guest name"

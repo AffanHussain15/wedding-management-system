@@ -4,6 +4,8 @@ export type { AuthContextValue } from './AuthContext';
 export { WeddingProvider, useWedding } from './WeddingContext';
 export type {
   ActionResult,
+  ContactImportCandidate,
+  ImportGuestsResult,
   WeddingActions,
   WeddingContextValue,
   WeddingProviderProps,
