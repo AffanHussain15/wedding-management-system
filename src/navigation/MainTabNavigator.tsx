@@ -13,9 +13,6 @@ import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-// Soft maroon tint that fades in behind the active tab.
-const ACTIVE_PILL = 'rgba(109,15,43,0.08)';
-
 const TAB_META: Record<keyof MainTabParamList, { label: string; icon: IconName }> = {
   Home: { label: 'Home', icon: 'home' },
   Vendors: { label: 'Vendors', icon: 'vendors' },
@@ -35,7 +32,7 @@ function TabButton({
   onPress: () => void;
   onLongPress: () => void;
 }) {
-  // Spring toward 1 when focused, 0 when not — drives the pop + pill fade.
+  // Spring toward 1 when focused, 0 when not — drives the lift.
   const anim = useRef(new Animated.Value(focused ? 1 : 0)).current;
 
   useEffect(() => {
@@ -48,16 +45,27 @@ function TabButton({
   }, [focused, anim]);
 
   const meta = TAB_META[name];
+  // The active tab is marked by colour alone — no pill or fill behind it — so
+  // the icon and label carry the whole signal. Weight shifts with it, since
+  // colour on its own is a weak cue for anyone who can't distinguish it.
   const color = focused ? colors.primary : colors.textMuted;
   // Lift only — no scaling, so the SVG icon stays crisp instead of blurring.
   const translateY = anim.interpolate({ inputRange: [0, 1], outputRange: [0, -3] });
 
   return (
-    <Pressable style={styles.item} onPress={onPress} onLongPress={onLongPress} hitSlop={4}>
-      <Animated.View style={[styles.pill, { opacity: anim }]} />
+    <Pressable
+      style={styles.item}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      hitSlop={4}
+      accessibilityRole="button"
+      accessibilityLabel={meta.label}
+      accessibilityState={{ selected: focused }}>
       <Animated.View style={[styles.itemInner, { transform: [{ translateY }] }]}>
-        <Icon name={meta.icon} size={23} color={color} strokeWidth={2} />
-        <Text style={[styles.labelEn, { color }]}>{meta.label}</Text>
+        <Icon name={meta.icon} size={23} color={color} strokeWidth={focused ? 2.4 : 2} />
+        <Text style={[styles.labelEn, focused ? styles.labelActive : styles.labelIdle, { color }]}>
+          {meta.label}
+        </Text>
       </Animated.View>
     </Pressable>
   );
@@ -67,6 +75,9 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
   return (
+    // The white sheet is the outer view, so it runs edge to edge and down
+    // through the gesture area. Previously the white card sat inset inside a
+    // cream wrapper, which framed it in a band of background colour.
     <View style={[styles.barWrap, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       <View style={styles.bar}>
         {state.routes.map((route, index) => {
@@ -121,24 +132,23 @@ export function MainTabNavigator(): React.JSX.Element {
 
 const styles = StyleSheet.create({
   barWrap: {
-    backgroundColor: colors.background,
-    paddingHorizontal: 14,
-    paddingTop: 6,
+    backgroundColor: colors.surface,
+    paddingTop: 8,
+    // Rounded at the top only: the sheet meets the bottom of the screen, so
+    // rounding there would just expose cream in the two corners again.
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    // Shadow cast upward, onto the content the sheet sits over.
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 12,
   },
   bar: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: 22,
-    paddingVertical: 8,
     paddingHorizontal: 6,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderSubtle,
-    // Floating shadow so the bar reads as detached from the screen edge.
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 10,
+    paddingBottom: 8,
   },
   item: {
     flex: 1,
@@ -149,18 +159,14 @@ const styles = StyleSheet.create({
   itemInner: {
     alignItems: 'center',
   },
-  pill: {
-    position: 'absolute',
-    top: 2,
-    left: 8,
-    right: 8,
-    bottom: 2,
-    borderRadius: 16,
-    backgroundColor: ACTIVE_PILL,
-  },
   labelEn: {
     fontSize: 11,
     marginTop: 4,
+  },
+  labelActive: {
     ...weight('bold'),
+  },
+  labelIdle: {
+    ...weight('medium'),
   },
 });
