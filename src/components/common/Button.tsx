@@ -92,7 +92,14 @@ export function Button({
       ) : (
         <View style={styles.content}>
           {leftIcon}
-          <AppText style={[typography.button, { color: v.text }]}>{label}</AppText>
+          {/* Single line, always: the button's height is fixed, so a wrapped
+              label overflows its box instead of growing it. Two of these side
+              by side in a card are narrow enough that "Save Changes" wrapped. */}
+          <AppText
+            numberOfLines={1}
+            style={[typography.button, styles.label, { color: v.text }]}>
+            {label}
+          </AppText>
           {rightIcon}
         </View>
       )}
@@ -109,7 +116,10 @@ const styles = StyleSheet.create({
   },
   md: {
     height: 54,
-    paddingHorizontal: spacing.xl,
+    // `base` rather than `xl`: two buttons sharing a row inside a card have
+    // ~90dp of text width left after 24dp gutters, which truncated ordinary
+    // two-word labels. Full-width buttons are unaffected either way.
+    paddingHorizontal: spacing.base,
   },
   sm: {
     height: 40,
@@ -141,6 +151,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
+    // Lets the label shrink to the available width instead of pushing an icon
+    // out past the button's edge.
+    maxWidth: '100%',
+  },
+  label: {
+    flexShrink: 1,
   },
   pressed: {
     opacity: 0.9,

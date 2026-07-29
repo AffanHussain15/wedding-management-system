@@ -6,13 +6,15 @@ import {
   AppText,
   Button,
   Input,
+  PhoneInput,
   FilterChip,
   FieldError,
   FormBanner,
 } from '@components';
 import { useWedding } from '@store';
-import { E164_PHONE, VENDOR_CATEGORIES } from '@constants';
+import { VENDOR_CATEGORIES } from '@constants';
 import type { VendorCategory, ID } from '@types';
+import { isValidPhone, normalizePhone } from '@utils';
 import { colors, spacing } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
 
@@ -34,8 +36,8 @@ export function AddVendorScreen(): React.JSX.Element {
   const save = async () => {
     const next: Record<string, string> = {};
     if (name.trim().length < 2) next.name = 'Enter a name of at least 2 characters.';
-    if (phone.trim() && !E164_PHONE.test(phone.trim())) {
-      next.phone = 'Use international format, e.g. +923001234567.';
+    if (!isValidPhone(phone)) {
+      next.phone = 'Enter a valid mobile number, e.g. 0300 1234567.';
     }
     const costValue = Number(cost) || 0;
     const advanceValue = Number(advance) || 0;
@@ -51,7 +53,7 @@ export function AddVendorScreen(): React.JSX.Element {
     const result = await actions.addVendor({
       name: name.trim(),
       category,
-      phone: phone.trim(),
+      phone: normalizePhone(phone),
       cost: costValue,
       advance: advanceValue,
       eventId,
@@ -101,13 +103,10 @@ export function AddVendorScreen(): React.JSX.Element {
         </View>
         <FieldError message={errors.category} />
 
-        <Input
-          label="Contact number"
-          placeholder="+923001234567"
+        <PhoneInput
+          label="Contact number (optional)"
           value={phone}
           onChangeText={setPhone}
-          keyboardType="phone-pad"
-          autoCapitalize="none"
           editable={!saving}
         />
         <FieldError message={errors.phone} />

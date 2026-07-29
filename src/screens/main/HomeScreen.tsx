@@ -28,7 +28,7 @@ import {
 } from '@store';
 import { joinCoupleName } from '@services';
 import { colors, layout, radius, shadows, spacing, typography, weight } from '@theme';
-import { formatDate, formatNumber, functionDotColor, functionIcon } from '@utils';
+import { formatDate, formatNumber, functionDotColor, functionIcon, todayIso } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 // Translucent cream tones for text over the maroon hero gradient.
@@ -41,6 +41,9 @@ export function HomeScreen(): React.JSX.Element {
   const { wedding } = state;
 
   const daysLeft = selectDaysLeft(state);
+  // Compared as ISO strings against the local day, so a wedding earlier today
+  // still counts as today rather than past.
+  const isPast = !!wedding.weddingDate && wedding.weddingDate < todayIso();
   const progress = selectOverallProgress(state);
   const budget = selectBudgetTotals(state);
   const guests = selectGuestCounts(state);
@@ -128,17 +131,30 @@ export function HomeScreen(): React.JSX.Element {
             />
           </Svg>
           <AppText style={styles.heroLabel}>COUNTDOWN TO THE BIG DAY</AppText>
-          {wedding.weddingDate ? (
+          {/* `daysUntil` floors at 0, so a date that has already passed and the
+              date itself both come through as 0 — which rendered as the
+              nonsensical "0 days to go". Each gets its own line instead. */}
+          {!wedding.weddingDate ? (
+            <AppText style={[typography.serifTitle, { color: colors.goldSoft }]}>
+              Set your date
+            </AppText>
+          ) : isPast ? (
+            <AppText style={[typography.serifTitle, { color: colors.goldSoft }]}>
+              Mubarak ho!
+            </AppText>
+          ) : daysLeft === 0 ? (
+            <AppText style={[typography.serifTitle, { color: colors.goldSoft }]}>
+              It's today!
+            </AppText>
+          ) : (
             <View style={styles.heroRow}>
               <AppText style={[typography.serifDisplay, { color: colors.goldSoft }]}>
                 {daysLeft}
               </AppText>
-              <AppText style={styles.heroDays}>days to go</AppText>
+              <AppText style={styles.heroDays}>
+                {daysLeft === 1 ? 'day to go' : 'days to go'}
+              </AppText>
             </View>
-          ) : (
-            <AppText style={[typography.serifTitle, { color: colors.goldSoft }]}>
-              Set your date
-            </AppText>
           )}
           <AppText style={styles.heroSub}>
             {[weddingDate, location].filter(Boolean).join(' · ')}

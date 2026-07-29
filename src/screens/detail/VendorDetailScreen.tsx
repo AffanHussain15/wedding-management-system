@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Alert, Linking, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Image, Linking, Pressable, StyleSheet, View } from 'react-native';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 
 import {
@@ -13,6 +13,7 @@ import {
   Card,
   Button,
   Input,
+  PhoneInput,
   FilterChip,
   FieldError,
   StatusBadge,
@@ -31,12 +32,38 @@ import {
 } from '@services';
 import { useWedding } from '@store';
 import { useQuery } from '@hooks';
-import { E164_PHONE, VENDOR_CATEGORIES } from '@constants';
+import { VENDOR_CATEGORIES } from '@constants';
 import type { VendorCategory } from '@types';
 import type { RootStackParamList } from '@navigation/types';
 import { useAppNavigation } from '@navigation/hooks';
 import { colors, radius, spacing, typography, weight } from '@theme';
-import { paymentStatusStyle, balanceOf, formatDate, formatNumber } from '@utils';
+import {
+  paymentStatusStyle,
+  balanceOf,
+  formatDate,
+  formatNumber,
+  isValidPhone,
+  normalizePhone,
+  toNationalPhone,
+} from '@utils';
+
+/**
+ * Header artwork. Reuses the onboarding vendor illustration — the one that
+ * depicts the paid / advance / pending states — rather than shipping a second
+ * asset that says the same thing.
+ */
+const HEADER_ART = require('../../assets/images/onboarding-1-vendors.png');
+
+/**
+ * The banner is sized from the artwork's own ratio instead of a fixed height.
+ * A fixed 130px box is far wider than the asset is tall, so `contain` fitted by
+ * height and left the image spanning barely half the width, with sand either
+ * side. Matching the ratio lets it fill the full width with nothing cropped.
+ */
+const HEADER_RATIO = (() => {
+  const asset = Image.resolveAssetSource(HEADER_ART);
+  return asset?.height ? asset.width / asset.height : 1368 / 864;
+})();
 
 export function VendorDetailScreen(): React.JSX.Element {
   const nav = useAppNavigation();
@@ -124,7 +151,8 @@ export function VendorDetailScreen(): React.JSX.Element {
   const startEditing = () => {
     setName(vendor.name);
     setCategory(vendorCategoryToLabel(vendor.category));
-    setPhone(vendor.phone ?? '');
+    // The field renders "+92" itself, so seed it with the national part only.
+    setPhone(toNationalPhone(vendor.phone ?? ''));
     setPrice(cost > 0 ? String(cost) : '');
     setEditErrors({});
     setEditBanner(null);
@@ -136,8 +164,8 @@ export function VendorDetailScreen(): React.JSX.Element {
     // The API requires a 2–150 character name; the price may be cleared to 0.
     if (name.trim().length < 2) next.name = 'Enter a name of at least 2 characters.';
     if (price.trim() && !(Number(price) >= 0)) next.totalPrice = 'Enter a valid amount.';
-    if (phone.trim() && !E164_PHONE.test(phone.trim())) {
-      next.phone = 'Use international format, e.g. +923001234567.';
+    if (!isValidPhone(phone)) {
+      next.phone = 'Enter a valid mobile number, e.g. 0300 1234567.';
     }
     setEditErrors(next);
     setEditBanner(null);
@@ -149,7 +177,7 @@ export function VendorDetailScreen(): React.JSX.Element {
       category,
       // A blank phone is omitted, not sent: the API rejects '' as invalid E.164
       // rather than treating it as "clear this".
-      ...(phone.trim() ? { phone: phone.trim() } : {}),
+      ...(normalizePhone(phone) ? { phone: normalizePhone(phone) } : {}),
       cost: price.trim() ? Number(price) : 0,
     });
     setSavingEdit(false);
@@ -221,7 +249,18 @@ export function VendorDetailScreen(): React.JSX.Element {
         <Icon name="chevronRight" size={18} color={colors.primary} />
       </Pressable>
 
-      <View style={styles.banner} />
+      <View style={[styles.banner, { aspectRatio: HEADER_RATIO }]}>
+        <Image
+          source={HEADER_ART}
+          style={styles.bannerArt}
+          // The box now carries the artwork's own ratio, so `cover` fills it
+          // edge to edge without actually cropping anything.
+          resizeMode="cover"
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel="Illustration of vendor payment states"
+        />
+      </View>
 
       <View style={styles.titleRow}>
         <AppText style={[typography.serifTitle, styles.name]}>{vendor.name}</AppText>
@@ -276,12 +315,10 @@ export function VendorDetailScreen(): React.JSX.Element {
             </View>
             <FieldError message={editErrors.category} />
 
-            <Input
+            <PhoneInput
               label="Phone"
               value={phone}
               onChangeText={setPhone}
-              keyboardType="phone-pad"
-              autoCapitalize="none"
               editable={!savingEdit}
             />
             <FieldError message={editErrors.phone} />
@@ -310,8 +347,11 @@ export function VendorDetailScreen(): React.JSX.Element {
                 onPress={() => setEditing(false)}
                 disabled={savingEdit}
               />
+              {/* "Save", not "Save Changes": at 17px semiBold the longer label
+                  is wider than the half-row this button gets, and beside
+                  "Cancel" the short form is unambiguous anyway. */}
               <Button
-                label="Save Changes"
+                label="Save"
                 fullWidth={false}
                 style={styles.action}
                 onPress={saveEdit}
@@ -341,6 +381,13 @@ export function VendorDetailScreen(): React.JSX.Element {
           value={cost > 0 ? `Rs ${formatNumber(balance)}` : '—'}
         />
         <ProgressBar progress={pctPaid} height={6} style={styles.bar} />
+        {/* The status badge above is derived server-side from paid-vs-cost, not
+            a field anyone can set, so the only way to move it is to record a
+            payment or set a total. Spelled out because the badge otherwise looks
+            like something you ought to be able to tap and change. */}
+        <AppText variant="caption" color={colors.textMuted} style={styles.statusHint}>
+          {statusHint(cost, paid)}
+        </AppText>
       </Card>
 
       {/* --- Record a payment ------------------------------------------ */}
@@ -443,6 +490,24 @@ export function VendorDetailScreen(): React.JSX.Element {
   );
 }
 
+/**
+ * Explains what would move the status badge, mirroring the server's rule:
+ * nothing paid → Pending, paid in full → Paid, anything between → Advance.
+ * A vendor with no total set can never reach Paid, which is worth saying.
+ */
+function statusHint(cost: number, paid: number): string {
+  if (paid <= 0) {
+    return 'Pending until the first payment is recorded below.';
+  }
+  if (cost <= 0) {
+    return 'Set a total cost so this can reach Paid — without one it stays Advance.';
+  }
+  if (paid >= cost) {
+    return 'Paid in full. Status follows the payments, so deleting one moves it back.';
+  }
+  return `Advance until the full Rs ${formatNumber(cost)} is recorded. Status follows the payments below — it can't be set directly.`;
+}
+
 function Row({
   label,
   value,
@@ -490,10 +555,16 @@ const styles = StyleSheet.create({
   },
   banner: {
     width: '100%',
-    height: 130,
+    // Height comes from `aspectRatio` at the call site, not a fixed value.
     borderRadius: radius.xl,
     backgroundColor: colors.surfaceSand,
     marginBottom: spacing.base,
+    // Keeps the artwork's corners inside the card's radius.
+    overflow: 'hidden',
+  },
+  bannerArt: {
+    width: '100%',
+    height: '100%',
   },
   titleRow: {
     flexDirection: 'row',
@@ -524,6 +595,9 @@ const styles = StyleSheet.create({
     ...weight('bold'),
   },
   bar: {
+    marginTop: spacing.xs,
+  },
+  statusHint: {
     marginTop: spacing.xs,
   },
   note: {

@@ -6,13 +6,14 @@ import {
   AppText,
   Button,
   Input,
+  PhoneInput,
   Icon,
   FieldError,
   FormBanner,
 } from '@components';
 import { useAuth } from '@store';
 import { useMutation } from '@hooks';
-import { E164_PHONE } from '@constants';
+import { isValidPhone, normalizePhone } from '@utils';
 import { colors, radius, spacing, typography } from '@theme';
 import { useAppNavigation } from '@navigation/hooks';
 
@@ -48,8 +49,8 @@ export function SignupScreen(): React.JSX.Element {
     if (!PASSWORD_RULE.test(password)) {
       next.password = 'At least 8 characters, with one uppercase letter and one number.';
     }
-    if (phone.trim() && !E164_PHONE.test(phone.trim())) {
-      next.phone = 'Use international format, e.g. +923001234567.';
+    if (!isValidPhone(phone)) {
+      next.phone = 'Enter a valid mobile number, e.g. 0300 1234567.';
     }
     setLocalErrors(next);
     if (Object.keys(next).length > 0) return;
@@ -59,7 +60,7 @@ export function SignupScreen(): React.JSX.Element {
       fullName: fullName.trim(),
       email: email.trim(),
       password,
-      ...(phone.trim() ? { phone: phone.trim() } : {}),
+      ...(normalizePhone(phone) ? { phone: normalizePhone(phone) } : {}),
     });
   };
 
@@ -103,13 +104,10 @@ export function SignupScreen(): React.JSX.Element {
         />
         <FieldError message={errors.email} />
 
-        <Input
+        <PhoneInput
           label="Phone (optional)"
-          placeholder="+923001234567"
           value={phone}
           onChangeText={setPhone}
-          keyboardType="phone-pad"
-          autoCapitalize="none"
           editable={!loading}
         />
         <FieldError message={errors.phone} />

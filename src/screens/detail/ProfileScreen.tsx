@@ -26,7 +26,7 @@ import { api, canEdit } from '@services';
 import { useAuth, useWedding } from '@store';
 import { useMutation } from '@hooks';
 import { colors, radius, spacing, statusColors, typography } from '@theme';
-import { formatDate, formatNumber, todayIso } from '@utils';
+import { formatDate, formatNumber } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -211,6 +211,13 @@ export function ProfileScreen(): React.JSX.Element {
             autoCapitalize="words"
             editable={!save.loading}
           />
+          {/* Deliberately unbounded. A `min` of today made every earlier day
+              untappable, so a user correcting a mistyped date — or whose device
+              clock runs ahead — could not select the day they wanted, and
+              tapping Done just re-committed the date already on file. It read as
+              "the date won't save". The backend accepts a past wedding date
+              (it only attaches a warning on create), so the UI shouldn't be
+              stricter than the API it writes to. */}
           <DateField
             label="Wedding date"
             title="Pick the wedding date"
@@ -218,9 +225,6 @@ export function ProfileScreen(): React.JSX.Element {
             onChange={setDate}
             placeholder="Tap to pick a date"
             disabled={save.loading}
-            // Re-picking a date only moves it forward; an already-past date is
-            // left alone unless the user chooses a new one.
-            min={todayIso()}
             clearable
           />
           <FieldError message={errors.weddingDate} />
