@@ -28,7 +28,13 @@ export type IconName =
   | 'vendors'
   | 'guests'
   | 'budget'
-  | 'timeline';
+  | 'timeline'
+  // Wedding functions — see `functionIcon` for the name → glyph mapping.
+  | 'dholki'
+  | 'mayun'
+  | 'mehndi'
+  | 'baraat'
+  | 'walima';
 
 export interface IconProps {
   name: IconName;
@@ -221,6 +227,54 @@ export function Icon({
           <Rect x={4} y={5} width={16} height={15} rx={2} {...p} />
           <Path d="M4 9h16" {...p} />
           <Path d="M8 3v4M16 3v4" {...p} />
+        </Svg>
+      );
+    // Dholki — a drum: barrel sides, an elliptical head, and its lacing.
+    case 'dholki':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M7 8v8M17 8v8" {...p} />
+          <Path d="M7 8a5 2.5 0 0 1 10 0a5 2.5 0 0 1-10 0" {...p} />
+          <Path d="M7 16a5 2.5 0 0 0 10 0" {...p} />
+          <Path d="M8 10l8 4M16 10l-8 4" {...p} />
+        </Svg>
+      );
+    // Mayun — the turmeric bowl, with the rim above it.
+    case 'mayun':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M3 12h18" {...p} />
+          <Path d="M5 12a7 7 0 0 0 14 0" {...p} />
+          <Path d="M12 4v3M9 5.5l1 1.8M15 5.5l-1 1.8" {...p} />
+        </Svg>
+      );
+    // Mehndi — a henna leaf with its midrib.
+    case 'mehndi':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M5 19c0-7 5-13 13-14 1 8-4 14-13 14z" {...p} />
+          <Path d="M5 19c3-3.5 6.5-5.5 10-6.5" {...p} />
+        </Svg>
+      );
+    // Baraat — the procession, as the car that carries it.
+    case 'baraat':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M3 17v-4l2.2-4.4A2 2 0 0 1 7 7.5h10a2 2 0 0 1 1.8 1.1L21 13v4" {...p} />
+          <Path d="M2 17h20" {...p} />
+          <Path d="M6.5 13h11" {...p} />
+          <Circle cx={7.5} cy={19} r={1.6} {...p} />
+          <Circle cx={16.5} cy={19} r={1.6} {...p} />
+        </Svg>
+      );
+    // Walima — the reception dinner: a cloche over the plate.
+    case 'walima':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M3 17h18" {...p} />
+          <Path d="M5 17a7 7 0 0 1 14 0" {...p} />
+          <Path d="M12 7V5.5" {...p} />
+          <Circle cx={12} cy={4.5} r={1} {...p} />
         </Svg>
       );
   }

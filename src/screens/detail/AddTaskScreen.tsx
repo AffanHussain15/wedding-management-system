@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { useRoute, type RouteProp } from '@react-navigation/native';
 
 import {
   ScreenContainer,
@@ -16,16 +17,20 @@ import {
 import { useWedding } from '@store';
 import { TASK_PRIORITIES } from '@constants';
 import type { ID, TaskPriorityLabel } from '@types';
+import type { RootStackParamList } from '@navigation/types';
 import { colors, spacing } from '@theme';
 import { todayIso } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 export function AddTaskScreen(): React.JSX.Element {
   const nav = useAppNavigation();
+  const { params } = useRoute<RouteProp<RootStackParamList, 'AddTask'>>();
   const { state, actions } = useWedding();
 
   const [title, setTitle] = useState('');
-  const [eventId, setEventId] = useState<ID | null>(null);
+  // Pre-selected when opened from a function's detail screen, so a task added
+  // there stays attached to it instead of silently landing unlinked.
+  const [eventId, setEventId] = useState<ID | null>(params?.eventId ?? null);
   const [assignedTo, setAssignedTo] = useState<ID | null>(null);
   const [priority, setPriority] = useState<TaskPriorityLabel>('Medium');
   const [dueDate, setDueDate] = useState('');

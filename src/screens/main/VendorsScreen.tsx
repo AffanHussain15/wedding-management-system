@@ -18,7 +18,7 @@ import { useWedding } from '@store';
 import { canEdit } from '@services';
 import { VENDOR_FILTERS } from '@constants';
 import type { Vendor } from '@types';
-import { colors, radius, spacing, typography } from '@theme';
+import { colors, layout, radius, spacing, typography } from '@theme';
 import { paymentStatusStyle, balanceOf, formatNumber } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
@@ -171,7 +171,8 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: spacing.xs,
-    paddingBottom: spacing.xxl,
+    // Clears the floating Fab, which would otherwise sit over the last row.
+    paddingBottom: layout.fabClearance,
   },
   title: {
     marginBottom: spacing.base,

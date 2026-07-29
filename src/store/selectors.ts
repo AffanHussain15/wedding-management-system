@@ -1,6 +1,6 @@
 /** Pure derivations over WeddingState, so screens don't recompute inline. */
 
-import { balanceOf, daysUntil, formatNumber, percentage, relativeDay } from '@utils';
+import { balanceOf, daysUntil, formatNumber, percentage, relativeDay, todayIso } from '@utils';
 import type { ReminderType } from '@types';
 import type { WeddingState } from './types';
 
@@ -103,15 +103,38 @@ export interface NextFunctionInfo {
 }
 
 /**
- * The function the API flagged as 'next', falling back to the first that is
- * neither finished nor cancelled.
+ * The soonest function still ahead of us.
+ *
+ * Prefers the one the API flagged 'next', but the fallback picks the earliest
+ * *future* date rather than the first candidate in the array. The old version
+ * took whichever unfinished function came first in list order, which meant:
+ *
+ *  - a function whose date has already passed but which the server marked
+ *    `POSTPONED` (so it is neither 'done' nor 'cancelled') was chosen ahead of
+ *    genuinely upcoming ones; and
+ *  - because `daysUntil` floors at 0, a stale pick reads as "today".
+ *
+ * The API only flags 'next' when a function has no manual status *and* its date
+ * is in the future, so with any manually-set status the fallback is what runs —
+ * which is how "Upcoming" ended up naming a function years out.
  */
 export const selectNextFunction = (state: WeddingState): NextFunctionInfo => {
-  const next =
-    state.functions.find(f => f.status === 'next') ??
-    state.functions.find(f => f.status !== 'done' && f.status !== 'cancelled');
-  if (!next) return { name: 'All set', relative: 'Nothing pending' };
-  return { name: next.name, relative: relativeDay(next.date) || 'Date not set' };
+  const flagged = state.functions.find(f => f.status === 'next');
+  if (flagged) {
+    return { name: flagged.name, relative: relativeDay(flagged.date) || 'Date not set' };
+  }
+
+  const today = todayIso();
+  let soonest: WeddingState['functions'][number] | undefined;
+  for (const fn of state.functions) {
+    if (fn.status === 'done' || fn.status === 'cancelled') continue;
+    // An undated function can't be "next"; it has no position in time.
+    if (!fn.date || fn.date < today) continue;
+    if (!soonest || fn.date < soonest.date) soonest = fn;
+  }
+
+  if (!soonest) return { name: 'All set', relative: 'Nothing pending' };
+  return { name: soonest.name, relative: relativeDay(soonest.date) || 'Date not set' };
 };
 
 /**
@@ -157,7 +180,9 @@ const TASK_WINDOW_DAYS = 14;
  */
 export const selectReminders = (state: WeddingState): DerivedReminder[] => {
   const out: DerivedReminder[] = [];
-  const today = new Date().toISOString().slice(0, 10);
+  // Local today, not UTC: `toISOString` is a day behind between midnight and
+  // 05:00 in Pakistan, which would hide a task that is genuinely overdue.
+  const today = todayIso();
 
   for (const vendor of state.vendors) {
     const balance = balanceOf(vendor.cost, vendor.advance);

@@ -1,16 +1,31 @@
 /** Text field styled to match the design's form inputs. */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { colors, radius, spacing, typography } from '@theme';
 import { AppText } from './AppText';
+import { useScrollAssist } from './ScreenContainer';
 
 export interface InputProps extends TextInputProps {
   label?: string;
 }
 
-export function Input({ label, style, ...rest }: InputProps): React.JSX.Element {
+export function Input({ label, style, onFocus, ...rest }: InputProps): React.JSX.Element {
+  const field = useRef<TextInput>(null);
+  // Null outside a scrollable ScreenContainer, in which case there is nothing
+  // to scroll and focus needs no special handling.
+  const assist = useScrollAssist();
+
+  // Typed from the prop itself: RN's focus event shape has changed between
+  // versions, and this can't drift from whatever TextInput expects.
+  const handleFocus: NonNullable<TextInputProps['onFocus']> = event => {
+    // Keeps the field visible when focus moves to it while the keyboard is
+    // already open — no keyboard event fires for that.
+    assist?.ensureVisible(field.current);
+    onFocus?.(event);
+  };
+
   return (
     <View>
       {label ? (
@@ -18,7 +33,13 @@ export function Input({ label, style, ...rest }: InputProps): React.JSX.Element 
           {label}
         </AppText>
       ) : null}
-      <TextInput placeholderTextColor={colors.textMuted} style={[styles.input, style]} {...rest} />
+      <TextInput
+        ref={field}
+        placeholderTextColor={colors.textMuted}
+        style={[styles.input, style]}
+        onFocus={handleFocus}
+        {...rest}
+      />
     </View>
   );
 }

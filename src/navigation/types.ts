@@ -39,7 +39,8 @@ export type RootStackParamList = {
   AddFunction: undefined;
   Reminders: undefined;
   Tasks: undefined;
-  AddTask: undefined;
+  /** `eventId` pre-selects the function, when opened from its detail screen. */
+  AddTask: { eventId?: string } | undefined;
   Seating: undefined;
   Profile: undefined;
 };

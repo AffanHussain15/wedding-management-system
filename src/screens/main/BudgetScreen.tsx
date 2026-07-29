@@ -18,7 +18,7 @@ import {
 import { useWedding, selectBudgetTotals } from '@store';
 import { canEdit } from '@services';
 import type { BudgetCategory, Expense } from '@types';
-import { colors, radius, spacing, statusColors, typography, weight } from '@theme';
+import { colors, layout, radius, spacing, statusColors, typography, weight } from '@theme';
 import { formatDate, formatNumber, percentage, getChartColor } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
@@ -263,7 +263,8 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: spacing.xs,
-    paddingBottom: spacing.xxl,
+    // Clears the floating Fab, which would otherwise sit over the last row.
+    paddingBottom: layout.fabClearance,
   },
   title: {
     marginBottom: spacing.base,
