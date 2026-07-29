@@ -1,6 +1,6 @@
 /** Pure derivations over WeddingState, so screens don't recompute inline. */
 
-import { balanceOf, daysUntil, formatNumber, percentage, relativeDay } from '@utils';
+import { balanceOf, daysUntil, formatNumber, percentage, relativeDay, todayIso } from '@utils';
 import type { ReminderType } from '@types';
 import type { WeddingState } from './types';
 
@@ -157,7 +157,9 @@ const TASK_WINDOW_DAYS = 14;
  */
 export const selectReminders = (state: WeddingState): DerivedReminder[] => {
   const out: DerivedReminder[] = [];
-  const today = new Date().toISOString().slice(0, 10);
+  // Local today, not UTC: `toISOString` is a day behind between midnight and
+  // 05:00 in Pakistan, which would hide a task that is genuinely overdue.
+  const today = todayIso();
 
   for (const vendor of state.vendors) {
     const balance = balanceOf(vendor.cost, vendor.advance);

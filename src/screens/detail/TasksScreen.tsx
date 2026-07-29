@@ -19,8 +19,8 @@ import { useWedding } from '@store';
 import { canContribute, canEdit } from '@services';
 import { TASK_FILTERS } from '@constants';
 import type { ID, Task } from '@types';
-import { colors, radius, spacing, statusColors, typography } from '@theme';
-import { formatDate } from '@utils';
+import { colors, layout, radius, spacing, statusColors, typography } from '@theme';
+import { formatDate, todayIso } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 type Filter = (typeof TASK_FILTERS)[number];
@@ -167,7 +167,7 @@ const TaskRow = React.memo(function TaskRowItem({
   const priority = PRIORITY_STYLE[task.priority];
   // A due date in the past on an unfinished task is worth flagging.
   const overdue =
-    !task.done && task.dueDate !== '' && task.dueDate < new Date().toISOString().slice(0, 10);
+    !task.done && task.dueDate !== '' && task.dueDate < todayIso();
 
   const meta = [
     task.function || null,
@@ -219,7 +219,11 @@ const TaskRow = React.memo(function TaskRowItem({
       ) : null}
 
       {onDelete ? (
-        <Pressable onPress={() => onDelete(task)} hitSlop={8}>
+        <Pressable
+          onPress={() => onDelete(task)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={`Delete task ${task.title}`}>
           <Icon name="trash" size={16} color={colors.danger} />
         </Pressable>
       ) : null}
@@ -234,7 +238,8 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: spacing.xs,
-    paddingBottom: spacing.xxl,
+    // Clears the floating Fab, which would otherwise sit over the last row.
+    paddingBottom: layout.fabClearance,
   },
   title: {
     marginTop: spacing.base,

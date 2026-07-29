@@ -213,7 +213,11 @@ export function VendorDetailScreen(): React.JSX.Element {
       contentContainerStyle={styles.content}
       onRefresh={vendorQuery.refetch}
       refreshing={vendorQuery.refreshing}>
-      <Pressable style={styles.back} onPress={() => nav.goBack()}>
+      <Pressable
+        style={styles.back}
+        onPress={() => nav.goBack()}
+        accessibilityRole="button"
+        accessibilityLabel="Go back">
         <Icon name="chevronRight" size={18} color={colors.primary} />
       </Pressable>
 
@@ -390,7 +394,11 @@ export function VendorDetailScreen(): React.JSX.Element {
                   </AppText>
                 </View>
                 {mayEdit ? (
-                  <Pressable onPress={() => deletePayment(payment.id)} hitSlop={8}>
+                  <Pressable
+                    onPress={() => deletePayment(payment.id)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel="Delete payment">
                     <Icon name="trash" size={16} color={colors.danger} />
                   </Pressable>
                 ) : null}

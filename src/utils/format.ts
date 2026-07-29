@@ -130,10 +130,19 @@ export const daysInMonth = (year: number, month: number): number =>
 export const firstWeekdayOfMonth = (year: number, month: number): number =>
   new Date(year, month, 1).getDay();
 
-/** "YYYY-MM-DD" → full ISO timestamp for the API, or undefined when empty. */
+/**
+ * "YYYY-MM-DD" → the value to send the API, or undefined when empty.
+ *
+ * Stays date-only instead of `toISOString()`. A local midnight converted to UTC
+ * lands on the *previous* day everywhere east of Greenwich — 2030-01-01 in
+ * Pakistan becomes 2029-12-31T19:00:00Z — and the API hands dates back by
+ * truncating at the 'T', so every date the user picked came back a day early.
+ * Every date field the app writes validates as `@IsDateString()` server-side,
+ * which accepts a bare date.
+ */
 export const toApiDate = (iso: string): string | undefined => {
   const d = parseDate(iso);
-  return d ? d.toISOString() : undefined;
+  return d ? toIsoDate(d) : undefined;
 };
 
 export const clamp = (value: number, min = 0, max = 100): number =>

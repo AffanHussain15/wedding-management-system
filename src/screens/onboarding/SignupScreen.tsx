@@ -65,7 +65,11 @@ export function SignupScreen(): React.JSX.Element {
 
   return (
     <ScreenContainer scroll padded={false} contentContainerStyle={styles.root}>
-      <Pressable style={styles.back} onPress={() => nav.navigate('Onboarding')}>
+      <Pressable
+        style={styles.back}
+        onPress={() => nav.navigate('Onboarding')}
+        accessibilityRole="button"
+        accessibilityLabel="Back to intro">
         <Icon name="chevronRight" size={18} color={colors.primary} />
       </Pressable>
 

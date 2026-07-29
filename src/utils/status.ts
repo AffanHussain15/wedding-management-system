@@ -72,6 +72,28 @@ export const functionStatusLabel = (status: FunctionStatus): string => {
   }
 };
 
+/**
+ * Glyph for a function, matched on its name. Names are free text server-side,
+ * so anything unrecognised — a custom "Qawwali Night" — falls back to the
+ * generic calendar rather than showing nothing.
+ *
+ * The return type is spelled out instead of importing `IconName`, which would
+ * point this layer at the component layer just for a type.
+ */
+export const functionIcon = (
+  name: string,
+): 'dholki' | 'mayun' | 'mehndi' | 'baraat' | 'walima' | 'timeline' => {
+  const key = name.trim().toLowerCase();
+  if (key.includes('dholki') || key.includes('dholak')) return 'dholki';
+  if (key.includes('mayun') || key.includes('mayoun') || key.includes('haldi')) return 'mayun';
+  if (key.includes('mehndi') || key.includes('mehendi')) return 'mehndi';
+  if (key.includes('baraat') || key.includes('barat') || key.includes('nikah')) return 'baraat';
+  if (key.includes('walima') || key.includes('valima') || key.includes('reception')) {
+    return 'walima';
+  }
+  return 'timeline';
+};
+
 /** Solid dot color for a function on the timeline / dashboard. */
 export const functionDotColor = (status: FunctionStatus): string => {
   switch (status) {

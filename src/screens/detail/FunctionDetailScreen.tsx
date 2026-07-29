@@ -103,7 +103,11 @@ export function FunctionDetailScreen(): React.JSX.Element {
       contentContainerStyle={styles.content}
       onRefresh={query.refetch}
       refreshing={query.refreshing}>
-      <Pressable style={styles.back} onPress={() => nav.goBack()}>
+      <Pressable
+        style={styles.back}
+        onPress={() => nav.goBack()}
+        accessibilityRole="button"
+        accessibilityLabel="Go back">
         <Icon name="chevronRight" size={18} color={colors.primary} />
       </Pressable>
 

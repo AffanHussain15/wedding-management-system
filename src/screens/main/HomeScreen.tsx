@@ -27,8 +27,8 @@ import {
   selectReminders,
 } from '@store';
 import { joinCoupleName } from '@services';
-import { colors, radius, shadows, spacing, typography, weight } from '@theme';
-import { formatDate, formatNumber, functionDotColor } from '@utils';
+import { colors, layout, radius, shadows, spacing, typography, weight } from '@theme';
+import { formatDate, formatNumber, functionDotColor, functionIcon } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 // Translucent cream tones for text over the maroon hero gradient.
@@ -96,10 +96,18 @@ export function HomeScreen(): React.JSX.Element {
             <AppText style={typography.serifTitle}>{couple}</AppText>
           </View>
           <View style={styles.headerActions}>
-            <Pressable style={styles.iconButton} onPress={() => nav.navigate('Reminders')}>
+            <Pressable
+              style={styles.iconButton}
+              onPress={() => nav.navigate('Reminders')}
+              accessibilityRole="button"
+              accessibilityLabel="Reminders">
               <Icon name="bell" size={18} />
             </Pressable>
-            <Pressable style={styles.initialsButton} onPress={() => nav.navigate('Profile')}>
+            <Pressable
+              style={styles.initialsButton}
+              onPress={() => nav.navigate('Profile')}
+              accessibilityRole="button"
+              accessibilityLabel="Your profile">
               <AppText color={colors.textOnPrimary} style={styles.initials}>
                 {initials}
               </AppText>
@@ -210,9 +218,14 @@ export function HomeScreen(): React.JSX.Element {
                 style={styles.functionCard}
                 onPress={() => nav.navigate('FunctionDetail', { functionId: fn.id })}>
                 <View style={[styles.functionDot, { backgroundColor: functionDotColor(fn.status) }]}>
-                  {fn.status === 'done' ? (
-                    <Icon name="check" size={14} color={colors.textOnPrimary} />
-                  ) : null}
+                  {/* A finished function keeps the tick; the rest show what kind
+                      of function they are. */}
+                  <Icon
+                    name={fn.status === 'done' ? 'check' : functionIcon(fn.name)}
+                    size={17}
+                    color={colors.textOnPrimary}
+                    strokeWidth={1.9}
+                  />
                 </View>
                 <AppText style={styles.functionName} numberOfLines={1}>
                   {fn.name}
@@ -305,7 +318,8 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: spacing.xs,
-    paddingBottom: spacing.xxl,
+    // Clears the floating Fab, which would otherwise sit over the last row.
+    paddingBottom: layout.fabClearance,
   },
   flexShrink: {
     flexShrink: 1,

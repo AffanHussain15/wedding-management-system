@@ -148,6 +148,8 @@ export function SeatingScreen(): React.JSX.Element {
                     <Pressable
                       onPress={() => deleteTable(table.id)}
                       hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Delete table ${table.name}`}
                       style={styles.iconBtn}>
                       <Icon name="trash" size={16} color={colors.danger} />
                     </Pressable>
