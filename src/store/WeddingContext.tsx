@@ -526,7 +526,12 @@ export function WeddingProvider({
           await api.events.update(id, eventId, {
             ...(changes.name !== undefined ? { name: changes.name } : {}),
             ...(changes.date !== undefined ? { eventDate: toApiDate(changes.date) } : {}),
-            ...(changes.time !== undefined ? { startTime: changes.time } : {}),
+            // A blank time is omitted rather than sent. `startTime` is validated
+            // with `@Matches(HH:mm)` and NestJS's `@IsOptional()` only skips
+            // `undefined`/`null` — never '' — so an empty string is a 400, not a
+            // "clear this field". The upshot is that a start time can be changed
+            // but not removed; the API exposes no way to unset it.
+            ...(changes.time ? { startTime: changes.time } : {}),
             ...(changes.venue !== undefined ? { venueName: changes.venue } : {}),
           });
           await reloadFunctions(id);

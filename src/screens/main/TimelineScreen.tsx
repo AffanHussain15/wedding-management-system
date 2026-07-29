@@ -89,7 +89,9 @@ function TimelineItem({ fn, onPress }: { fn: WeddingFunction; onPress: () => voi
   const status = functionStatusStyle(fn.status);
   // The list endpoint doesn't return startTime, so the time line is only shown
   // once the detail screen has been opened; here date and venue are enough.
-  const meta = [formatDate(fn.date, 'monthDay', 'Date not set'), fn.time]
+  // 'long' keeps the year: without it a function in the wrong year looked
+  // identical to one a few weeks away.
+  const meta = [formatDate(fn.date, 'long', 'Date not set'), fn.time]
     .filter(Boolean)
     .join(' · ');
 
