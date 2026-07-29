@@ -58,6 +58,16 @@ export interface AuthContextValue {
   /** Re-reads `GET /users/me`, e.g. after creating or joining a wedding. */
   refreshProfile: () => Promise<void>;
   selectWedding: (weddingId: string) => Promise<void>;
+  /**
+   * Makes a freshly created wedding active immediately, without waiting on a
+   * `GET /users/me` round trip to confirm it. `refreshProfile` alone is too
+   * fragile for this: the backend runs on a Render free instance that can
+   * take 40-60s to wake up, and if that request is slow or fails right after
+   * `POST /weddings` succeeds, `needsWeddingSetup` would stay true forever —
+   * stranding a brand-new user on the setup wizard with no way into the app
+   * and no error shown, since they already have an `activeWeddingId`.
+   */
+  completeWeddingSetup: (wedding: WeddingMembershipSummary) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -214,6 +224,35 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
     await loadProfile();
   }, [loadProfile]);
 
+  const completeWeddingSetup = useCallback(async (wedding: WeddingMembershipSummary) => {
+    await saveActiveWeddingId(wedding.id);
+    if (!mounted.current) return;
+    setActiveWeddingId(wedding.id);
+    setProfile(prev => {
+      if (!prev) return prev;
+      if (prev.weddings.some(w => w.id === wedding.id)) return prev;
+      return { ...prev, weddings: [...prev.weddings, wedding] };
+    });
+
+    // Reconcile with the server in the background — deliberately not via
+    // `loadProfile`, which would overwrite `weddings` outright. Right after
+    // creation the membership may not have caught up in a read yet, and a
+    // stale response must not erase the wedding we already know exists (or
+    // touch `activeWeddingId`, which we just explicitly set).
+    try {
+      const me = await api.users.me();
+      if (!mounted.current) return;
+      const weddings = me.weddings.some(w => w.id === wedding.id)
+        ? me.weddings
+        : [...me.weddings, wedding];
+      setProfile({ ...me, weddings });
+      setProfileError(null);
+      setProfileLoaded(true);
+    } catch (error) {
+      if (mounted.current) setProfileError(errorMessage(error));
+    }
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       ready,
@@ -236,6 +275,7 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
       logout,
       refreshProfile,
       selectWedding,
+      completeWeddingSetup,
     }),
     [
       ready,
@@ -250,6 +290,7 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
       logout,
       refreshProfile,
       selectWedding,
+      completeWeddingSetup,
     ],
   );
 

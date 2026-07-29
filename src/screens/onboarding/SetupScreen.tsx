@@ -40,7 +40,7 @@ const initialSelection: Selected = FUNCTION_NAMES.reduce<Selected>((acc, name) =
 
 export function SetupScreen(): React.JSX.Element {
   const nav = useAppNavigation();
-  const { refreshProfile, selectWedding } = useAuth();
+  const { completeWeddingSetup } = useAuth();
 
   const [step, setStep] = useState(0);
   const [bride, setBride] = useState('');
@@ -84,7 +84,7 @@ export function SetupScreen(): React.JSX.Element {
     }
 
     return {
-      weddingId: wedding.id,
+      wedding,
       failures,
       skippedEvents: !eventDate && chosen.length > 0,
     };
@@ -125,7 +125,7 @@ export function SetupScreen(): React.JSX.Element {
     const result = await create.run();
     if (!result.ok) return;
 
-    const { weddingId, failures, skippedEvents } = result.data;
+    const { wedding, failures, skippedEvents } = result.data;
     if (failures.length > 0 || skippedEvents) {
       // The wedding exists; only some functions don't. Say so rather than
       // dropping into the app as though everything worked.
@@ -136,9 +136,12 @@ export function SetupScreen(): React.JSX.Element {
       );
     }
 
-    // Make the new wedding active; the root navigator then shows the app stack.
-    await selectWedding(weddingId);
-    await refreshProfile();
+    // Make the new wedding active immediately — the root navigator then shows
+    // the app stack. Deliberately not `refreshProfile()` here: a slow/failed
+    // `GET /users/me` (the backend can take up to a minute to wake from an
+    // idle Render instance) must not stall this, or a brand-new user is stuck
+    // on this screen with no error and no way into the app they just created.
+    await completeWeddingSetup({ id: wedding.id, name: wedding.name, role: wedding.role });
   };
 
   const goBack = () => {
