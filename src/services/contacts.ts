@@ -4,6 +4,7 @@
  * future swap of it) stays in one place.
  */
 
+import { PermissionsAndroid, Platform } from 'react-native';
 import Contacts, { type Contact } from 'react-native-contacts';
 
 export type ContactsPermissionStatus = 'granted' | 'denied';
@@ -16,8 +17,15 @@ export interface DeviceContact {
   thumbnailPath: string | null;
 }
 
-/** Checks current status first, so an already-granted permission never re-prompts. */
 export async function requestContactsAccess(): Promise<ContactsPermissionStatus> {
+  if (Platform.OS === 'android') {
+    const permission = PermissionsAndroid.PERMISSIONS.READ_CONTACTS;
+    if (await PermissionsAndroid.check(permission)) return 'granted';
+
+    const requested = await PermissionsAndroid.request(permission);
+    return requested === PermissionsAndroid.RESULTS.GRANTED ? 'granted' : 'denied';
+  }
+
   const current = await Contacts.checkPermission();
   if (current === 'authorized' || current === 'limited') return 'granted';
 
@@ -35,7 +43,8 @@ export async function getDeviceContacts(): Promise<DeviceContact[]> {
     .map(c => ({
       id: c.recordID,
       name: contactName(c),
-      phone: c.phoneNumbers[0]?.number ?? '',
+      // A single contact stored without a phone list must not fail the whole read.
+      phone: c.phoneNumbers?.[0]?.number ?? '',
       thumbnailPath: c.hasThumbnail && c.thumbnailPath ? c.thumbnailPath : null,
     }))
     .filter(c => c.name.length > 0);
