@@ -176,7 +176,22 @@ async function readBody(response: Response): Promise<unknown> {
 
 // --- Token refresh ---------------------------------------------------------
 
-let refreshPromise: Promise<AuthTokens | null> | null = null;
+/**
+ * Why a refresh didn't yield a new token pair.
+ *
+ * The distinction is what keeps a signed-in user signed in: only the server
+ * *rejecting* the refresh token proves the session is dead. A transport failure
+ * — no connectivity, or the free-tier instance still waking from idle — says
+ * nothing about the token, so the session has to survive it. Collapsing both
+ * into "no tokens" signs the user out mid-form and loses whatever they were
+ * filling in.
+ */
+type RefreshOutcome =
+  | { status: 'refreshed'; tokens: AuthTokens }
+  | { status: 'rejected' }
+  | { status: 'unavailable' };
+
+let refreshPromise: Promise<RefreshOutcome> | null = null;
 
 /** Called when the session can no longer be recovered. */
 type UnauthorizedHandler = () => void;
@@ -191,12 +206,12 @@ export function setUnauthorizedHandler(handler: UnauthorizedHandler | null): voi
  * refresh endpoint itself cannot recurse. Concurrent callers share one
  * in-flight refresh.
  */
-function refreshTokens(): Promise<AuthTokens | null> {
+function refreshSession(): Promise<RefreshOutcome> {
   if (refreshPromise) return refreshPromise;
 
-  refreshPromise = (async (): Promise<AuthTokens | null> => {
+  refreshPromise = (async (): Promise<RefreshOutcome> => {
     const refreshToken = getRefreshToken();
-    if (!refreshToken) return null;
+    if (!refreshToken) return { status: 'rejected' };
 
     try {
       const response = await rawFetch(
@@ -212,18 +227,28 @@ function refreshTokens(): Promise<AuthTokens | null> {
         REQUEST_TIMEOUT_MS,
       );
 
-      if (!response.ok) return null;
+      // A 4xx is the endpoint telling us the token is spent or invalid. A 5xx
+      // (or a proxy's HTML error page) is the server's problem, not the
+      // session's, so it must not end the session.
+      if (!response.ok) {
+        return response.status >= 500
+          ? { status: 'unavailable' }
+          : { status: 'rejected' };
+      }
 
       const body = (await readBody(response)) as { data?: AuthTokens } | undefined;
       const tokens = body?.data;
-      if (!tokens?.accessToken || !tokens?.refreshToken) return null;
+      // A 200 we can't parse is a broken response, not a rejected token.
+      if (!tokens?.accessToken || !tokens?.refreshToken) {
+        return { status: 'unavailable' };
+      }
 
       await updateTokens(tokens);
-      return tokens;
+      return { status: 'refreshed', tokens };
     } catch {
-      // Network failure during refresh: do not destroy the session — the token
-      // may still be valid once connectivity returns.
-      return null;
+      // Timeout or network failure: keep the session — the token may still be
+      // valid once connectivity returns.
+      return { status: 'unavailable' };
     } finally {
       refreshPromise = null;
     }
@@ -270,13 +295,25 @@ export async function requestWithMeta<T>(
 
   // A 401 on an authenticated call means the access token expired: rotate it
   // once and replay. Only once — a second 401 is a real auth failure.
+  let sessionDropped = false;
   if (response.status === 401 && auth && getRefreshToken()) {
-    const tokens = await refreshTokens();
-    if (tokens) {
-      response = await send(tokens.accessToken);
-    } else {
+    const outcome = await refreshSession();
+    if (outcome.status === 'refreshed') {
+      response = await send(outcome.tokens.accessToken);
+    } else if (outcome.status === 'rejected') {
+      sessionDropped = true;
       await clearSession();
       onUnauthorized?.();
+    } else {
+      // The refresh never reached the server, so the session is still assumed
+      // good. Report it as the transport failure it is — signing the user out
+      // here would throw them back to the login screen over a cold start.
+      throw new ApiError({
+        status: 0,
+        code: 'NETWORK_ERROR',
+        message:
+          "Couldn't reach the server to renew your session. Check your connection and try again.",
+      });
     }
   }
 
@@ -284,7 +321,7 @@ export async function requestWithMeta<T>(
 
   if (!response.ok) {
     const error = toApiError(response.status, payload);
-    if (error.status === 401 && auth) {
+    if (error.status === 401 && auth && !sessionDropped) {
       // Still unauthenticated after the retry — drop the dead session.
       await clearSession();
       onUnauthorized?.();
