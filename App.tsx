@@ -14,7 +14,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 
 import { AuthProvider, WeddingProvider, useAuth } from '@store';
-import { RootNavigator, navigationTheme } from '@navigation';
+import { RootNavigator, navigationTheme, useRootTree } from '@navigation';
 
 /**
  * Bridges the two providers. Split out because it has to call `useAuth`, which
@@ -22,10 +22,17 @@ import { RootNavigator, navigationTheme } from '@navigation';
  */
 function AuthedApp(): React.JSX.Element {
   const { activeWeddingId } = useAuth();
+  // Signing in, finishing the setup wizard or signing out swaps which tree
+  // `RootNavigator` registers. The container is keyed on that so the swap also
+  // discards the previous tree's navigation state — see `RootNavigator`, where
+  // routes shared by two trees would otherwise survive the swap and strand the
+  // user on the screen they just finished. The wedding store sits outside, so
+  // this costs a fresh navigation state and no refetching.
+  const tree = useRootTree();
 
   return (
     <WeddingProvider weddingId={activeWeddingId}>
-      <NavigationContainer theme={navigationTheme}>
+      <NavigationContainer key={tree} theme={navigationTheme}>
         <RootNavigator />
       </NavigationContainer>
     </WeddingProvider>

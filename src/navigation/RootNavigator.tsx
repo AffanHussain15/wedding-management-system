@@ -45,53 +45,34 @@ import {
 } from '@screens';
 
 import { MainTabNavigator } from './MainTabNavigator';
+import { useRootTree } from './hooks';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+/**
+ * `Setup`, `SelectWedding` and `FamilyLink` are deliberately registered in both
+ * the setup and app trees below, so an already-signed-in user can still reach
+ * them ("Create Another Wedding", "Switch Wedding"). The cost is that swapping
+ * trees cannot be left to the navigator: `NavigationContainer` keeps its
+ * navigation state across the swap, and a stack rehydrates every route whose
+ * name still exists in the new tree — so finishing the wizard used to re-mount
+ * `Setup` (a *fresh* one, back at step 1) instead of landing on `Main`, with
+ * the wedding created and no way into the app but to sign out.
+ *
+ * Re-mounting the navigator alone doesn't help: the retained state lives one
+ * level up. `App` therefore keys the whole `NavigationContainer` on
+ * `useRootTree()`, so each swap starts from the new tree's first screen.
+ */
 export function RootNavigator(): React.JSX.Element {
-  const {
-    ready,
-    isAuthenticated,
-    needsWeddingSetup,
-    activeWeddingId,
-    weddings,
-    profileError,
-    profileLoaded,
-  } = useAuth();
+  const { weddings } = useAuth();
+  const tree = useRootTree();
 
-  // Hold the branded splash until the stored session has been read, so an
-  // already-signed-in user never sees the login screen flash by.
-  if (!ready) return <SplashScreen />;
-
-  // Signed in, but `GET /users/me` hasn't answered yet and there's no
-  // remembered wedding to fall back on. Keep waiting: treating unknown
-  // memberships as "none" would drop an existing couple into the setup wizard
-  // for as long as the request takes.
-  if (isAuthenticated && !profileLoaded && !activeWeddingId) return <SplashScreen />;
-
-  // Signed in, but we couldn't load which weddings they belong to and have no
-  // remembered one either. Offer a retry rather than dropping into the setup
-  // wizard, which would invite them to create a duplicate wedding.
-  if (isAuthenticated && profileError && !activeWeddingId) {
-    return <ProfileErrorScreen />;
-  }
-
-  const noWeddingSelected = needsWeddingSetup || !activeWeddingId;
-
-  // `Setup`, `SelectWedding` and `FamilyLink` are deliberately registered in
-  // both the noWeddingSelected and authenticated trees below (so an
-  // already-signed-in user can still reach them, e.g. "Create Another
-  // Wedding"). That means when `noWeddingSelected` flips — e.g. finishing the
-  // setup wizard — "Setup" is a valid route in the *new* tree too, so the
-  // navigator has no reason to move off it on its own; only forcing a fresh
-  // mount (via `key`) makes it land on that tree's first screen instead of
-  // silently staying put until the app is restarted.
-  const mode = !isAuthenticated ? 'guest' : noWeddingSelected ? 'setup' : 'app';
+  if (tree === 'loading') return <SplashScreen />;
+  if (tree === 'profileError') return <ProfileErrorScreen />;
 
   return (
     <Stack.Navigator
-      key={mode}
       screenOptions={{
         headerStyle: { backgroundColor: colors.primary },
         headerTintColor: colors.textOnPrimary,
@@ -99,7 +80,7 @@ export function RootNavigator(): React.JSX.Element {
         headerShadowVisible: false,
         contentStyle: { backgroundColor: colors.background },
       }}>
-      {!isAuthenticated ? (
+      {tree === 'guest' ? (
         <Stack.Group screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Onboarding" component={OnboardingScreen} />
           <Stack.Screen name="Signup" component={SignupScreen} />
@@ -107,7 +88,7 @@ export function RootNavigator(): React.JSX.Element {
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         </Stack.Group>
-      ) : noWeddingSelected ? (
+      ) : tree === 'setup' ? (
         <Stack.Group screenOptions={{ headerShown: false }}>
           {/*
             Signed in with nothing selected. Existing members get the picker
