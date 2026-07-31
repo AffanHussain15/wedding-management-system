@@ -20,7 +20,7 @@ import {
   FieldError,
   FormBanner,
 } from '@components';
-import { api, errorMessage, joinCoupleName } from '@services';
+import { api, ApiError, errorMessage, joinCoupleName } from '@services';
 import { useAuth } from '@store';
 import { useMutation } from '@hooks';
 import { FUNCTION_NAMES } from '@constants';
@@ -29,6 +29,39 @@ import { formatDate, toApiDate, todayIso } from '@utils';
 import { useAppNavigation } from '@navigation/hooks';
 
 const STEP_TITLES = ['Tell us about the couple', 'Set your date & venue', 'Confirm your functions'];
+
+const STEP_FIELDS: string[][] = [
+  ['bride', 'groom'],
+  ['weddingDate', 'venueCity', 'totalBudget'],
+  [],
+];
+
+/**
+ * Temporary tracing for the setup wizard — delete once the flow is confirmed.
+ *
+ * Deliberately not behind `__DEV__`, so it also shows up in a release build's
+ * device log (`npx react-native log-android`, or Xcode's console) and not only
+ * in Metro. Every line is prefixed `[Setup]` so it can be filtered.
+ */
+function trace(label: string, value?: unknown): void {
+  console.log(
+    `[Setup] ${label}`,
+    value === undefined ? '' : JSON.stringify(value, null, 2),
+  );
+}
+
+/** Errors carry their fields on the prototype, so spell them out for logging. */
+function describeError(error: ApiError): Record<string, unknown> {
+  return {
+    status: error.status,
+    code: error.code,
+    message: error.message,
+    details: error.details,
+    fieldErrors: error.fieldErrors,
+    requestId: error.requestId,
+    isNetworkError: error.isNetworkError,
+  };
+}
 
 type Selected = Record<string, boolean>;
 
@@ -53,12 +86,36 @@ export function SetupScreen(): React.JSX.Element {
   const [partialWarning, setPartialWarning] = useState<string | null>(null);
 
   const create = useMutation(async () => {
-    const { wedding } = await api.weddings.create({
+    // Raw form state, to confirm nothing was lost between steps.
+    trace('form state at submit', {
+      bride,
+      groom,
+      weddingDate,
+      city,
+      venue,
+      totalBudget,
+      selectedFunctions: FUNCTION_NAMES.filter(name => selected[name]),
+    });
+
+    const payload = {
       name: joinCoupleName(bride, groom),
       ...(weddingDate ? { weddingDate: toApiDate(weddingDate) } : {}),
       ...(city.trim() ? { venueCity: city.trim() } : {}),
       ...(Number(totalBudget) > 0 ? { totalBudget: Number(totalBudget) } : {}),
-    });
+    };
+    trace('POST /weddings payload', payload);
+
+    let wedding: Awaited<ReturnType<typeof api.weddings.create>>['wedding'];
+    try {
+      ({ wedding } = await api.weddings.create(payload));
+      trace('POST /weddings ok', wedding);
+    } catch (error) {
+      trace(
+        'POST /weddings FAILED',
+        error instanceof ApiError ? describeError(error) : String(error),
+      );
+      throw error;
+    }
 
     // Each selected function becomes an event. They share the wedding date
     // because the wizard doesn't ask per function; the Timeline can adjust them
@@ -70,16 +127,25 @@ export function SetupScreen(): React.JSX.Element {
 
     if (eventDate) {
       for (const name of chosen) {
+        const eventPayload = {
+          name,
+          eventDate,
+          ...(venue.trim() ? { venueName: venue.trim() } : {}),
+        };
         try {
-          await api.events.create(wedding.id, {
-            name,
-            eventDate,
-            ...(venue.trim() ? { venueName: venue.trim() } : {}),
-          });
+          trace(`POST /weddings/${wedding.id}/events payload`, eventPayload);
+          await api.events.create(wedding.id, eventPayload);
+          trace(`event "${name}" ok`);
         } catch (error) {
+          trace(
+            `event "${name}" FAILED`,
+            error instanceof ApiError ? describeError(error) : String(error),
+          );
           failures.push(`${name} (${errorMessage(error)})`);
         }
       }
+    } else {
+      trace('no wedding date — skipping all events', { weddingDate });
     }
 
     return {
@@ -91,7 +157,8 @@ export function SetupScreen(): React.JSX.Element {
 
   const isLast = step === 2;
 
-  const validateStep = (): boolean => {
+  /** Client-side rules for the current step; empty means it passed. */
+  const collectStepErrors = (): Record<string, string> => {
     const next: Record<string, string> = {};
     if (step === 0) {
       if (!bride.trim()) next.bride = "Enter the bride's name.";
@@ -105,19 +172,29 @@ export function SetupScreen(): React.JSX.Element {
         next.totalBudget = 'Enter a positive amount, or leave it blank.';
       }
     }
-    setLocalErrors(next);
-    return Object.keys(next).length === 0;
+    return next;
   };
 
   const goNext = async () => {
-    if (!validateStep()) return;
+    trace(`"${isLast ? 'Finish Setup' : 'Next'}" tapped on step ${step + 1}/3`);
+
+    const localFailures = collectStepErrors();
+    setLocalErrors(localFailures);
+    if (Object.keys(localFailures).length > 0) {
+      trace('blocked by local validation', localFailures);
+      return;
+    }
+
     if (!isLast) {
       setStep(s => s + 1);
       return;
     }
 
     const result = await create.run();
-    if (!result.ok) return;
+    if (!result.ok) {
+      trace('submit failed — staying on step 3', describeError(result.error));
+      return;
+    }
 
     const { wedding, failures, skippedEvents } = result.data;
     if (failures.length > 0 || skippedEvents) {
@@ -145,7 +222,7 @@ export function SetupScreen(): React.JSX.Element {
   };
 
   const errors = { ...localErrors, ...create.fieldErrors };
-  const hasFieldErrors = Object.keys(errors).length > 0;
+  const shownInline = STEP_FIELDS[step].some(field => errors[field]);
 
   return (
     <ScreenContainer scroll padded={false} contentContainerStyle={styles.root}>
@@ -161,7 +238,7 @@ export function SetupScreen(): React.JSX.Element {
       <AppText style={[typography.serifTitle, styles.title]}>{STEP_TITLES[step]}</AppText>
 
       <View style={styles.messages}>
-        <FormBanner message={hasFieldErrors ? null : create.error?.message} />
+        <FormBanner message={shownInline ? null : create.error?.message} />
         <FormBanner tone="warning" message={partialWarning} />
       </View>
 

@@ -165,7 +165,7 @@ export function OnboardingScreen(): React.JSX.Element {
           ))}
         </ScrollView>
 
-        <View style={styles.dots}>
+        {/* <View style={styles.dots}>
           {SLIDES.map((slide, i) => (
             <Pressable
               key={slide.title}
@@ -177,7 +177,7 @@ export function OnboardingScreen(): React.JSX.Element {
               <View style={[styles.dot, i === index ? styles.dotActive : styles.dotInactive]} />
             </Pressable>
           ))}
-        </View>
+        </View> */}
       </View>
 
       <View style={styles.footer}>

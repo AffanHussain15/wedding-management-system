@@ -93,6 +93,25 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
     };
   }, []);
 
+  /**
+   * Guards `GET /users/me` responses against arriving too late to be true.
+   *
+   * The epoch is bumped whenever something outside `loadProfile` establishes
+   * newer truth about memberships — creating a wedding, or switching user. A
+   * read issued before that bump was accurate when it left, but applying it now
+   * would roll the state back: an empty `weddings` erases the wedding just
+   * created *and* unsets `activeWeddingId`, which drops a brand-new user out of
+   * the app and back onto a freshly mounted setup wizard.
+   *
+   * `request` also dedupes concurrent reads, so the provider's effect and an
+   * awaiting caller share one in-flight fetch instead of racing two.
+   */
+  const profileEpoch = useRef(0);
+  const profileRequest = useRef<{
+    epoch: number;
+    promise: Promise<CurrentUser | null>;
+  } | null>(null);
+
   // Mirror the module-level session singleton into React state, so a refresh
   // failure deep inside the HTTP client re-renders the navigator.
   useEffect(() => subscribeToSession(setSessionState), []);
@@ -126,33 +145,49 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
     return () => setUnauthorizedHandler(null);
   }, []);
 
-  const loadProfile = useCallback(async (): Promise<CurrentUser | null> => {
-    try {
-      const me = await api.users.me();
-      if (!mounted.current) return me;
-      setProfile(me);
-      setProfileError(null);
-      setProfileLoaded(true);
+  const loadProfile = useCallback((): Promise<CurrentUser | null> => {
+    const epoch = profileEpoch.current;
+    const inFlight = profileRequest.current;
+    if (inFlight && inFlight.epoch === epoch) return inFlight.promise;
 
-      // Reconcile the stored wedding id against actual memberships: a wedding
-      // the user was removed from must not stay selected.
-      setActiveWeddingId(previous => {
-        const stillAMember =
-          previous !== null && me.weddings.some(w => w.id === previous);
-        if (stillAMember) return previous;
-        const fallback = me.weddings[0]?.id ?? null;
-        // Persistence is best-effort and already swallows its own errors.
-        if (fallback) saveActiveWeddingId(fallback);
-        return fallback;
-      });
-      return me;
-    } catch (error) {
-      if (mounted.current) {
-        setProfileError(errorMessage(error));
+    const promise = (async (): Promise<CurrentUser | null> => {
+      try {
+        const me = await api.users.me();
+        // Superseded while in flight — report the response to the caller, but
+        // don't let it overwrite newer state.
+        if (!mounted.current || epoch !== profileEpoch.current) return me;
+        setProfile(me);
+        setProfileError(null);
         setProfileLoaded(true);
+
+        // Reconcile the stored wedding id against actual memberships: a wedding
+        // the user was removed from must not stay selected.
+        setActiveWeddingId(previous => {
+          const stillAMember =
+            previous !== null && me.weddings.some(w => w.id === previous);
+          if (stillAMember) return previous;
+          const fallback = me.weddings[0]?.id ?? null;
+          // Persistence is best-effort and already swallows its own errors.
+          if (fallback) saveActiveWeddingId(fallback);
+          return fallback;
+        });
+        return me;
+      } catch (error) {
+        if (mounted.current && epoch === profileEpoch.current) {
+          setProfileError(errorMessage(error));
+          setProfileLoaded(true);
+        }
+        return null;
+      } finally {
+        // Only retire our own entry; a bump may already have replaced it.
+        if (profileRequest.current?.epoch === epoch) {
+          profileRequest.current = null;
+        }
       }
-      return null;
-    }
+    })();
+
+    profileRequest.current = { epoch, promise };
+    return promise;
   }, []);
 
   // Load the profile whenever we become authenticated.
@@ -171,6 +206,9 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
     async (result: { user: Session['user']; accessToken: string; refreshToken: string }) => {
       // Drop any previous user's profile *before* the session lands, so the
       // render `setSession` triggers can't be decided on their memberships.
+      // The bump also discards a read still in flight for the previous user,
+      // which would otherwise land as if it described this one.
+      profileEpoch.current += 1;
       setProfile(null);
       setProfileLoaded(false);
       await setSession({
@@ -216,6 +254,7 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
         // clear local credentials, or the user stays stuck signed in.
       }
     }
+    profileEpoch.current += 1;
     await clearSession();
     if (!mounted.current) return;
     setProfile(null);
@@ -233,6 +272,11 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
   }, [loadProfile]);
 
   const completeWeddingSetup = useCallback(async (wedding: WeddingMembershipSummary) => {
+    // This wedding is newer than any profile read already in flight — those
+    // were sent before it existed and would report no memberships.
+    profileEpoch.current += 1;
+    const epoch = profileEpoch.current;
+
     await saveActiveWeddingId(wedding.id);
     if (!mounted.current) return;
     setActiveWeddingId(wedding.id);
@@ -252,7 +296,8 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
     (async () => {
       try {
         const me = await api.users.me();
-        if (!mounted.current) return;
+        // A later wedding (or a logout) has since superseded this reconcile.
+        if (!mounted.current || epoch !== profileEpoch.current) return;
         const weddings = me.weddings.some(w => w.id === wedding.id)
           ? me.weddings
           : [...me.weddings, wedding];
@@ -260,7 +305,9 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
         setProfileError(null);
         setProfileLoaded(true);
       } catch (error) {
-        if (mounted.current) setProfileError(errorMessage(error));
+        if (mounted.current && epoch === profileEpoch.current) {
+          setProfileError(errorMessage(error));
+        }
       }
     })();
   }, []);

@@ -57,8 +57,7 @@ export function HomeScreen(): React.JSX.Element {
   // Empty fallback: the hero already says "Set your date" when there is none,
   // so the line below it shouldn't repeat "Date not set".
   const weddingDate = formatDate(wedding.weddingDate, 'long', '');
-  const initials =
-    `${wedding.bride[0] ?? ''}${wedding.groom[0] ?? ''}`.toUpperCase() || '–';
+  const initials = `${wedding.bride[0] ?? ''}${wedding.groom[0] ?? ''}`.toUpperCase() || '–';
   // The venue/city line has to survive either part being unset.
   const location = [wedding.venue, wedding.city].filter(Boolean).join(', ');
 
@@ -182,7 +181,9 @@ export function HomeScreen(): React.JSX.Element {
               spend instead of a meaningless 0%. */}
           <StatCard
             label="Budget Used / Bajat"
-            value={budget.allotted === null ? `Rs ${formatNumber(budget.spent)}` : `${budget.pctUsed}%`}
+            value={
+              budget.allotted === null ? `Rs ${formatNumber(budget.spent)}` : `${budget.pctUsed}%`
+            }
             caption={budget.allotted === null ? 'no budget set' : undefined}
             onPress={() => goTab('Budget')}
             footer={<ProgressBar progress={budget.pctUsed} height={5} style={styles.statBar} />}
@@ -233,7 +234,8 @@ export function HomeScreen(): React.JSX.Element {
                 key={fn.id}
                 style={styles.functionCard}
                 onPress={() => nav.navigate('FunctionDetail', { functionId: fn.id })}>
-                <View style={[styles.functionDot, { backgroundColor: functionDotColor(fn.status) }]}>
+                <View
+                  style={[styles.functionDot, { backgroundColor: functionDotColor(fn.status) }]}>
                   {/* A finished function keeps the tick; the rest show what kind
                       of function they are. */}
                   <Icon
@@ -437,6 +439,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: spacing.md,
     paddingBottom: spacing.xs,
+    marginTop: 5,
   },
   functionCard: {
     width: 96,
