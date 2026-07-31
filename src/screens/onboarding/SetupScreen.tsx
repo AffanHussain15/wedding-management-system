@@ -7,7 +7,7 @@
  * happens on the Profile screen instead.
  */
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import {
@@ -26,7 +26,7 @@ import { useMutation } from '@hooks';
 import { FUNCTION_NAMES } from '@constants';
 import { colors, radius, spacing, typography } from '@theme';
 import { formatDate, toApiDate, todayIso } from '@utils';
-import { useAppNavigation } from '@navigation/hooks';
+import { useAppNavigation, useRootTree } from '@navigation/hooks';
 
 const STEP_TITLES = ['Tell us about the couple', 'Set your date & venue', 'Confirm your functions'];
 
@@ -73,6 +73,11 @@ const initialSelection: Selected = FUNCTION_NAMES.reduce<Selected>((acc, name) =
 export function SetupScreen(): React.JSX.Element {
   const nav = useAppNavigation();
   const { completeWeddingSetup } = useAuth();
+
+  // Whether the wizard was pushed from inside the app ("Create Another
+  // Wedding") rather than entered as a new account's first screen. Read once on
+  // mount, because creating the wedding is exactly what changes the answer.
+  const openedFromApp = useRef(useRootTree() === 'app').current;
 
   const [step, setStep] = useState(0);
   const [bride, setBride] = useState('');
@@ -213,6 +218,13 @@ export function SetupScreen(): React.JSX.Element {
     // idle Render instance) must not stall this, or a brand-new user is stuck
     // on this screen with no error and no way into the app they just created.
     await completeWeddingSetup({ id: wedding.id, name: wedding.name, role: wedding.role });
+
+    // Entered from the app stack, the tree doesn't change — the user already had
+    // a wedding — so this screen isn't swapped out and would sit here on a
+    // finished wizard, one tap away from creating the same wedding twice. Walk
+    // back to the app instead. When the tree does change (a new account's first
+    // wedding) the container re-keys and this screen is already gone.
+    if (openedFromApp) nav.popToTop();
   };
 
   const goBack = () => {
@@ -246,6 +258,7 @@ export function SetupScreen(): React.JSX.Element {
         <View style={styles.form}>
           <Input
             label="Bride's name / Dulhan"
+            placeholder="e.g. Ayesha Khan"
             value={bride}
             onChangeText={setBride}
             autoCapitalize="words"
@@ -254,6 +267,7 @@ export function SetupScreen(): React.JSX.Element {
           <FieldError message={errors.bride} />
           <Input
             label="Groom's name / Dulha"
+            placeholder="e.g. Ahmed Raza"
             value={groom}
             onChangeText={setGroom}
             autoCapitalize="words"
@@ -279,6 +293,7 @@ export function SetupScreen(): React.JSX.Element {
           <FieldError message={errors.weddingDate} />
           <Input
             label="City"
+            placeholder="e.g. Karachi"
             value={city}
             onChangeText={setCity}
             autoCapitalize="words"
@@ -287,6 +302,7 @@ export function SetupScreen(): React.JSX.Element {
           <FieldError message={errors.venueCity} />
           <Input
             label="Main venue"
+            placeholder="e.g. Pearl Continental"
             value={venue}
             onChangeText={setVenue}
             autoCapitalize="words"

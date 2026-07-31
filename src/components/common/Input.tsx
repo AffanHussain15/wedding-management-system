@@ -1,21 +1,38 @@
 /** Text field styled to match the design's form inputs. */
 
-import React, { useRef } from 'react';
-import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
+import React, { useRef, useState } from 'react';
+import {
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+  type TextInputProps,
+} from 'react-native';
 
 import { colors, radius, spacing, typography } from '@theme';
 import { AppText } from './AppText';
+import { Icon } from './Icon';
 import { useScrollAssist } from './ScreenContainer';
 
 export interface InputProps extends TextInputProps {
   label?: string;
 }
 
-export function Input({ label, style, onFocus, ...rest }: InputProps): React.JSX.Element {
+export function Input({
+  label,
+  style,
+  onFocus,
+  secureTextEntry,
+  ...rest
+}: InputProps): React.JSX.Element {
   const field = useRef<TextInput>(null);
   // Null outside a scrollable ScreenContainer, in which case there is nothing
   // to scroll and focus needs no special handling.
   const assist = useScrollAssist();
+  // Every `secureTextEntry` field gets a reveal toggle — on a phone keyboard a
+  // password long enough to satisfy the API's rules is easy to mistype, and
+  // there is nothing else to check it against.
+  const [revealed, setRevealed] = useState(false);
 
   // Typed from the prop itself: RN's focus event shape has changed between
   // versions, and this can't drift from whatever TextInput expects.
@@ -26,6 +43,19 @@ export function Input({ label, style, onFocus, ...rest }: InputProps): React.JSX
     onFocus?.(event);
   };
 
+  const input = (
+    <TextInput
+      ref={field}
+      placeholderTextColor={colors.textMuted}
+      // `style` stays last so a caller can still override the padding the
+      // toggle reserves for itself.
+      style={[styles.input, secureTextEntry ? styles.inputWithToggle : null, style]}
+      onFocus={handleFocus}
+      secureTextEntry={secureTextEntry && !revealed}
+      {...rest}
+    />
+  );
+
   return (
     <View>
       {label ? (
@@ -33,13 +63,26 @@ export function Input({ label, style, onFocus, ...rest }: InputProps): React.JSX
           {label}
         </AppText>
       ) : null}
-      <TextInput
-        ref={field}
-        placeholderTextColor={colors.textMuted}
-        style={[styles.input, style]}
-        onFocus={handleFocus}
-        {...rest}
-      />
+      {secureTextEntry ? (
+        <View>
+          {input}
+          <Pressable
+            onPress={() => setRevealed(value => !value)}
+            hitSlop={8}
+            style={styles.toggle}
+            accessibilityRole="button"
+            accessibilityLabel={revealed ? 'Hide password' : 'Show password'}>
+            <Icon
+              name={revealed ? 'eyeOff' : 'eye'}
+              size={20}
+              color={colors.textSecondary}
+              strokeWidth={1.75}
+            />
+          </Pressable>
+        </View>
+      ) : (
+        input
+      )}
     </View>
   );
 }
@@ -58,5 +101,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceMuted,
     color: colors.text,
     ...typography.callout,
+  },
+  inputWithToggle: {
+    // Clears the toggle's 52pt tap target, so a long password doesn't run
+    // under the icon.
+    paddingRight: spacing.xxxl,
+  },
+  toggle: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.base,
   },
 });
