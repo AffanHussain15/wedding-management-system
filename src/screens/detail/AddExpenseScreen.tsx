@@ -12,6 +12,7 @@ import {
   AppText,
   Button,
   Input,
+  MoneyInput,
   FilterChip,
   FieldError,
   FormBanner,
@@ -126,12 +127,11 @@ export function AddExpenseScreen(): React.JSX.Element {
         </View>
         <FieldError message={errors.category} />
 
-        <Input
+        <MoneyInput
           label="Amount (Rs)"
           placeholder="0"
           value={amount}
           onChangeText={setAmount}
-          keyboardType="number-pad"
           editable={!saving && !existing?.fromVendorPayment}
         />
         <FieldError message={errors.amount} />

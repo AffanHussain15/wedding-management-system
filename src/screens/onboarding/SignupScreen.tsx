@@ -132,14 +132,14 @@ export function SignupScreen(): React.JSX.Element {
         loginWithGoogle is all that remains — so this stays disabled rather
         than looking functional.
       */}
-      <View style={styles.divider}>
+      {/* <View style={styles.divider}>
         <View style={styles.line} />
         <AppText variant="caption" color={colors.textMuted}>
           or continue with
         </AppText>
         <View style={styles.line} />
       </View>
-      <Button label="Google (setup required)" variant="outline" disabled />
+      <Button label="Google (setup required)" variant="outline" disabled /> */}
 
       <AppText variant="caption" color={colors.textSecondary} center style={styles.footer}>
         Already have an account?{' '}

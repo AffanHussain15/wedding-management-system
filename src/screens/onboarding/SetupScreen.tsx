@@ -15,6 +15,7 @@ import {
   AppText,
   Button,
   Input,
+  MoneyInput,
   DateField,
   FilterChip,
   FieldError,
@@ -65,8 +66,13 @@ function describeError(error: ApiError): Record<string, unknown> {
 
 type Selected = Record<string, boolean>;
 
+/**
+ * Nothing is selected up front: every function that stays ticked becomes an
+ * event, and a preselected list means a couple who skips past this step gets a
+ * Timeline full of functions they never said they were having.
+ */
 const initialSelection: Selected = FUNCTION_NAMES.reduce<Selected>((acc, name) => {
-  acc[name] = true;
+  acc[name] = false;
   return acc;
 }, {});
 
@@ -233,6 +239,12 @@ export function SetupScreen(): React.JSX.Element {
     else nav.goBack();
   };
 
+  // Step 1 of a new account's wizard is the setup tree's first route, so its
+  // "Back" has nothing to pop and sits dead under the finger. Show the button
+  // only where it can move: a later step, or an entry point that left a screen
+  // behind it (the wedding picker, "Create Another Wedding").
+  const canGoBack = step > 0 || nav.canGoBack();
+
   const errors = { ...localErrors, ...create.fieldErrors };
   const shownInline = STEP_FIELDS[step].some(field => errors[field]);
 
@@ -308,12 +320,11 @@ export function SetupScreen(): React.JSX.Element {
             autoCapitalize="words"
             editable={!create.loading}
           />
-          <Input
+          <MoneyInput
             label="Total budget (Rs, optional)"
             value={totalBudget}
             onChangeText={setTotalBudget}
             placeholder="0"
-            keyboardType="number-pad"
             editable={!create.loading}
           />
           <FieldError message={errors.totalBudget} />
@@ -323,8 +334,9 @@ export function SetupScreen(): React.JSX.Element {
       {step === 2 ? (
         <View>
           <AppText variant="callout" color={colors.textSecondary} style={styles.hint}>
-            Which functions are you planning? Tap to toggle. Each becomes an event
-            you can reschedule later.
+            Which functions are you planning? Tap the ones you're having — each
+            becomes an event you can reschedule later, and you can add more from
+            the Timeline.
           </AppText>
           <View style={styles.chips}>
             {FUNCTION_NAMES.map(name => (
@@ -351,14 +363,16 @@ export function SetupScreen(): React.JSX.Element {
       ) : null}
 
       <View style={styles.actions}>
-        <Button
-          label="Back"
-          variant="outline"
-          fullWidth={false}
-          style={styles.backBtn}
-          onPress={goBack}
-          disabled={create.loading}
-        />
+        {canGoBack ? (
+          <Button
+            label="Back"
+            variant="outline"
+            fullWidth={false}
+            style={styles.backBtn}
+            onPress={goBack}
+            disabled={create.loading}
+          />
+        ) : null}
         <Button
           label={isLast ? 'Finish Setup' : 'Next'}
           fullWidth={false}

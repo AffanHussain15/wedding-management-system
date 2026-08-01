@@ -48,6 +48,59 @@ export const formatNumber = (value: number): string =>
 export const formatCurrency = (value: number): string =>
   `${CURRENCY_SYMBOL} ${formatNumber(value)}`;
 
+/**
+ * Groups an amount held as a *string* for display in a money field:
+ * "10000000" → "10,000,000". Unlike `formatNumber` this never rounds or goes
+ * through `Number`, so a half-typed value ("", "10", "1500.") survives a
+ * render untouched and the field doesn't fight the person typing into it.
+ */
+export const groupAmount = (value: string): string => {
+  const [whole, fraction] = value.split('.');
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return fraction === undefined ? grouped : `${grouped}.${fraction}`;
+};
+
+/**
+ * The inverse: the raw digits behind a grouped field, so `Number(...)` and the
+ * API see "10000000" rather than "10,000,000". Also the guard for pasted text,
+ * which can carry currency symbols and spaces the number pad can't produce.
+ * A leading zero is dropped once a real digit follows it ("05" → "5"); a lone
+ * "0" and "0.5" both stand.
+ */
+export const parseAmountInput = (text: string): string => {
+  const cleaned = text.replace(/[^\d.]/g, '');
+  // Extra dots are dropped rather than kept — "1.5.2" is not a number, and the
+  // caller would only get NaN out of it.
+  const [whole = '', ...rest] = cleaned.split('.');
+  const digits = whole.replace(/^0+(?=\d)/, '');
+  return rest.length > 0 ? `${digits}.${rest.join('')}` : digits;
+};
+
+/**
+ * An amount in the units people actually say out loud: 10000 → "10k",
+ * 100000 → "1 lac", 25000000 → "2.5 crore". Prefixed with "≈" when rounding to
+ * two decimals loses something, so 12345 reads "≈ 12.35k" and never claims to
+ * be the exact figure.
+ *
+ * Returns '' below a thousand, where the grouped number is already plain, and
+ * for anything that isn't a positive number — the caller shows nothing at all
+ * rather than a hint for a half-typed value.
+ */
+export const shortAmount = (value: number): string => {
+  if (!Number.isFinite(value) || value < 1000) return '';
+  // South Asian units: a lac is 100,000 and a crore is 100 lac, which is what
+  // the budgets in this app are discussed in.
+  const [unit, divisor] =
+    value >= 10_000_000
+      ? ([' crore', 10_000_000] as const)
+      : value >= 100_000
+        ? ([' lac', 100_000] as const)
+        : (['k', 1_000] as const);
+  const scaled = Math.round((value / divisor) * 100) / 100;
+  const approx = Math.round(scaled * divisor) !== Math.round(value) ? '≈ ' : '';
+  return `${approx}${groupAmount(String(scaled))}${unit}`;
+};
+
 /** "Ayesha Khan" → "AK". */
 export const getInitials = (name: string): string =>
   name
