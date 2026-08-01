@@ -44,6 +44,7 @@ export type RootStackParamList = {
   AddTask: { eventId?: string } | undefined;
   Seating: undefined;
   Profile: undefined;
+  AiAssistant: undefined;
 };
 
 // Makes useNavigation / useRoute typed app-wide without per-call generics.

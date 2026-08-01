@@ -42,6 +42,7 @@ import {
   AddTaskScreen,
   SeatingScreen,
   ProfileScreen,
+  AiAssistantScreen,
 } from '@screens';
 
 import { MainTabNavigator } from './MainTabNavigator';
@@ -109,6 +110,7 @@ export function RootNavigator(): React.JSX.Element {
             <Stack.Screen name="Reminders" component={RemindersScreen} />
             <Stack.Screen name="Tasks" component={TasksScreen} />
             <Stack.Screen name="Seating" component={SeatingScreen} />
+            <Stack.Screen name="AiAssistant" component={AiAssistantScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="FamilyLink" component={FamilyLinkScreen} />
             <Stack.Screen name="SelectWedding" component={SelectWeddingScreen} />

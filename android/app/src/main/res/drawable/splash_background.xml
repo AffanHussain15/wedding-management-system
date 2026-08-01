@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Window background for the cold-start frames before JS mounts SplashScreen.
+     Matches that screen's gradient so the handover is invisible. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:startColor="#7A1230"
+        android:centerColor="#6B1B2C"
+        android:endColor="#4E0A1D"
+        android:type="linear" />
+</shape>

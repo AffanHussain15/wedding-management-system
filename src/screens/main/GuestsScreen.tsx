@@ -221,14 +221,17 @@ export function GuestsScreen(): React.JSX.Element {
         />
       </ScreenContainer>
 
-      {mayEdit ? (
-        <Fab
-          actions={[
-            { label: 'Add Guest', onPress: () => nav.navigate('AddGuest') },
-            { label: 'Import from Contacts', onPress: () => nav.navigate('ImportContacts') },
-          ]}
-        />
-      ) : null}
+      <Fab
+        ai={() => nav.navigate('AiAssistant')}
+        actions={
+          mayEdit
+            ? [
+                { label: 'Add Guest', onPress: () => nav.navigate('AddGuest') },
+                { label: 'Import from Contacts', onPress: () => nav.navigate('ImportContacts') },
+              ]
+            : undefined
+        }
+      />
       <Toast message={toast} visible={!!toast} />
     </View>
   );

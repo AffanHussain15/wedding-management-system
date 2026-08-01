@@ -26,4 +26,5 @@ export { RemindersScreen } from './detail/RemindersScreen';
 export { TasksScreen } from './detail/TasksScreen';
 export { AddTaskScreen } from './detail/AddTaskScreen';
 export { SeatingScreen } from './detail/SeatingScreen';
+export { AiAssistantScreen } from './detail/AiAssistantScreen';
 export { ProfileScreen } from './detail/ProfileScreen';

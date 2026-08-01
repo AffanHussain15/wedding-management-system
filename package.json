@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "icons": "node scripts/generate-app-icon.js",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",

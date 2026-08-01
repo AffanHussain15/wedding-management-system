@@ -52,6 +52,9 @@ export type { ProgressBarProps } from './common/ProgressBar';
 export { Icon } from './common/Icon';
 export type { IconProps, IconName } from './common/Icon';
 
+export { BrandMark } from './common/BrandMark';
+export type { BrandMarkProps } from './common/BrandMark';
+
 export { StripedPlaceholder } from './common/StripedPlaceholder';
 export type { StripedPlaceholderProps } from './common/StripedPlaceholder';
 
