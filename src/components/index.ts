@@ -13,6 +13,9 @@ export type { BackButtonProps } from './common/BackButton';
 export { Input } from './common/Input';
 export type { InputProps } from './common/Input';
 
+export { MoneyInput } from './common/MoneyInput';
+export type { MoneyInputProps } from './common/MoneyInput';
+
 export { PhoneInput } from './common/PhoneInput';
 export type { PhoneInputProps } from './common/PhoneInput';
 

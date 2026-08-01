@@ -6,6 +6,7 @@ import {
   AppText,
   Button,
   Input,
+  MoneyInput,
   PhoneInput,
   FilterChip,
   FieldError,
@@ -113,23 +114,21 @@ export function AddVendorScreen(): React.JSX.Element {
 
         <View style={styles.money}>
           <View style={styles.moneyField}>
-            <Input
+            <MoneyInput
               label="Total cost (Rs)"
               placeholder="0"
               value={cost}
               onChangeText={setCost}
-              keyboardType="number-pad"
               editable={!saving}
             />
             <FieldError message={errors.cost} />
           </View>
           <View style={styles.moneyField}>
-            <Input
+            <MoneyInput
               label="Advance paid"
               placeholder="0"
               value={advance}
               onChangeText={setAdvance}
-              keyboardType="number-pad"
               editable={!saving}
             />
             <FieldError message={errors.advance} />

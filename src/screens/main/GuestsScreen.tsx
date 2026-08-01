@@ -27,6 +27,9 @@ import { useAppNavigation } from '@navigation/hooks';
 
 type Filter = (typeof GUEST_FILTERS)[number];
 
+/** Shared empty set, so "nothing pending" is the same value on every render. */
+const EMPTY_SET: ReadonlySet<ID> = new Set();
+
 export function GuestsScreen(): React.JSX.Element {
   const nav = useAppNavigation();
   const { state, actions, loading, refreshing, error, refresh, hasData } = useWedding();
@@ -37,6 +40,12 @@ export function GuestsScreen(): React.JSX.Element {
   const [filter, setFilter] = useState<Filter>('All');
   const [toast, setToast] = useState('');
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Guests whose RSVP is being written. Held as a set so several rows can be
+  // in flight at once, and mirrored in a ref because `cycleRsvp` has to read it
+  // without taking it as a dependency — see the note on the callbacks below.
+  const [pendingRsvp, setPendingRsvp] = useState<ReadonlySet<ID>>(EMPTY_SET);
+  const pendingRsvpRef = useRef<ReadonlySet<ID>>(EMPTY_SET);
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -49,17 +58,35 @@ export function GuestsScreen(): React.JSX.Element {
 
   const mayEdit = canContribute(state.wedding.role);
 
+  const markPending = useCallback((id: ID, pending: boolean) => {
+    const next = new Set(pendingRsvpRef.current);
+    if (pending) next.add(id);
+    else next.delete(id);
+    pendingRsvpRef.current = next;
+    setPendingRsvp(next);
+  }, []);
+
   const cycleRsvp = useCallback(
     async (id: ID, current: RsvpStatus) => {
       if (!mayEdit) {
         showToast('You have read-only access.');
         return;
       }
+      // The write PATCHes the guest and then reloads the whole list, so the
+      // badge only catches up a round trip later. Until then this row shows a
+      // spinner and ignores further taps — a second tap would cycle from the
+      // status still on screen, which is already stale, and land somewhere the
+      // user didn't choose.
+      if (pendingRsvpRef.current.has(id)) return;
+      markPending(id, true);
+
       const nextIdx = (RSVP_STATUSES.indexOf(current) + 1) % RSVP_STATUSES.length;
       const result = await actions.setGuestRsvp(id, RSVP_STATUSES[nextIdx]);
+
+      markPending(id, false);
       if (!result.ok) showToast(result.message);
     },
-    [actions, mayEdit, showToast],
+    [actions, markPending, mayEdit, showToast],
   );
 
   const invite = useCallback(
@@ -96,11 +123,12 @@ export function GuestsScreen(): React.JSX.Element {
       <GuestRow
         guest={item}
         photoUri={getPhoto(item.phone)}
+        rsvpPending={pendingRsvp.has(item.id)}
         onCycleRsvp={cycleRsvp}
         onInvite={invite}
       />
     ),
-    [cycleRsvp, getPhoto, invite],
+    [cycleRsvp, getPhoto, invite, pendingRsvp],
   );
 
   const renderFilterBar = useCallback(
@@ -224,43 +252,58 @@ function MiniStat({ value, label, color }: { value: number; label: string; color
 interface GuestRowProps {
   guest: Guest;
   photoUri?: string;
+  /** This guest's RSVP change is in flight. */
+  rsvpPending?: boolean;
   onCycleRsvp: (id: ID, current: RsvpStatus) => void;
   onInvite: (guest: Guest) => void;
 }
 
-const GuestRow = React.memo(({ guest, photoUri, onCycleRsvp, onInvite }: GuestRowProps) => {
-  const rsvp = rsvpStatusStyle(guest.rsvp);
+const GuestRow = React.memo(
+  ({ guest, photoUri, rsvpPending = false, onCycleRsvp, onInvite }: GuestRowProps) => {
+    const rsvp = rsvpStatusStyle(guest.rsvp);
 
-  return (
-    <Card style={styles.row}>
-      <Avatar name={guest.name} photoUri={photoUri} size={40} />
-      <View style={styles.rowBody}>
-        <AppText variant="label" color={colors.text} numberOfLines={1}>
-          {guest.name}
-        </AppText>
-        <AppText variant="caption" color={colors.textSecondary}>
-          {guest.group}
-          {guest.groupSize > 1 ? ` · ${guest.groupSize} people` : ''}
-        </AppText>
-      </View>
-      <Pressable
-        onPress={() => onCycleRsvp(guest.id, guest.rsvp)}
-        hitSlop={6}
-        accessibilityRole="button"
-        accessibilityLabel={`${guest.name} is ${guest.rsvp}. Change RSVP`}>
-        <StatusBadge label={guest.rsvp} bg={rsvp.bg} color={rsvp.text} />
-      </Pressable>
-      <Pressable
-        style={styles.invite}
-        onPress={() => onInvite(guest)}
-        hitSlop={6}
-        accessibilityRole="button"
-        accessibilityLabel={`Send invite to ${guest.name}`}>
-        <Icon name="send" size={14} color={colors.primary} />
-      </Pressable>
-    </Card>
-  );
-});
+    return (
+      <Card style={styles.row}>
+        <Avatar name={guest.name} photoUri={photoUri} size={40} />
+        <View style={styles.rowBody}>
+          <AppText variant="label" color={colors.text} numberOfLines={1}>
+            {guest.name}
+          </AppText>
+          <AppText variant="caption" color={colors.textSecondary}>
+            {guest.group}
+            {guest.groupSize > 1 ? ` · ${guest.groupSize} people` : ''}
+          </AppText>
+        </View>
+        <Pressable
+          onPress={() => onCycleRsvp(guest.id, guest.rsvp)}
+          disabled={rsvpPending}
+          hitSlop={6}
+          accessibilityRole="button"
+          accessibilityState={{ busy: rsvpPending, disabled: rsvpPending }}
+          accessibilityLabel={
+            rsvpPending
+              ? `Updating RSVP for ${guest.name}`
+              : `${guest.name} is ${guest.rsvp}. Change RSVP`
+          }>
+          <StatusBadge
+            label={guest.rsvp}
+            bg={rsvp.bg}
+            color={rsvp.text}
+            loading={rsvpPending}
+          />
+        </Pressable>
+        <Pressable
+          style={styles.invite}
+          onPress={() => onInvite(guest)}
+          hitSlop={6}
+          accessibilityRole="button"
+          accessibilityLabel={`Send invite to ${guest.name}`}>
+          <Icon name="send" size={14} color={colors.primary} />
+        </Pressable>
+      </Card>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   flex: {

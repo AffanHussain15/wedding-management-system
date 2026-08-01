@@ -13,6 +13,7 @@ import {
   Card,
   Button,
   Input,
+  MoneyInput,
   PhoneInput,
   FilterChip,
   FieldError,
@@ -264,7 +265,7 @@ export function VendorDetailScreen(): React.JSX.Element {
 
       <View style={styles.titleRow}>
         <AppText style={[typography.serifTitle, styles.name]}>{vendor.name}</AppText>
-        <StatusBadge label={statusLabel} bg={status.bg} color={status.text} />
+        <StatusBadge label={statusLabel} bg={status.bg} style={{marginRight:10}} color={status.text} />
         {mayEdit && !editing ? (
           <Pressable
             onPress={startEditing}
@@ -323,12 +324,11 @@ export function VendorDetailScreen(): React.JSX.Element {
             />
             <FieldError message={editErrors.phone} />
 
-            <Input
+            <MoneyInput
               label="Total cost (Rs)"
               placeholder="0"
               value={price}
               onChangeText={setPrice}
-              keyboardType="number-pad"
               editable={!savingEdit}
             />
             <FieldError message={editErrors.totalPrice} />
@@ -398,11 +398,10 @@ export function VendorDetailScreen(): React.JSX.Element {
           </AppText>
           <FormBanner message={payError} />
           <FormBanner message={payWarning} tone="warning" />
-          <Input
+          <MoneyInput
             placeholder="Amount in Rs"
             value={amount}
             onChangeText={setAmount}
-            keyboardType="number-pad"
             editable={!paying}
           />
           <AppText variant="caption" color={colors.textMuted} style={styles.note}>

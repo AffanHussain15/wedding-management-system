@@ -165,7 +165,7 @@ export function OnboardingScreen(): React.JSX.Element {
           ))}
         </ScrollView>
 
-        {/* <View style={styles.dots}>
+        <View style={styles.dots}>
           {SLIDES.map((slide, i) => (
             <Pressable
               key={slide.title}
@@ -177,7 +177,7 @@ export function OnboardingScreen(): React.JSX.Element {
               <View style={[styles.dot, i === index ? styles.dotActive : styles.dotInactive]} />
             </Pressable>
           ))}
-        </View> */}
+        </View>
       </View>
 
       <View style={styles.footer}>
@@ -213,11 +213,9 @@ const styles = StyleSheet.create({
   },
   pager: {
     marginHorizontal: -GUTTER,
+    flexGrow: 0,
   },
   card: {
-    // Full screen width so paging snaps cleanly, with the contents centred at
-    // `cardWidth` — which restores the gutter the pager cancelled, keeping the
-    // artwork aligned with the Next button.
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xl,

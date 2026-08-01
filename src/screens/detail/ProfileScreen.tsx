@@ -14,6 +14,7 @@ import {
   Avatar,
   Button,
   Input,
+  MoneyInput,
   DateField,
   Icon,
   StatusBadge,
@@ -235,12 +236,11 @@ export function ProfileScreen(): React.JSX.Element {
             autoCapitalize="words"
             editable={!save.loading}
           />
-          <Input
+          <MoneyInput
             label="Total budget (Rs)"
             value={budget}
             onChangeText={setBudget}
             placeholder="0"
-            keyboardType="number-pad"
             editable={!save.loading}
           />
           <FieldError message={errors.totalBudget} />
@@ -336,11 +336,11 @@ export function ProfileScreen(): React.JSX.Element {
           Log out
         </AppText>
       </Pressable>
-      <Pressable style={styles.logoutAll} onPress={confirmLogoutAll}>
+      {/* <Pressable style={styles.logoutAll} onPress={confirmLogoutAll}>
         <AppText variant="caption" color={colors.textMuted}>
           Log out of all devices
         </AppText>
-      </Pressable>
+      </Pressable> */}
     </ScreenContainer>
   );
 }
