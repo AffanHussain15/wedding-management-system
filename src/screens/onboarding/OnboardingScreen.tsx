@@ -213,20 +213,9 @@ const styles = StyleSheet.create({
   },
   pager: {
     marginHorizontal: -GUTTER,
-    // React Native gives every ScrollView `flexGrow: 1`, so inside this
-    // `flex: 1` column the pager ate all the free height: the cards stretched
-    // to fill it and centred their own contents, which left the dots stranded
-    // at the bottom of the screen, a slide's height away from the text they
-    // belong to. At `flexGrow: 0` the pager is only as tall as a card, and
-    // `center` centres the pager and the dots together with the gap between
-    // them. `flexShrink` stays at its default 1, so a short screen shrinks the
-    // pager instead of pushing the dots under the button.
     flexGrow: 0,
   },
   card: {
-    // Full screen width so paging snaps cleanly, with the contents centred at
-    // `cardWidth` — which restores the gutter the pager cancelled, keeping the
-    // artwork aligned with the Next button.
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xl,
