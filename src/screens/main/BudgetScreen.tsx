@@ -145,7 +145,10 @@ export function BudgetScreen(): React.JSX.Element {
           </>
         ) : null}
       </ScreenContainer>
-      {mayEdit ? <Fab onPress={() => nav.navigate('AddExpense')} /> : null}
+      <Fab
+        ai={() => nav.navigate('AiAssistant')}
+        onPress={mayEdit ? () => nav.navigate('AddExpense') : undefined}
+      />
     </View>
   );
 }

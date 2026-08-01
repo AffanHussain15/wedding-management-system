@@ -80,7 +80,10 @@ export function TimelineScreen(): React.JSX.Element {
           />
         )}
       </ScreenContainer>
-      {mayAdd ? <Fab onPress={() => nav.navigate('AddFunction')} /> : null}
+      <Fab
+        ai={() => nav.navigate('AiAssistant')}
+        onPress={mayAdd ? () => nav.navigate('AddFunction') : undefined}
+      />
     </View>
   );
 }

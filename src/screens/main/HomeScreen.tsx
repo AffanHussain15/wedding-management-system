@@ -300,6 +300,7 @@ export function HomeScreen(): React.JSX.Element {
       </ScreenContainer>
 
       <Fab
+        ai={() => nav.navigate('AiAssistant')}
         actions={[
           { label: '+ Add Vendor', onPress: () => nav.navigate('AddVendor') },
           { label: '+ Add Guest', onPress: () => nav.navigate('AddGuest') },

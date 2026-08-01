@@ -113,8 +113,11 @@ export function VendorsScreen(): React.JSX.Element {
           </View>
         </ScrollView>
       </ScreenContainer>
-      {/* Creating a vendor is OWNER/CO_OWNER only, so don't offer it otherwise. */}
-      {mayAdd ? <Fab onPress={() => nav.navigate('AddVendor')} /> : null}
+      {/* Creating a vendor is OWNER/CO_OWNER only; the AI button is not gated. */}
+      <Fab
+        ai={() => nav.navigate('AiAssistant')}
+        onPress={mayAdd ? () => nav.navigate('AddVendor') : undefined}
+      />
     </View>
   );
 }

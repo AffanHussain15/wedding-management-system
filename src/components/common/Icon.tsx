@@ -15,6 +15,7 @@ export type IconName =
   | 'link'
   | 'code'
   | 'plus'
+  | 'sparkles'
   | 'trash'
   | 'pencil'
   | 'close'
@@ -122,6 +123,14 @@ export function Icon({
       return (
         <Svg {...svgProps}>
           <Path d="M12 5v14M5 12h14" {...p} />
+        </Svg>
+      );
+    // Sparkles — a large four-point star with a small one beside it.
+    case 'sparkles':
+      return (
+        <Svg {...svgProps}>
+          <Path d="M10.5 5.5l2 5 5 2-5 2-2 5-2-5-5-2 5-2 2-5z" {...p} />
+          <Path d="M19 2.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9.9-2.1z" {...p} />
         </Svg>
       );
     case 'trash':
