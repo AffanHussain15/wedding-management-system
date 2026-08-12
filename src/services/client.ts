@@ -257,6 +257,88 @@ function refreshSession(): Promise<RefreshOutcome> {
   return refreshPromise;
 }
 
+/**
+ * Seconds of headroom before `exp` at which a token counts as expired. Covers
+ * clock skew plus the round trip, so a token that would die mid-handshake is
+ * rotated first.
+ */
+const TOKEN_EXPIRY_SKEW_SECONDS = 60;
+
+const B64_ALPHABET =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+/**
+ * base64url → the decoded bytes as a latin1 string.
+ *
+ * Hand-rolled because React Native ships no `atob`/`Buffer` this code can rely
+ * on across platforms. Only ever used on a JWT payload: the structural
+ * characters of JSON are ASCII, so a multi-byte claim value decoding to
+ * mojibake is harmless here — the one field read back out is numeric.
+ */
+/* eslint-disable no-bitwise -- base64 is defined in terms of bit shifts. */
+function decodeBase64Url(input: string): string {
+  const normalised = input.replace(/-/g, '+').replace(/_/g, '/').replace(/[=]+$/, '');
+  let output = '';
+  let buffer = 0;
+  let bits = 0;
+
+  for (const character of normalised) {
+    const value = B64_ALPHABET.indexOf(character);
+    if (value === -1) continue;
+    buffer = (buffer << 6) | value;
+    bits += 6;
+    if (bits >= 8) {
+      bits -= 8;
+      output += String.fromCharCode((buffer >> bits) & 0xff);
+    }
+  }
+  return output;
+}
+/* eslint-enable no-bitwise */
+
+/** `exp` (seconds since epoch) from a JWT payload, or null if unreadable. */
+function readTokenExpiry(token: string): number | null {
+  const payload = token.split('.')[1];
+  if (!payload) return null;
+  try {
+    const claims = JSON.parse(decodeBase64Url(payload)) as { exp?: unknown };
+    return typeof claims.exp === 'number' ? claims.exp : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * An access token that is valid *now*, rotating it first if it is expired or
+ * about to be.
+ *
+ * `request` can afford to be lazy about this — it reacts to a 401 and replays.
+ * A websocket cannot: its handshake is authenticated once, at connect, and
+ * socket.io reconnects on its own with whatever credential it was given. A
+ * token that expired while the socket was open therefore fails every reconnect
+ * attempt silently, locking the user out of a live conversation until they
+ * restart the app. Callers that authenticate out-of-band (see `chatSocket.ts`)
+ * must ask for the token through here, every time, rather than capturing it.
+ *
+ * Shares the same in-flight refresh as the 401 path, so a burst of callers
+ * rotates the pair once.
+ */
+export async function getValidAccessToken(): Promise<string | null> {
+  const token = getAccessToken();
+  if (!token) return null;
+
+  const expiry = readTokenExpiry(token);
+  // An unreadable `exp` is not a reason to force a refresh: the token may well
+  // be fine, and the 401 path is still there as a backstop.
+  if (expiry === null) return token;
+
+  const expiresSoon = expiry - TOKEN_EXPIRY_SKEW_SECONDS <= Date.now() / 1000;
+  if (!expiresSoon) return token;
+
+  const outcome = await refreshSession();
+  return outcome.status === 'refreshed' ? outcome.tokens.accessToken : getAccessToken();
+}
+
 // --- Public request API ----------------------------------------------------
 
 /** Issues a request and returns both `data` and envelope `meta`. */
