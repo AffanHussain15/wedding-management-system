@@ -13,6 +13,7 @@
 
 import { authApi } from './endpoints/auth';
 import { budgetApi } from './endpoints/budget';
+import { chatApi } from './endpoints/chat';
 import { dashboardApi } from './endpoints/dashboard';
 import { eventsApi } from './endpoints/events';
 import { guestsApi, publicRsvpApi } from './endpoints/guests';
@@ -32,6 +33,7 @@ export const api = {
   events: eventsApi,
   tasks: tasksApi,
   dashboard: dashboardApi,
+  chat: chatApi,
 } as const;
 
 export { IMPORT_MIME_TYPES, mimeTypeForFileName } from './endpoints/guests';
@@ -58,8 +60,18 @@ export {
 export type { Session } from './session';
 
 // Client internals worth exposing
-export { setUnauthorizedHandler } from './client';
+export { setUnauthorizedHandler, getValidAccessToken } from './client';
 export type { ApiResponse, QueryParams, RequestOptions } from './client';
+
+// AI assistant socket transport (history is on `api.chat`)
+export { ChatSocketClient } from './chatSocket';
+export type {
+  ChatResetReason,
+  ChatSocketConfig,
+  ChatSocketError,
+  ChatSocketEvents,
+  ChatToolActivity,
+} from './chatSocket';
 
 // Storage (for swapping in a secure/persistent adapter, or reading/writing
 // arbitrary local-only data such as the imported-guest photo cache)

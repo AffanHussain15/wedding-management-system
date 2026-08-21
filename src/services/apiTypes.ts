@@ -711,6 +711,49 @@ export interface DashboardSummary {
 }
 
 // ---------------------------------------------------------------------------
+// Chat (Module 14 — AI assistant)
+// ---------------------------------------------------------------------------
+
+export const CHAT_ROLES = ['USER', 'ASSISTANT', 'SYSTEM'] as const;
+export type ChatRole = (typeof CHAT_ROLES)[number];
+
+export const CHAT_SESSION_STATUSES = ['ACTIVE', 'ARCHIVED'] as const;
+export type ChatSessionStatus = (typeof CHAT_SESSION_STATUSES)[number];
+
+export interface ChatMessage {
+  id: string;
+  role: ChatRole;
+  content: string;
+  createdAt: IsoDate;
+  /** Present on assistant messages — the audit trail of tools that ran. */
+  toolCalls?: unknown;
+  /** False when the grounding validator had to retract and replace the reply. */
+  grounded?: boolean;
+}
+
+export interface ChatSession {
+  id: string;
+  title: string | null;
+  startedAt: IsoDate;
+  lastMessageAt: IsoDate;
+  status: ChatSessionStatus;
+}
+
+export type ChatSessionListQuery = {
+  page?: number;
+  limit?: number;
+  /** Omit to return both active and archived sessions. */
+  status?: ChatSessionStatus;
+};
+
+export type ChatMessageListQuery = {
+  page?: number;
+  limit?: number;
+  /** Defaults to oldest-first, the natural order for a transcript. */
+  sortOrder?: 'asc' | 'desc';
+};
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
